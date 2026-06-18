@@ -19,6 +19,7 @@ import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.repository.ProductMarketplaceDataRepository;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;

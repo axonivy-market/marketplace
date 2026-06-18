@@ -1,6 +1,7 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.AppSetting;
+import com.axonivy.market.enums.AppSettingCategory;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,8 @@ import java.util.Set;
 public interface AppSettingRepository extends JpaRepository<AppSetting, String> {
 
   List<AppSetting> findByKeyContainingIgnoreCase(String keyword);
+
+  List<AppSetting> findByCategoryIgnoreCase(String category);
 
   Optional<AppSetting> findByKey(String keyword);
 

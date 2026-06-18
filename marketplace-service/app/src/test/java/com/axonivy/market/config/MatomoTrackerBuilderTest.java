@@ -1,5 +1,6 @@
 package com.axonivy.market.config;
 
+import com.axonivy.market.enums.AppSettingCategory;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.service.AppSettingService;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,8 +10,10 @@ import org.matomo.java.tracking.MatomoTracker;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MatomoTrackerBuilderTest {
@@ -20,30 +23,31 @@ class MatomoTrackerBuilderTest {
 
   private MatomoTrackerBuilder builder;
 
+  private final Map<String, String> matomoSettings = Map.ofEntries(
+      Map.entry(AppSettingKey.MATOMO_SITE_ID.getKey(), "1234"),
+      Map.entry(AppSettingKey.MATOMO_API_ENDPOINT.getKey(), "https://matomo.example.com/matomo.php"),
+      Map.entry(AppSettingKey.MATOMO_ENABLED.getKey(), "false"));
+
+  private final Map<String, String> secondMatomoSettings = Map.ofEntries(
+      Map.entry(AppSettingKey.MATOMO_SITE_ID.getKey(), "789"),
+      Map.entry(AppSettingKey.MATOMO_API_ENDPOINT.getKey(), "https://matomo.example.com/matomo.php"),
+      Map.entry(AppSettingKey.MATOMO_ENABLED.getKey(), "true"));
+
   @BeforeEach
   void setUp() {
     builder = new MatomoTrackerBuilder(appSettingService);
   }
 
-  private void stubMatomoSettings(String endpoint, String siteId, boolean enabled) {
-    when(appSettingService.getStringValueByKey(AppSettingKey.MATOMO_API_ENDPOINT)).thenReturn(endpoint);
-    when(appSettingService.getStringValueByKey(AppSettingKey.MATOMO_SITE_ID)).thenReturn(siteId);
-    when(appSettingService.getBooleanValueByKey(AppSettingKey.MATOMO_ENABLED)).thenReturn(enabled);
-  }
-
   @Test
   void testBuildCreatesMatomoTracker() {
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "1", true);
-
+    when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(matomoSettings);
     MatomoTracker tracker = builder.build();
-
     assertNotNull(tracker, "MatomoTracker should not be null");
   }
 
   @Test
   void testBuildReturnsCachedTrackerWhenSettingsUnchanged() {
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "1", true);
-
+    when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(matomoSettings);
     MatomoTracker first = builder.build();
     MatomoTracker second = builder.build();
 
@@ -51,22 +55,12 @@ class MatomoTrackerBuilderTest {
   }
 
   @Test
-  void testBuildCreatesNewTrackerWhenEndpointChanges() {
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "1", true);
-    MatomoTracker first = builder.build();
-
-    stubMatomoSettings("https://new-matomo.example.com/matomo.php", "1", true);
-    MatomoTracker second = builder.build();
-
-    assertNotSame(first, second, "Should create new tracker when endpoint changes");
-  }
-
-  @Test
   void testBuildCreatesNewTrackerWhenSiteIdChanges() {
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "1", true);
-    MatomoTracker first = builder.build();
+    when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(
+        matomoSettings("1234", "https://matomo.example.com/matomo.php", "false")).thenReturn(
+        matomoSettings("789", "https://matomo.example.com/matomo.php", "false"));
 
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "2", true);
+    MatomoTracker first = builder.build();
     MatomoTracker second = builder.build();
 
     assertNotSame(first, second, "Should create new tracker when site ID changes");
@@ -74,22 +68,38 @@ class MatomoTrackerBuilderTest {
 
   @Test
   void testBuildCreatesNewTrackerWhenEnabledChanges() {
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "1", true);
-    MatomoTracker first = builder.build();
+    when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(
+        matomoSettings("1234", "https://matomo.example.com/matomo.php", "false")).thenReturn(
+        matomoSettings("1234", "https://matomo.example.com/matomo.php", "true"));
 
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "1", false);
+    MatomoTracker first = builder.build();
     MatomoTracker second = builder.build();
 
-    assertNotSame(first, second, "Should create new tracker when enabled flag changes");
+    assertNotSame(first, second, "Should create new tracker when enabled setting changes");
+  }
+
+  @Test
+  void testBuildReturnsPreviousTrackerWhenEndpointChanges() {
+    when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(
+        matomoSettings("1234", "https://matomo.example.com/matomo.php", "false")).thenReturn(
+        matomoSettings("1234", "invalid-uri", "false"));
+
+    MatomoTracker first = builder.build();
+    MatomoTracker second = builder.build();
+
+    assertNotSame(first, second, "Should return previous tracker when endpoint is invalid");
   }
 
   @Test
   void testBuildDisabledTracker() {
-    stubMatomoSettings("https://matomo.example.com/matomo.php", "1", false);
-
+    when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(matomoSettings);
     MatomoTracker tracker = builder.build();
-
     assertNotNull(tracker, "Should create tracker even when disabled");
   }
-}
 
+  private Map<String, String> matomoSettings(String siteId, String endpoint, String enabled) {
+
+    return Map.of(AppSettingKey.MATOMO_SITE_ID.getKey(), siteId, AppSettingKey.MATOMO_API_ENDPOINT.getKey(), endpoint,
+        AppSettingKey.MATOMO_ENABLED.getKey(), enabled);
+  }
+}

@@ -1378,37 +1378,41 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testUnArchivedTheRepositoryWhenSuccessful() throws IOException {
-    okhttp3.Call mockCall = setupUnarchiveCall(200, "OK");
+    okhttp3.OkHttpClient mockClient = mock(okhttp3.OkHttpClient.class);
+    okhttp3.Call mockCall = setupUnarchiveCall(mockClient, 200, "OK");
 
     gitHubService.unArchivedTheRepository("org/repo");
 
-    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockClient).newCall(any(okhttp3.Request.class));
     verify(mockCall).execute();
   }
 
   @Test
   void testUnArchivedTheRepositoryWhenResponseNotSuccessful() throws IOException {
-    okhttp3.Call mockCall = setupUnarchiveCall(403, "Forbidden");
+    okhttp3.OkHttpClient mockClient = mock(okhttp3.OkHttpClient.class);
+    okhttp3.Call mockCall = setupUnarchiveCall(mockClient, 403, "Forbidden");
 
     assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
         "Expected UnarchiveFailedException when GitHub API returns a non-successful response");
 
-    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockClient).newCall(any(okhttp3.Request.class));
     verify(mockCall).execute();
   }
 
   @Test
   void testUnArchivedTheRepositoryWhenIOExceptionThrown() throws IOException {
-    when(gitHubProperty.getToken()).thenReturn("test-token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
 
+    okhttp3.OkHttpClient mockClient = mock(okhttp3.OkHttpClient.class);
+    when(okHttpClientBuilder.build()).thenReturn(mockClient);
     okhttp3.Call mockCall = mock(okhttp3.Call.class);
-    when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
+    when(mockClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
     when(mockCall.execute()).thenThrow(new IOException("Network error"));
 
     assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
         "Expected UnarchiveFailedException when an IOException occurs during the unarchive request");
 
-    verify(okHttpClient).newCall(any(okhttp3.Request.class));
+    verify(mockClient).newCall(any(okhttp3.Request.class));
     verify(mockCall).execute();
   }
 
@@ -1421,8 +1425,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(mockReadme.read()).thenReturn(new ByteArrayInputStream(readmeContent.getBytes(StandardCharsets.UTF_8)));
   }
 
-  private okhttp3.Call setupUnarchiveCall(int code, String message) throws IOException {
-    when(gitHubProperty.getToken()).thenReturn("test-token");
+  private okhttp3.Call setupUnarchiveCall(okhttp3.OkHttpClient mockClient, int code, String message) throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
 
     okhttp3.Call mockCall = mock(okhttp3.Call.class);
     okhttp3.Response mockResponse = new okhttp3.Response.Builder()
@@ -1433,7 +1437,8 @@ class GitHubServiceImplTest extends BaseSetup {
         .body(okhttp3.ResponseBody.create("{}", okhttp3.MediaType.parse("application/json")))
         .build();
 
-    when(okHttpClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
+    when(okHttpClientBuilder.build()).thenReturn(mockClient);
+    when(mockClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
     when(mockCall.execute()).thenReturn(mockResponse);
     return mockCall;
   }

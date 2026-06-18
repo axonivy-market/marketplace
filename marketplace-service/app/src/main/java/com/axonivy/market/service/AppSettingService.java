@@ -1,9 +1,11 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.enums.AppSettingCategory;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.model.AppSettingDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AppSettingService {
 
@@ -11,7 +13,7 @@ public interface AppSettingService {
 
   AppSettingDto update(String key, String value);
 
-  List<AppSettingDto> getAllByCategory(String category);
+  Map<String, String> getByCategory(AppSettingCategory category);
 
   Long getLongValueByKey(AppSettingKey key);
 

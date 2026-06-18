@@ -49,7 +49,6 @@ class OpenApisUtilsTest {
         assertTrue(isValid, "Expected remote Swagger validator to pass");
     }
 
-
     private String fetchOpenApiYaml() {
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(getSpecUrl(), String.class);

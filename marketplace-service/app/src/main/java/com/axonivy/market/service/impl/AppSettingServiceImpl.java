@@ -1,11 +1,13 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.AppSetting;
+import com.axonivy.market.enums.AppSettingCategory;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.model.AppSettingDto;
 import com.axonivy.market.repository.AppSettingRepository;
 import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.service.EncryptionService;
+import com.axonivy.market.util.SettingValueParser;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,8 +60,9 @@ public class AppSettingServiceImpl implements AppSettingService {
   }
 
   @Override
-  public List<AppSettingDto> getAllByCategory(String category) {
-    return List.of();
+  public Map<String, String> getByCategory(AppSettingCategory category) {
+    List<AppSetting> appSettings = repository.findByCategoryIgnoreCase(category.name());
+    return appSettings.stream().collect(Collectors.toMap(AppSetting::getKey, this::resolveValue));
   }
 
   @Override
@@ -83,40 +87,19 @@ public class AppSettingServiceImpl implements AppSettingService {
   @Override
   public Long getLongValueByKey(AppSettingKey setting) {
     var value = getStringValueByKey(setting);
-    try {
-      return Long.parseLong(value);
-    } catch (NumberFormatException ex) {
-      try {
-        return Long.parseLong(setting.getDefaultValue());
-      } catch (NumberFormatException defaultEx) {
-        log.warn("Invalid long value '{}' and invalid default '{}' for setting key '{}'.", value,
-            setting.getDefaultValue(), setting.getKey(), defaultEx);
-        return 0L;
-      }
-    }
+    return SettingValueParser.parseLong(value, setting);
   }
 
   @Override
   public Integer getIntegerValueByKey(AppSettingKey setting) {
     var value = getStringValueByKey(setting);
-
-    try {
-      return Integer.parseInt(value);
-    } catch (NumberFormatException ex) {
-      try {
-        return Integer.parseInt(setting.getDefaultValue());
-      } catch (NumberFormatException defaultEx) {
-        log.warn("Invalid integer value '{}' and invalid default '{}' for setting key '{}'", value,
-            setting.getDefaultValue(), setting.getKey(), defaultEx);
-        return null;
-      }
-    }
+    return SettingValueParser.parseInteger(value, setting);
   }
 
   @Override
   public Boolean getBooleanValueByKey(AppSettingKey setting) {
     var value = getStringValueByKey(setting);
-    return Boolean.valueOf(value);
+    return SettingValueParser.parseBoolean(value);
   }
 
   @PostConstruct
@@ -127,8 +110,10 @@ public class AppSettingServiceImpl implements AppSettingService {
     Set<String> existingKeys = repository.findAllKeys();
 
     repository.saveAll(
-        Arrays.stream(AppSettingKey.values()).filter(settingKey -> !existingKeys.contains(settingKey.getKey())).map(
-            AppSetting::from).toList());
+        Arrays.stream(AppSettingKey.values())
+            .filter(settingKey -> !existingKeys.contains(settingKey.getKey()))
+            .map(AppSetting::from)
+            .toList());
 
     repository.deleteByKeyNotIn(enumKeys);
   }

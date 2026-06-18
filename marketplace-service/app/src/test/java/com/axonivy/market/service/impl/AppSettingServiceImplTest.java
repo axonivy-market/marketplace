@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.AppSetting;
+import com.axonivy.market.enums.AppSettingCategory;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.model.AppSettingDto;
 import com.axonivy.market.repository.AppSettingRepository;
@@ -14,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -214,6 +216,49 @@ class AppSettingServiceImplTest {
         "Should save all enum keys when no keys exist in repository");
   }
 
+  // ===== getByCategory =====
+
+  @Test
+  void testGetByCategoryReturnsSettingsMap() {
+    AppSetting setting1 = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "token-value", false);
+    AppSetting setting2 = buildAppSetting(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey(), "5000", false);
+    when(repository.findByCategoryIgnoreCase(AppSettingCategory.GITHUB.name())).thenReturn(
+        List.of(setting1, setting2));
+
+    Map<String, String> result = appSettingService.getByCategory(AppSettingCategory.GITHUB);
+
+    assertEquals(2, result.size(), "Should return a map with two entries");
+    assertEquals("token-value", result.get(AppSettingKey.GITHUB_TOKEN.getKey()),
+        "Should contain the correct value for token key");
+    assertEquals("5000", result.get(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey()),
+        "Should contain the correct value for timeout key");
+    verify(repository).findByCategoryIgnoreCase(AppSettingCategory.GITHUB.name());
+  }
+
+  @Test
+  void testGetByCategoryDecryptsEncryptedValues() {
+    AppSetting encryptedSetting = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "encrypted-token", true);
+    when(repository.findByCategoryIgnoreCase(AppSettingCategory.GITHUB.name())).thenReturn(
+        List.of(encryptedSetting));
+    when(encryptionService.decrypt("encrypted-token")).thenReturn("decrypted-token");
+
+    Map<String, String> result = appSettingService.getByCategory(AppSettingCategory.GITHUB);
+
+    assertEquals(1, result.size(), "Should return a map with one entry");
+    assertEquals("decrypted-token", result.get(AppSettingKey.GITHUB_TOKEN.getKey()),
+        "Encrypted value should be decrypted in the returned map");
+  }
+
+  @Test
+  void testGetByCategoryReturnsEmptyMapWhenNoSettings() {
+    when(repository.findByCategoryIgnoreCase(AppSettingCategory.SCHEDULING.name())).thenReturn(List.of());
+
+    Map<String, String> result = appSettingService.getByCategory(AppSettingCategory.SCHEDULING);
+
+    assertTrue(result.isEmpty(), "Should return empty map when no settings found for category");
+    verify(repository).findByCategoryIgnoreCase(AppSettingCategory.SCHEDULING.name());
+  }
+
   // ===== getLongValueByKey =====
 
   @Test
@@ -224,16 +269,6 @@ class AppSettingServiceImplTest {
     Long result = appSettingService.getLongValueByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT);
 
     assertEquals(5000L, result, "Should parse stored value as long");
-  }
-
-  @Test
-  void testGetLongValueByKeyReturnsZeroWhenBothValueAndDefaultInvalid() {
-    AppSetting setting = buildAppSetting(AppSettingKey.LIMITED_REQUEST_PATHS.getKey(), "not-a-number", false);
-    when(repository.findByKey(AppSettingKey.LIMITED_REQUEST_PATHS.getKey())).thenReturn(Optional.of(setting));
-
-    Long result = appSettingService.getLongValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
-
-    assertEquals(0L, result, "Should return 0L when both stored and default values are invalid");
   }
 
   @Test
@@ -258,22 +293,12 @@ class AppSettingServiceImplTest {
   }
 
   @Test
-  void testGetIntegerValueByKeyReturnsNullWhenBothValueAndDefaultInvalid() {
-    AppSetting setting = buildAppSetting(AppSettingKey.LIMITED_REQUEST_PATHS.getKey(), "not-a-number", false);
-    when(repository.findByKey(AppSettingKey.LIMITED_REQUEST_PATHS.getKey())).thenReturn(Optional.of(setting));
-
-    Integer result = appSettingService.getIntegerValueByKey(AppSettingKey.LIMITED_REQUEST_PATHS);
-
-    assertNull(result, "Should return null when both stored and default values are invalid");
-  }
-
-  @Test
   void testGetIntegerValueByKeyUsesDefaultWhenNotFound() {
-    when(repository.findByKey(AppSettingKey.CLICK_CAPACITY.getKey())).thenReturn(Optional.empty());
+    when(repository.findByKey(AppSettingKey.MAIL_PORT.getKey())).thenReturn(Optional.empty());
 
-    Integer result = appSettingService.getIntegerValueByKey(AppSettingKey.CLICK_CAPACITY);
+    Integer result = appSettingService.getIntegerValueByKey(AppSettingKey.MAIL_PORT);
 
-    assertEquals(100, result, "Should parse default value as integer when setting not found");
+    assertEquals(587, result, "Should parse default value as integer when setting not found");
   }
 
   // ===== getBooleanValueByKey =====

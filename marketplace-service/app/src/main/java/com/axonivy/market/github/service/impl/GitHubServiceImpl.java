@@ -602,6 +602,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public void unArchivedTheRepository(String repoPath) {
+    var okHttpClient = okHttpClientBuilder.build();
     String url = Url.REPOS_BASE_URL + repoPath;
     okhttp3.RequestBody body = okhttp3.RequestBody.create(
         "{\"archived\": false}",
@@ -610,7 +611,8 @@ public class GitHubServiceImpl implements GitHubService {
     okhttp3.Request request = new okhttp3.Request.Builder()
         .url(url)
         .patch(body)
-        .addHeader(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + gitHubProperty.getToken())
+        .addHeader(HttpHeaders.AUTHORIZATION,
+            BEARER_PREFIX + appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN))
         .build();
 
     try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
