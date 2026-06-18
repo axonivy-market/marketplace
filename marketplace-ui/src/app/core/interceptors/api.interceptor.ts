@@ -58,20 +58,11 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     requestURL = `${apiURL}/${req.url}`;
   }
 
-  const cloneReq = req.clone({
-    url: requestURL,
-    headers: addIvyHeaders(req.headers, req.method, adminAuthService.csrfToken()),
-    withCredentials: true
-  });
-
-  const needsCsrf = req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS';
-  if (needsCsrf && !adminAuthService.csrfToken()) {
+  const csrfToken = adminAuthService.csrfToken();
+  const needsCsrf = requiresCsrfProtection(req.method);
+  if (needsCsrf && !csrfToken) {
     return adminAuthService.fetchCsrfToken().pipe(
-      switchMap(() => next(req.clone({
-        url: requestURL,
-        headers: addIvyHeaders(req.headers, req.method, adminAuthService.csrfToken()),
-        withCredentials: true
-      }))),
+      switchMap(() => next(buildApiRequest(req, requestURL, adminAuthService.csrfToken()))),
       finalize(() => {
         if (req.context.get(LoadingComponent)) {
           loadingService.hideLoading(req.context.get(LoadingComponent));
@@ -80,7 +71,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
 
-  return next(cloneReq).pipe(
+  return next(buildApiRequest(req, requestURL, csrfToken)).pipe(
     tap(event => {
       if (req.method === 'GET'
         && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
@@ -96,12 +87,24 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
+function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string, csrfToken: string | null) {
+  return req.clone({
+    url: requestURL,
+    headers: addIvyHeaders(req.headers, req.method, csrfToken),
+    withCredentials: true
+  });
+}
+
+function requiresCsrfProtection(method: string): boolean {
+  return method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
+}
+
 function addIvyHeaders(headers: HttpHeaders, method: string, csrfToken: string | null): HttpHeaders {
   let updatedHeaders = headers;
   if (!updatedHeaders.has(REQUEST_BY)) {
     updatedHeaders = updatedHeaders.append(REQUEST_BY, IVY);
   }
-  if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS' && csrfToken && !updatedHeaders.has('X-XSRF-TOKEN')) {
+  if (requiresCsrfProtection(method) && csrfToken && !updatedHeaders.has('X-XSRF-TOKEN')) {
     updatedHeaders = updatedHeaders.append('X-XSRF-TOKEN', csrfToken);
   }
   return updatedHeaders;

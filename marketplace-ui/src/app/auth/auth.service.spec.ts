@@ -99,12 +99,20 @@ describe('AuthService', () => {
     (globalThis as any).PublicKeyCredential = originalPublicKeyCredential;
   });
 
-  it('redirects to GitHub using a server-issued state', () => {
+  async function flushMicrotasks(times = 3): Promise<void> {
+    for (let i = 0; i < times; i++) {
+      await Promise.resolve();
+    }
+  }
+
+  it('redirects to GitHub using a server-issued state', async () => {
     service.redirectToGitHub('/ignored');
+    await flushMicrotasks();
 
     const request = httpMock.expectOne(API_URI.ADMIN_GITHUB_AUTHORIZATION);
     expect(request.request.method).toBe('GET');
     request.flush({ state: 'server-state' });
+    await flushMicrotasks();
 
     expect(adminAuthService.fetchCsrfToken).toHaveBeenCalled();
     expect(location.href).toContain('client_id=github-client-id');
@@ -123,6 +131,7 @@ describe('AuthService', () => {
     };
 
     service.handleGitHubCallback('code-1', 'state-1');
+    await flushMicrotasks();
 
     const request = httpMock.expectOne(API_URI.ADMIN_GITHUB_CALLBACK);
     expect(request.request.method).toBe('POST');
@@ -168,7 +177,7 @@ describe('AuthService', () => {
     credentials.create.mockResolvedValue(createdCredential);
 
     const registerPromise = service.registerPasskey();
-    await Promise.resolve();
+    await flushMicrotasks();
 
     const optionsRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_REGISTER_OPTIONS);
     expect(optionsRequest.request.method).toBe('POST');
@@ -179,8 +188,7 @@ describe('AuthService', () => {
       pubKeyCredParams: [],
       timeout: 300000
     });
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushMicrotasks();
 
     const completeRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_REGISTER_COMPLETE);
     expect(completeRequest.request.method).toBe('POST');
@@ -216,7 +224,7 @@ describe('AuthService', () => {
     credentials.get.mockResolvedValue(assertedCredential);
 
     const loginPromise = service.loginWithPasskey('octopus');
-    await Promise.resolve();
+    await flushMicrotasks();
 
     const optionsRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_AUTHENTICATE_OPTIONS);
     expect(optionsRequest.request.method).toBe('POST');
@@ -227,8 +235,7 @@ describe('AuthService', () => {
       timeout: 300000,
       allowCredentials: [{ id: 'BAUG', type: 'public-key' }]
     });
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushMicrotasks();
 
     const completeRequest = httpMock.expectOne(API_URI.ADMIN_PASSKEY_AUTHENTICATE_COMPLETE);
     expect(completeRequest.request.method).toBe('POST');

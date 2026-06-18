@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
@@ -55,12 +56,11 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
     validateState(request.getSession(false), callbackRequest.getState());
 
     try {
-      String accessToken = gitHubService.getAccessToken(callbackRequest.getCode(), gitHubProperty).getAccessToken();
-      UserInfo authorizedGitHubUser = gitHubService.validateUserInOrganizationAndTeam(accessToken,
-          GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME, GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+      String accessToken = exchangeAccessToken(callbackRequest.getCode());
+      UserInfo authorizedGitHubUser = validateAdminMembership(accessToken);
       GithubUser persistedUser = gitHubService.getAndUpdateUser(accessToken);
-      UserInfo sessionUser = adminAuthenticationSessionService.createSession(persistedUser, authorizedGitHubUser.getUrl(),
-          request, response);
+      UserInfo sessionUser = adminAuthenticationSessionService.createSession(
+          persistedUser, authorizedGitHubUser.getUrl(), request, response);
 
       log.info("Admin login success userId={} username={}", sessionUser.getId(), sessionUser.getUsername());
       return sessionUser;
@@ -69,8 +69,7 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
       throw exception;
     } catch (Exception exception) {
       log.error("Admin login failed", exception);
-      throw new Oauth2ExchangeCodeException(HttpStatus.INTERNAL_SERVER_ERROR.name(),
-          "Unable to authenticate GitHub user");
+      throw internalAuthenticationFailure();
     }
   }
 
@@ -108,5 +107,19 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
   private void removeExpiredStates(Map<String, Instant> pendingStates) {
     Instant now = Instant.now();
     pendingStates.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().isBefore(now));
+  }
+
+  private String exchangeAccessToken(String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
+    return gitHubService.getAccessToken(code, gitHubProperty).getAccessToken();
+  }
+
+  private UserInfo validateAdminMembership(String accessToken) {
+    return gitHubService.validateUserInOrganizationAndTeam(accessToken,
+        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME, GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+  }
+
+  private Oauth2ExchangeCodeException internalAuthenticationFailure() {
+    return new Oauth2ExchangeCodeException(HttpStatus.INTERNAL_SERVER_ERROR.name(),
+        "Unable to authenticate GitHub user");
   }
 }

@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticationSessionService {
   private static final String PRINCIPAL_NAME_INDEX = FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
+  private static final String ROLE_ADMIN = "ROLE_ADMIN";
+  private static final String GITHUB_PROFILE_URL_PREFIX = "https://github.com/";
 
   private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
   private final SecurityContextRepository securityContextRepository;
@@ -35,7 +37,7 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
       HttpServletResponse response) {
     UserInfo sessionUser = toSessionUser(githubUser, profileUrl);
     var authentication = UsernamePasswordAuthenticationToken.authenticated(sessionUser, null,
-        AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+        AuthorityUtils.createAuthorityList(ROLE_ADMIN));
 
     sessionAuthenticationStrategy.onAuthentication(authentication, request, response);
 
@@ -53,7 +55,8 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
     }
 
     sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX, principalName)
-        .forEach((sessionId, session) -> {
+        .keySet()
+        .forEach(sessionId -> {
           if (!StringUtils.equals(sessionId, currentSessionId)) {
             sessionRepository.deleteById(sessionId);
           }
@@ -77,9 +80,7 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
     sessionUser.setAvatarUrl(githubUser.getAvatarUrl());
     sessionUser.setUrl(resolveProfileUrl(githubUser, profileUrl));
     sessionUser.setToken(null);
-    var userEntity = publicKeyCredentialUserEntityRepository.findByUsername(githubUser.getUsername());
-    sessionUser.setHasPasskey(userEntity != null
-        && !userCredentialRepository.findByUserId(userEntity.getId()).isEmpty());
+    sessionUser.setHasPasskey(hasRegisteredPasskey(githubUser.getUsername()));
     return sessionUser;
   }
 
@@ -90,6 +91,11 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
     if (StringUtils.isBlank(githubUser.getUsername())) {
       return null;
     }
-    return "https://github.com/" + githubUser.getUsername();
+    return GITHUB_PROFILE_URL_PREFIX + githubUser.getUsername();
+  }
+
+  private boolean hasRegisteredPasskey(String username) {
+    var userEntity = publicKeyCredentialUserEntityRepository.findByUsername(username);
+    return userEntity != null && !userCredentialRepository.findByUserId(userEntity.getId()).isEmpty();
   }
 }

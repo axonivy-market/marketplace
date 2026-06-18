@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, firstValueFrom, Observable, switchMap, throwError } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { WindowRef } from '../core/services/browser/window-ref.service';
 import { RuntimeConfigService } from '../core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../core/models/runtime-config';
@@ -39,7 +39,6 @@ export interface UserInfo extends GitHubUser {
 })
 export class AuthService {
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
-
   private readonly githubOAuthCallbackUrl: string;
 
   constructor(
@@ -55,29 +54,11 @@ export class AuthService {
   }
 
   redirectToGitHub(_originalUrl: string): void {
-    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID);
-    this.adminAuthService.fetchCsrfToken().pipe(
-      switchMap(() => this.http.get<GitHubAuthorizationState>(API_URI.ADMIN_GITHUB_AUTHORIZATION))
-    ).subscribe({
-      next: ({ state }) => {
-        const authUrl = `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
-        const win = this.windowRef.nativeWindow;
-        if (win) {
-          win.location.href = authUrl;
-        }
-      }
-    });
+    void this.redirectToGitHubInternal();
   }
 
   handleGitHubCallback(code: string, state: string): void {
-    const body = { code, state };
-
-    this.exchangeCodeForSession(body).subscribe({
-      next: userInfo => {
-        void this.handleAuthenticatedUser(userInfo);
-      },
-      error: error => throwError(() => error)
-    });
+    void this.handleGitHubCallbackInternal(code, state);
   }
 
   isPasskeySupported(): boolean {
@@ -86,66 +67,89 @@ export class AuthService {
 
   async loginWithPasskey(username?: string | null): Promise<void> {
     this.ensurePasskeySupport();
-    await firstValueFrom(this.adminAuthService.fetchCsrfToken());
-
-    const options = await firstValueFrom(
-      this.http.post<Record<string, unknown>>(API_URI.ADMIN_PASSKEY_AUTHENTICATE_OPTIONS, {
-        username: username?.trim() || null
-      })
+    await this.completePasskeyFlow(
+      API_URI.ADMIN_PASSKEY_AUTHENTICATE_OPTIONS,
+      { username: username?.trim() || null },
+      API_URI.ADMIN_PASSKEY_AUTHENTICATE_COMPLETE,
+      async options =>
+        this.windowRef.nativeWindow?.navigator.credentials.get(
+          toAuthenticationOptions(options)
+        ) as Promise<PublicKeyCredential | null>,
+      'Passkey authentication was cancelled'
     );
-
-    const credential = await this.windowRef.nativeWindow?.navigator.credentials.get(
-      toAuthenticationOptions(options)
-    ) as PublicKeyCredential | null;
-
-    if (!credential) {
-      throw new Error('Passkey authentication was cancelled');
-    }
-
-    const userInfo = await firstValueFrom(
-      this.http.post<UserInfo>(API_URI.ADMIN_PASSKEY_AUTHENTICATE_COMPLETE, {
-        credential: serializePublicKeyCredential(credential)
-      })
-    );
-
-    await this.handleAuthenticatedUser(userInfo);
   }
 
   async registerPasskey(): Promise<void> {
     this.ensurePasskeySupport();
-    await firstValueFrom(this.adminAuthService.fetchCsrfToken());
-
-    const options = await firstValueFrom(
-      this.http.post<Record<string, unknown>>(API_URI.ADMIN_PASSKEY_REGISTER_OPTIONS, {})
+    await this.completePasskeyFlow(
+      API_URI.ADMIN_PASSKEY_REGISTER_OPTIONS,
+      {},
+      API_URI.ADMIN_PASSKEY_REGISTER_COMPLETE,
+      async options =>
+        this.windowRef.nativeWindow?.navigator.credentials.create(
+          toRegistrationOptions(options)
+        ) as Promise<PublicKeyCredential | null>,
+      'Passkey registration was cancelled'
     );
+  }
 
-    const credential = await this.windowRef.nativeWindow?.navigator.credentials.create(
-      toRegistrationOptions(options)
-    ) as PublicKeyCredential | null;
-
-    if (!credential) {
-      throw new Error('Passkey registration was cancelled');
+  private async redirectToGitHubInternal(): Promise<void> {
+    await this.ensureCsrfToken();
+    const { state } = await firstValueFrom(
+      this.http.get<GitHubAuthorizationState>(API_URI.ADMIN_GITHUB_AUTHORIZATION)
+    );
+    const win = this.windowRef.nativeWindow;
+    if (win) {
+      win.location.href = this.buildGitHubAuthorizationUrl(state);
     }
+  }
 
+  private async handleGitHubCallbackInternal(code: string, state: string): Promise<void> {
     const userInfo = await firstValueFrom(
-      this.http.post<UserInfo>(API_URI.ADMIN_PASSKEY_REGISTER_COMPLETE, {
-        credential: serializePublicKeyCredential(credential)
-      })
+      this.http.post<UserInfo>(API_URI.ADMIN_GITHUB_CALLBACK, { code, state })
     );
-
     await this.handleAuthenticatedUser(userInfo);
   }
 
-  private exchangeCodeForSession(body: { code: string; state: string }): Observable<UserInfo> {
-    return this.http
-      .post<UserInfo>(API_URI.ADMIN_GITHUB_CALLBACK, body)
-      .pipe(catchError(error => throwError(() => error)));
-  }
-
   private async handleAuthenticatedUser(userInfo: UserInfo): Promise<void> {
-    await firstValueFrom(this.adminAuthService.fetchCsrfToken());
+    await this.ensureCsrfToken();
     this.adminAuthService.setUserInfo(userInfo);
     this.router.navigate(['/internal-dashboard']);
+  }
+
+  private async completePasskeyFlow(
+    optionsUrl: string,
+    optionsBody: Record<string, unknown>,
+    completionUrl: string,
+    credentialFactory: (options: Record<string, unknown>) => Promise<PublicKeyCredential | null>,
+    cancellationMessage: string
+  ): Promise<void> {
+    await this.ensureCsrfToken();
+    const options = await firstValueFrom(
+      this.http.post<Record<string, unknown>>(optionsUrl, optionsBody)
+    );
+    const credential = await credentialFactory(options);
+    if (!credential) {
+      throw new Error(cancellationMessage);
+    }
+
+    const userInfo = await firstValueFrom(
+      this.http.post<UserInfo>(completionUrl, {
+        credential: serializePublicKeyCredential(credential)
+      })
+    );
+    await this.handleAuthenticatedUser(userInfo);
+  }
+
+  private buildGitHubAuthorizationUrl(state: string): string {
+    const githubClientId = this.runtimeConfig.get(
+      RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID
+    );
+    return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
+  }
+
+  private async ensureCsrfToken(): Promise<void> {
+    await firstValueFrom(this.adminAuthService.fetchCsrfToken());
   }
 
   private ensurePasskeySupport(): void {

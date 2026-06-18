@@ -22,7 +22,9 @@ import org.springframework.security.web.webauthn.management.PublicKeyCredentialU
 import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -73,11 +75,12 @@ class AdminAuthenticationSessionServiceImplTest {
             .name("octopus")
             .displayName("Octopus")
             .build());
+    Map<String, Session> activeSessions = new HashMap<>();
+    activeSessions.put("old-session-1", mock(Session.class));
+    activeSessions.put("old-session-2", mock(Session.class));
     when(sessionRepository.findByIndexNameAndIndexValue(
         FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, "octopus"))
-        .thenReturn(java.util.Map.of(
-            "old-session-1", mock(Session.class),
-            "old-session-2", mock(Session.class)));
+        .thenReturn((Map) activeSessions);
     when(userCredentialRepository.findByUserId(new Bytes("user-1".getBytes(StandardCharsets.UTF_8))))
         .thenReturn(List.of(org.mockito.Mockito.mock(CredentialRecord.class)));
 

@@ -1,5 +1,6 @@
 package com.axonivy.market.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +22,15 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import static com.axonivy.market.core.constants.CoreRequestMappingConstants.IMAGE;
-import static com.axonivy.market.core.constants.CoreRequestMappingConstants.ROOT;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.util.StringUtils;
+
+import java.util.function.Supplier;
+
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @Configuration
@@ -53,6 +60,12 @@ public class SecurityConfig {
       ADMIN_AUTH_V2 + PASSKEY + REGISTER + OPTIONS,
       ADMIN_AUTH_V2 + PASSKEY + REGISTER + COMPLETE,
       FEEDBACK,
+      PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
+      RELEASE_LETTER,
+      SECURITY_MONITOR
+  };
+  private static final String[] AUTHENTICATED_PUT_ENDPOINTS = {
+      FEEDBACK + FEEDBACK_APPROVAL,
       MONITOR_DASHBOARD + SYNC,
       MONITOR_DASHBOARD + SYNC_ONE_PRODUCT_BY_ID,
       MONITOR_DASHBOARD + FOCUSED,
@@ -61,14 +74,11 @@ public class SecurityConfig {
       PRODUCT + SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS,
       PRODUCT + SYNC_ZIP_ARTIFACTS,
       PRODUCT_DETAILS + SYNC_RELEASE_NOTES_FOR_PRODUCTS,
-      PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
-      RELEASE_LETTER,
+      PRODUCT_MARKETPLACE_DATA + DEPRECATION_BY_ID,
+      PRODUCT_MARKETPLACE_DATA + ARCHIVE_BY_ID,
+      RELEASE_LETTER + BY_ID,
       RELEASE_LETTER + SAVE_AS_DRAFT,
-      SECURITY_MONITOR,
       EXTERNAL_DOCUMENT + SYNC
-  };
-  private static final String[] AUTHENTICATED_PUT_ENDPOINTS = {
-      PRODUCT_MARKETPLACE_DATA + DEPRECATION_BY_ID
   };
   private static final String[] AUTHENTICATED_DELETE_ENDPOINTS = {
       RELEASE_LETTER + BY_ID
@@ -78,7 +88,7 @@ public class SecurityConfig {
   private String sessionCookieName;
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
     CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
     csrfTokenRepository.setCookieName(CSRF_COOKIE_NAME);
     csrfTokenRepository.setHeaderName(CSRF_HEADER_NAME);
@@ -90,6 +100,7 @@ public class SecurityConfig {
         .formLogin(AbstractHttpConfigurer::disable)
         .csrf(csrf -> csrf
             .csrfTokenRepository(csrfTokenRepository)
+            .csrfTokenRequestHandler(spaCsrfTokenRequestHandler())
             .ignoringRequestMatchers(ADMIN_AUTH_V2 + GITHUB_CALLBACK))
         .securityContext(securityContext -> securityContext
             .requireExplicitSave(true)
@@ -135,5 +146,31 @@ public class SecurityConfig {
   @Bean
   public AuthenticationEntryPoint authenticationEntryPoint() {
     return new HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED);
+  }
+
+  @Bean
+  public CsrfTokenRequestHandler spaCsrfTokenRequestHandler() {
+    return new SpaCsrfTokenRequestHandler();
+  }
+
+  private static final class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
+    private final CsrfTokenRequestHandler plain = new CsrfTokenRequestAttributeHandler();
+    private final CsrfTokenRequestHandler xor = new XorCsrfTokenRequestAttributeHandler();
+
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response,
+        Supplier<CsrfToken> csrfToken) {
+      this.xor.handle(request, response, csrfToken);
+      csrfToken.get();
+    }
+
+    @Override
+    public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
+      String headerValue = request.getHeader(csrfToken.getHeaderName());
+      if (StringUtils.hasText(headerValue)) {
+        return this.plain.resolveCsrfTokenValue(request, csrfToken);
+      }
+      return this.xor.resolveCsrfTokenValue(request, csrfToken);
+    }
   }
 }

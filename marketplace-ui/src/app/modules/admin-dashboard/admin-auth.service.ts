@@ -16,6 +16,8 @@ interface CsrfTokenResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
+  private static readonly CSRF_COOKIE_NAME = 'XSRF-TOKEN';
+
   private readonly storageRef = inject(SessionStorageRef);
   private readonly httpClient = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
@@ -25,7 +27,7 @@ export class AdminAuthService {
   readonly userInfo = this._userInfo.asReadonly();
 
   constructor() {
-    const user = this.loadFromSessionStorage();
+    const user = this.readStoredUser();
     if (user) {
       this._userInfo.set(user);
     }
@@ -40,8 +42,7 @@ export class AdminAuthService {
   }
 
   loadFromSessionStorage(): UserInfo | null {
-    const storedUserInfo = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN);
-    return storedUserInfo ? JSON.parse(storedUserInfo) : null;
+    return this.readStoredUser();
   }
 
   logout() {
@@ -49,7 +50,7 @@ export class AdminAuthService {
       catchError(() => of(void 0))
     ).subscribe({
       complete: () => {
-        this.clearToken();
+        this.clearSessionState();
       }
     });
   }
@@ -61,14 +62,13 @@ export class AdminAuthService {
 
   fetchCsrfToken(): Observable<CsrfTokenResponse> {
     return this.httpClient.get<CsrfTokenResponse>(API_URI.ADMIN_CSRF).pipe(
-      tap(response => this._csrfToken.set(this.getLiveCsrfToken() ?? response?.token ?? null))
+      tap(response => 
+        this._csrfToken.set(this.getLiveCsrfToken() ?? response?.token ?? null))
     );
   }
 
   clearToken(): void {
-    this.storageRef.session?.removeItem(ADMIN_SESSION_TOKEN);
-    this._userInfo.set(null);
-    this._csrfToken.set(null);
+    this.clearSessionState();
   }
 
   isAuthenticated(): Observable<boolean> {
@@ -76,7 +76,7 @@ export class AdminAuthService {
       tap(userInfo => this.setUserInfo(userInfo)),
       map(() => true),
       catchError(() => {
-        this.clearToken();
+        this.clearSessionState();
         return of(false);
       })
     );
@@ -86,8 +86,15 @@ export class AdminAuthService {
     return this.getLiveCsrfToken() ?? this._csrfToken();
   }
 
-  private currentUser(): UserInfo | null {
-    return this.userInfo() ?? this.loadFromSessionStorage();
+  private readStoredUser(): UserInfo | null {
+    const storedUserInfo = this.storageRef.session?.getItem(ADMIN_SESSION_TOKEN);
+    return storedUserInfo ? JSON.parse(storedUserInfo) : null;
+  }
+
+  private clearSessionState(): void {
+    this.storageRef.session?.removeItem(ADMIN_SESSION_TOKEN);
+    this._userInfo.set(null);
+    this._csrfToken.set(null);
   }
 
   private getLiveCsrfToken(): string | null {
@@ -96,7 +103,7 @@ export class AdminAuthService {
     }
 
     const cookie = this.windowRef.nativeWindow?.document.cookie ?? '';
-    return this.readCookie(cookie, 'XSRF-TOKEN');
+    return this.readCookie(cookie, AdminAuthService.CSRF_COOKIE_NAME);
   }
 
   private readCookie(cookieHeader: string, cookieName: string): string | null {

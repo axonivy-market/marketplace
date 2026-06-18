@@ -43,6 +43,7 @@ import org.springframework.security.web.webauthn.registration.PublicKeyCredentia
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Log4j2
@@ -53,6 +54,7 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   private static final String PASSKEY_PROFILE_URL_PREFIX = "https://github.com/";
   private static final String DEFAULT_PASSKEY_LABEL = "Admin passkey";
   private static final String ANONYMOUS_KEY = "passkey-anonymous";
+  private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
   private final WebAuthnRelyingPartyOperations webAuthnRelyingPartyOperations;
   private final PublicKeyCredentialCreationOptionsRepository creationOptionsRepository;
@@ -66,10 +68,9 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   public Map<String, Object> beginRegistration(UserInfo currentUser, HttpServletRequest request, HttpServletResponse response) {
     GithubUser githubUser = requireGithubUser(currentUser == null ? null : currentUser.getId());
     savePasskeyUserEntity(githubUser);
-    Authentication authentication = createAdminAuthentication(githubUser.getUsername());
-
     PublicKeyCredentialCreationOptions options = webAuthnRelyingPartyOperations
-        .createPublicKeyCredentialCreationOptions(new ImmutablePublicKeyCredentialCreationOptionsRequest(authentication));
+        .createPublicKeyCredentialCreationOptions(
+            new ImmutablePublicKeyCredentialCreationOptionsRequest(createAdminAuthentication(githubUser.getUsername())));
     creationOptionsRepository.save(request, response, options);
     return writeOptions(options);
   }
@@ -78,10 +79,7 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   public UserInfo finishRegistration(UserInfo currentUser, PasskeyCredentialRequest credentialRequest,
       HttpServletRequest request) {
     GithubUser githubUser = requireGithubUser(currentUser == null ? null : currentUser.getId());
-    PublicKeyCredentialCreationOptions creationOptions = creationOptionsRepository.load(request);
-    if (creationOptions == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing passkey challenge");
-    }
+    PublicKeyCredentialCreationOptions creationOptions = requireCreationOptions(request);
     validateCredentialPayload(credentialRequest);
 
     try {
@@ -104,9 +102,9 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   @Override
   public Map<String, Object> beginAuthentication(PasskeyAssertionOptionsRequest optionsRequest, HttpServletRequest request,
       HttpServletResponse response) {
-    Authentication authentication = createAssertionRequestAuthentication(optionsRequest);
     PublicKeyCredentialRequestOptions options = webAuthnRelyingPartyOperations
-        .createCredentialRequestOptions(new ImmutablePublicKeyCredentialRequestOptionsRequest(authentication));
+        .createCredentialRequestOptions(
+            new ImmutablePublicKeyCredentialRequestOptionsRequest(createAssertionRequestAuthentication(optionsRequest)));
     requestOptionsRepository.save(request, response, options);
     return writeOptions(options);
   }
@@ -114,10 +112,7 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
   @Override
   public UserInfo finishAuthentication(PasskeyCredentialRequest credentialRequest, HttpServletRequest request,
       HttpServletResponse response) {
-    PublicKeyCredentialRequestOptions requestOptions = requestOptionsRepository.load(request);
-    if (requestOptions == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing passkey challenge");
-    }
+    PublicKeyCredentialRequestOptions requestOptions = requireRequestOptions(request);
     validateCredentialPayload(credentialRequest);
 
     try {
@@ -143,7 +138,7 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing GitHub username for passkey registration");
     }
     return UsernamePasswordAuthenticationToken.authenticated(username, null,
-        AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+        AuthorityUtils.createAuthorityList(ROLE_ADMIN));
   }
 
   private Authentication createAssertionRequestAuthentication(PasskeyAssertionOptionsRequest optionsRequest) {
@@ -167,7 +162,7 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
     if (userEntity == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Passkey user not resolved");
     }
-    String githubUserId = new String(userEntity.getId().getBytes(), java.nio.charset.StandardCharsets.UTF_8);
+    String githubUserId = new String(userEntity.getId().getBytes(), StandardCharsets.UTF_8);
     return githubUserRepository.findById(githubUserId)
         .orElseGet(() -> githubUserRepository.findByUsernameIgnoreCase(userEntity.getName())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Passkey user not found")));
@@ -188,10 +183,26 @@ public class AdminPasskeyServiceImpl implements AdminPasskeyService {
 
   private void savePasskeyUserEntity(GithubUser githubUser) {
     publicKeyCredentialUserEntityRepository.save(ImmutablePublicKeyCredentialUserEntity.builder()
-        .id(new Bytes(githubUser.getId().getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+        .id(new Bytes(githubUser.getId().getBytes(StandardCharsets.UTF_8)))
         .name(githubUser.getUsername())
         .displayName(StringUtils.defaultIfBlank(githubUser.getName(), githubUser.getUsername()))
         .build());
+  }
+
+  private PublicKeyCredentialCreationOptions requireCreationOptions(HttpServletRequest request) {
+    PublicKeyCredentialCreationOptions creationOptions = creationOptionsRepository.load(request);
+    if (creationOptions == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing passkey challenge");
+    }
+    return creationOptions;
+  }
+
+  private PublicKeyCredentialRequestOptions requireRequestOptions(HttpServletRequest request) {
+    PublicKeyCredentialRequestOptions requestOptions = requestOptionsRepository.load(request);
+    if (requestOptions == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing passkey challenge");
+    }
+    return requestOptions;
   }
 
   private Map<String, Object> writeOptions(Object options) {
