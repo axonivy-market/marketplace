@@ -31,7 +31,7 @@
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/ui": "^4.1.2",
     "bootstrap": "^5.3.8",
-    "dompurify": "^3.4.5",
+    "dompurify": "^3.4.11",
     "easymde": "^2.20.0",
     "emoji-toolkit": "^9.0.1",
     "express": "^4.22.1",
