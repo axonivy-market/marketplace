@@ -28,11 +28,6 @@ class MatomoTrackerBuilderTest {
       Map.entry(AppSettingKey.MATOMO_API_ENDPOINT.getKey(), "https://matomo.example.com/matomo.php"),
       Map.entry(AppSettingKey.MATOMO_ENABLED.getKey(), "false"));
 
-  private final Map<String, String> secondMatomoSettings = Map.ofEntries(
-      Map.entry(AppSettingKey.MATOMO_SITE_ID.getKey(), "789"),
-      Map.entry(AppSettingKey.MATOMO_API_ENDPOINT.getKey(), "https://matomo.example.com/matomo.php"),
-      Map.entry(AppSettingKey.MATOMO_ENABLED.getKey(), "true"));
-
   @BeforeEach
   void setUp() {
     builder = new MatomoTrackerBuilder(appSettingService);

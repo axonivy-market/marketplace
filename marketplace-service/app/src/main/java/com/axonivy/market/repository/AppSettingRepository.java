@@ -1,7 +1,6 @@
 package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.AppSetting;
-import com.axonivy.market.enums.AppSettingCategory;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
