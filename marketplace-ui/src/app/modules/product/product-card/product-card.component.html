@@ -13,13 +13,37 @@
       "
       [lang]="languageService.selectedLanguage()" />
     @if (isShowInRESTClientEditor) {
-      <div
-        class="card__tag lh-md px-2 py-1 text-capitalize"
-        [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
-        {{ product.tags[0] }}
+      <div class="internal-badge-container d-flex align-items-center gap-1">
+        @if (product.internal) {
+           <div class="lh-md px-2 py-1 text-capitalize">
+          <img
+            class="internal-badge"
+            [src]="themeService.isDarkMode()
+              ? darkInternalBadgeUrl
+              : lightInternalBadgeUrl"
+            alt="Internal" />
+            </div>
+        }
+
+        <div
+          class="card__tag lh-md px-2 py-1 text-capitalize"
+          [ngClass]="themeService.isDarkMode() ? 'text-dark' : 'text-light'">
+          {{ product.tags[0] }}
+        </div>
       </div>
     } @else {
-      <div class="d-flex gap-2">
+      <div class="internal-badge-container d-flex gap-2 align-items-center">
+        @if (product.internal) {
+          <div class="lh-md px-2 py-1 text-capitalize">
+          <img
+            class="internal-badge"
+            [src]="themeService.isDarkMode()
+              ? darkInternalBadgeUrl
+              : lightInternalBadgeUrl"
+            alt="Internal" />
+            </div>
+        }
+
         @if (product.deprecated) {
           <div
             [lang]="languageService.selectedLanguage()"
@@ -27,6 +51,7 @@
             {{ 'common.deprecated' | translate }}
           </div>
         }
+
         <div
           [lang]="languageService.selectedLanguage()"
           class="card__tag lh-md px-2 py-1"
@@ -34,7 +59,6 @@
           {{ 'common.filter.value.' + product.type | translate }}
         </div>
       </div>
-
     }
   </div>
   <div>

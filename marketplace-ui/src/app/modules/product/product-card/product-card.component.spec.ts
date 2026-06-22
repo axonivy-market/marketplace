@@ -142,4 +142,122 @@ describe('ProductCardComponent', () => {
     expect(component.logoUrl).toBe('http://localhost:1234/logo-light.png');
     expect(component.logoDarkUrl).toBe('http://localhost:1234/logo-dark.png');
   });
+
+
+  it('should show internal badge when product is internal in marketplace mode', () => {
+    component.product = { ...products[0], internal: true };
+    component.isShowInRESTClientEditor = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const badge = fixture.debugElement.query(By.css('.internal-badge'));
+    expect(badge).toBeTruthy();
+  });
+
+  it('should not show internal badge when product is not internal', () => {
+    component.product = { ...products[0], internal: false };
+    component.isShowInRESTClientEditor = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const badge = fixture.debugElement.query(By.css('.internal-badge'));
+    expect(badge).toBeNull();
+  });
+
+  it('should show internal badge in REST client mode when product is internal', () => {
+    component.product = { ...products[0], internal: true };
+    component.isShowInRESTClientEditor = true;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const badge = fixture.debugElement.query(By.css('.internal-badge'));
+    expect(badge).toBeTruthy();
+  });
+
+  it('should show deprecated badge when product is deprecated in marketplace mode', () => {
+    component.product = { ...products[0], deprecated: true };
+    component.isShowInRESTClientEditor = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const deprecatedTag = fixture.debugElement.query(By.css('.card__tag--deprecated'));
+    expect(deprecatedTag).toBeTruthy();
+  });
+
+  it('should not show deprecated badge when product is not deprecated', () => {
+    component.product = { ...products[0], deprecated: false };
+    component.isShowInRESTClientEditor = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const deprecatedTag = fixture.debugElement.query(By.css('.card__tag--deprecated'));
+    expect(deprecatedTag).toBeNull();
+  });
+
+  it('should hide description in REST client mode', () => {
+    component.isShowInRESTClientEditor = true;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const description = fixture.debugElement.query(By.css('.card__description'));
+    expect(description).toBeNull();
+  });
+
+  it('should show description in marketplace mode', () => {
+    component.isShowInRESTClientEditor = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const description = fixture.debugElement.query(By.css('.card__description'));
+    expect(description).toBeTruthy();
+  });
+
+  it('should set card height to 250px in marketplace mode', () => {
+    component.isShowInRESTClientEditor = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const card = fixture.nativeElement.querySelector('.product-card');
+    expect(card.style.height).toBe('250px');
+  });
+
+  it('should set card height to 164px in REST client mode', () => {
+    component.isShowInRESTClientEditor = true;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const card = fixture.nativeElement.querySelector('.product-card');
+    expect(card.style.height).toBe('164px');
+  });
+
+  it('should use dark logo when dark mode is active', () => {
+    component.product = {
+      ...products[0],
+      logoUrl: 'http://localhost:1234/logo-light.png',
+      logoDarkUrl: 'http://localhost:1234/logo-dark.png'
+    };
+    component.ngOnInit();
+    component.themeService.isDarkMode.set(true);
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const img = fixture.debugElement.query(By.css('img.card-img-top'));
+    expect(img.nativeElement.getAttribute('ng-img')).toBeTruthy();
+    expect(component.logoDarkUrl).toBe('http://localhost:1234/logo-dark.png');
+  });
+
+  it('should use light logo when dark mode is inactive', () => {
+    component.product = {
+      ...products[0],
+      logoUrl: 'http://localhost:1234/logo-light.png',
+      logoDarkUrl: 'http://localhost:1234/logo-dark.png'
+    };
+    component.ngOnInit();
+    component.themeService.isDarkMode.set(false);
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    expect(component.logoUrl).toBe('http://localhost:1234/logo-light.png');
+    expect(component.themeService.isDarkMode()).toBe(false);
+  });
 });

@@ -84,6 +84,7 @@ public class Product extends AbstractAuditableEntity<String> {
   private String logoUrl;
   private Boolean listed;
   private Boolean deprecated;
+  private Boolean internal;
   private Boolean isArchived;
   private String type;
   private String vendor;

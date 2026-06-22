@@ -27,6 +27,7 @@ export interface Product {
   mavenArtifacts: MavenArtifact[];
   contactUs: boolean;
   deprecated?: boolean;
+  internal?: boolean;
   _links?: {
     self: {
       href: string;

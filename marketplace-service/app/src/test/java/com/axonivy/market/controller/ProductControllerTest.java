@@ -11,6 +11,7 @@ import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -256,6 +257,42 @@ class ProductControllerTest extends BaseSetup {
         "Response should still contain a body even when there are no artifacts to sync");
     assertEquals("Nothing to sync", Objects.requireNonNull(response.getBody()).getMessageDetails(),
         "Response message should indicate that there was nothing to sync");
+  }
+
+  @Test
+  void testUpdateProductSuccess() {
+    var request = new UpdateProductRequest(true);
+    when(service.updateProduct(PRODUCT_ID_SAMPLE, request)).thenReturn(new Product());
+
+    var response = productController.updateProduct(PRODUCT_ID_SAMPLE, request);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Response status should be OK when product is updated successfully");
+    assertTrue(response.hasBody(),
+        "Response should contain a body when product is updated successfully");
+    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
+        "Help code should indicate SUCCESSFUL when product is updated");
+    assertEquals("Product with id " + PRODUCT_ID_SAMPLE + " updated successfully",
+        response.getBody().getMessageDetails(),
+        "Response message should confirm the product was updated successfully");
+  }
+
+  @Test
+  void testUpdateProductNotFound() {
+    var request = new UpdateProductRequest(true);
+    when(service.updateProduct(PRODUCT_ID_SAMPLE, request)).thenReturn(null);
+
+    var response = productController.updateProduct(PRODUCT_ID_SAMPLE, request);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
+        "Response status should be NOT_FOUND when product does not exist");
+    assertTrue(response.hasBody(),
+        "Response should contain a body when product is not found");
+    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
+        "Help code should indicate PRODUCT_NOT_FOUND");
+    assertEquals("Product with id " + PRODUCT_ID_SAMPLE + " not found",
+        response.getBody().getMessageDetails(),
+        "Response message should indicate the product was not found");
   }
 
 }
