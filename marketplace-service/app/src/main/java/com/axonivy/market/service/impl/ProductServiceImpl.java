@@ -619,7 +619,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   @Override
   public Product updateProduct(String id, UpdateProductRequest request) {
     Product product = productRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
-        "Product not found with id: " + id));
+        "Product not found for id: " + id));
     if (request.getInternal() != null) {
       product.setInternal(request.getInternal());
     }
