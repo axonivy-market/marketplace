@@ -1,5 +1,11 @@
 pipeline {
   agent any
+
+  triggers {
+    pollSCM 'H H/6 * * *'
+    cron '@midnight'
+  }
+
   options {
     ansiColor('xterm')
   }
