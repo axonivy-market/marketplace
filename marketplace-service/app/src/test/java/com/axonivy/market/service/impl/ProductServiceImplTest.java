@@ -147,7 +147,6 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
     // Start testing by adding new meta
@@ -222,7 +221,6 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
     // Start testing by adding new logo
@@ -588,7 +586,6 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubRemoveOldLogo() throws IOException {
     // Start testing by adding new logo
@@ -624,7 +621,6 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubModifyLogo() throws IOException {
     // Start testing by adding new logo
@@ -682,7 +678,6 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHubAddVendorLogo() throws IOException {
     // Start testing by adding new meta
