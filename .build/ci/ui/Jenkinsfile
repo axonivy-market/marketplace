@@ -1,8 +1,15 @@
 pipeline {
   agent any
+
+  triggers {
+    pollSCM 'H H/6 * * *'
+    cron '@midnight'
+  }
+
   options {
     ansiColor('xterm')
   }
+
   environment {
     UI_DIR = 'marketplace-ui'
     SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_UI_PROJECT_KEY')
