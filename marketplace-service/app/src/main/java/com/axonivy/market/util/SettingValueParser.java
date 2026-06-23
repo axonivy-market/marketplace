@@ -14,10 +14,12 @@ public class SettingValueParser {
       return Long.parseLong(value);
     } catch (NumberFormatException ex) {
       try {
+        log.warn("Invalid integer value '{}' for setting key '{}', using default value '{}'.", value, settingKey,
+            settingKey.getDefaultValue(), ex);
         return Long.parseLong(settingKey.getDefaultValue());
       } catch (NumberFormatException defaultEx) {
-        log.warn("Invalid long value '{}' and invalid default '{}' for setting key '{}'.", value,
-            settingKey.getDefaultValue(), settingKey, defaultEx);
+        log.warn("Invalid default value '{}' for setting key '{}'.", settingKey.getDefaultValue(), settingKey,
+            defaultEx);
         return 0L;
       }
     }
@@ -28,10 +30,12 @@ public class SettingValueParser {
       return Integer.parseInt(value);
     } catch (NumberFormatException ex) {
       try {
+        log.warn("Invalid integer value '{}' for setting key '{}', using default value '{}'.", value, settingKey,
+            settingKey.getDefaultValue(), ex);
         return Integer.parseInt(settingKey.getDefaultValue());
       } catch (NumberFormatException defaultEx) {
-        log.warn("Invalid integer value '{}' and invalid default '{}' for setting key '{}'.", value,
-            settingKey.getDefaultValue(), settingKey, defaultEx);
+        log.warn("Invalid default value '{}' for setting key '{}'.", settingKey.getDefaultValue(), settingKey,
+            defaultEx);
         return null;
       }
     }

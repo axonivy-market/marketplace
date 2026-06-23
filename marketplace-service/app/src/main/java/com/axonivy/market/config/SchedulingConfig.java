@@ -78,14 +78,17 @@ public class SchedulingConfig implements SchedulingConfigurer {
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
     var cron = appSettingService.getStringValueByKey(key);
     try {
-      Instant next = new CronTrigger(cron).nextExecution(context);
-      return next == null ? null : next.plus(getOffset());
+      return calculateNextExecution(cron, context);
     } catch (IllegalArgumentException ex) {
       log.warn("Invalid cron expression for key '{}': {}. Using default value: {}", key.getKey(), cron,
           key.getDefaultValue(), ex);
-      Instant next = new CronTrigger(key.getDefaultValue()).nextExecution(context);
-      return next == null ? null : next.plus(getOffset());
+      return calculateNextExecution(key.getDefaultValue(), context);
     }
+  }
+
+  private Instant calculateNextExecution(String cron, TriggerContext context) {
+    Instant next = new CronTrigger(cron).nextExecution(context);
+    return next == null ? null : next.plus(getOffset());
   }
 
   /**

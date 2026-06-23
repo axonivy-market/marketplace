@@ -93,7 +93,6 @@ class MatomoTrackerBuilderTest {
   }
 
   private Map<String, String> matomoSettings(String siteId, String endpoint, String enabled) {
-
     return Map.of(AppSettingKey.MATOMO_SITE_ID.getKey(), siteId, AppSettingKey.MATOMO_API_ENDPOINT.getKey(), endpoint,
         AppSettingKey.MATOMO_ENABLED.getKey(), enabled);
   }

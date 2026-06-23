@@ -183,7 +183,9 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   protected getSortIcon(column: keyof AppSetting): string {
-    if (this.sortColumn !== column) { return 'ti-arrows-sort'; }
+    if (this.sortColumn !== column) {
+      return 'ti-arrows-sort'; 
+    }
     return this.sortDirection === ASCENDING ? 'ti-arrow-up' : 'ti-arrow-down';
   }
 

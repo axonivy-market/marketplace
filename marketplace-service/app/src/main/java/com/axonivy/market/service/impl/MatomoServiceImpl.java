@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.matomo.java.tracking.MatomoRequest;
 import org.matomo.java.tracking.MatomoRequests;
-import org.matomo.java.tracking.MatomoTracker;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -44,7 +43,7 @@ public class MatomoServiceImpl implements MatomoService {
     }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
     Map<String, String> headers = cloneRequestHeaders(httpServletRequest);
-    log.warn("Tracking event for requestUrl={}, referrerUrl={}, headers={}", requestUrl, referrerUrl, headers);
+    log.warn("Tracking event for requestUrl={}, referrerUrl={}", requestUrl, referrerUrl);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))

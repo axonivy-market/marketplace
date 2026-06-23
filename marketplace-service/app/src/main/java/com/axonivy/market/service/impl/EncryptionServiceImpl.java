@@ -18,7 +18,7 @@ public class EncryptionServiceImpl implements EncryptionService {
       @Value("${market.encryption.salt:}") String salt) {
 
     try {
-      if (StringUtils.isNotBlank(encryptionKey)) {
+      if (StringUtils.isNotBlank(encryptionKey) && StringUtils.isNotBlank(salt)) {
         this.encryptor = Encryptors.text(encryptionKey, salt);
       }
     } catch (IllegalStateException e) {
