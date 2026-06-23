@@ -355,7 +355,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
 
-    when(productRepo.findAllProductsWithNamesAndShortDescriptions()).thenReturn(List.of(mockProduct));
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of(mockProduct));
 
     ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
     mockReturnProductContent.setVersion(MOCK_RELEASED_VERSION);
@@ -392,7 +392,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
-    when(productRepo.findAllProductsWithNamesAndShortDescriptions()).thenReturn(List.of(getMockProduct()));
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of(getMockProduct()));
 
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
@@ -570,6 +570,12 @@ class ProductServiceImplTest extends BaseSetup {
     return mockGHContent;
   }
 
+  private GHContent mockGHContentAsLogoDark() {
+    var mockGHContent = mock(GHContent.class);
+    when(mockGHContent.getName()).thenReturn("logo-dark.png");
+    return mockGHContent;
+  }
+
   private ProductModuleContent mockReadmeProductContent() {
     ProductModuleContent productModuleContent = new ProductModuleContent();
     productModuleContent.setId(MOCK_PRODUCT_ID_WITH_VERSION);
@@ -628,7 +634,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
 
     var mockGitHubFile = new GitHubFile();
-    mockGitHubFile.setFileName("meta.json");
+    mockGitHubFile.setFileName(META_FILE);
     mockGitHubFile.setType(FileType.META);
     mockGitHubFile.setStatus(FileStatus.REMOVED);
     when(marketRepoService.fetchMarketItemsBySHA1Range(any(), any())).thenReturn(List.of(mockGitHubFile));
@@ -649,7 +655,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockProduct.setId(SAMPLE_PRODUCT_ID);
     mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
     when(productRepo.findById(anyString())).thenReturn(Optional.of(mockProduct));
-    var mockContents = mockMetaJsonAndLogoList();
+    var mockContents = mockMetaJsonAndLogoList(true);
     when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
     when(productRepo.save(any(Product.class))).thenReturn(mockProduct);
     assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false),
@@ -658,13 +664,14 @@ class ProductServiceImplTest extends BaseSetup {
         "Sync one product should be successful when overriding Market item path");
   }
 
-  private List<GHContent> mockMetaJsonAndLogoList() throws IOException {
+  private List<GHContent> mockMetaJsonAndLogoList(boolean isIncludedLogoDark) throws IOException {
     var mockContent = mockGHContentAsMetaJSON();
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));
     when(mockContent.read()).thenReturn(inputStream);
 
     var mockContentLogo = mockGHContentAsLogo();
-    return new ArrayList<>(List.of(mockContent, mockContentLogo));
+    return new ArrayList<>(isIncludedLogoDark ? List.of(mockContent, mockContentLogo, mockGHContentAsLogoDark()) :
+        List.of(mockContent, mockContentLogo));
   }
 
   @Test
@@ -946,6 +953,24 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testModifyProductLogoDarkWithExistingProduct() {
+    String parentPath = "market/connector/";
+    var mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+
+    var mockGHContent = mock(GHContent.class);
+    when(mockGHContent.getName()).thenReturn("market/logo-dark.png");
+    var mockImage = getMockImage();
+
+    when(productRepo.findByCriteria(any(ProductSearchCriteria.class))).thenReturn(mockProduct);
+    when(imageService.mappingImageFromGHContent(SAMPLE_PRODUCT_ID, mockGHContent)).thenReturn(mockImage);
+    when(productRepo.save(mockProduct)).thenReturn(mockProduct);
+    productService.modifyProductLogo(parentPath, mockGHContent);
+
+    assertEquals(mockImage.getId(), mockProduct.getLogoDarkId(), "Product should have new logo Dark ID set");
+  }
+
+  @Test
   void testModifyProductLogoWithExistingProductButNoOldLogo() {
     String parentPath = "market/connector/";
     var mockProduct = new Product();
@@ -1006,13 +1031,32 @@ class ProductServiceImplTest extends BaseSetup {
     assertEquals("existing-logo-id", mockProduct.getLogoId(), "Product logo ID should remain unchanged");
   }
 
+  @Test
+  void testUpdateLatestReleaseVersionContentsSkipsWhenNoProducts() {
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of());
+
+    productService.syncLatestDataFromMarketRepo(true);
+
+    verify(productRepo, never()).save(any(Product.class));
+  }
+
+  @Test
+  void testUpdateLatestReleaseVersionContentsSavesEachProduct() {
+    List<Product> mockProducts = getMockProducts();
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(mockProducts);
+
+    productService.syncLatestDataFromMarketRepo(true);
+
+    verify(productRepo, times(mockProducts.size())).save(any(Product.class));
+  }
+
   private void prepareMockDataForSync(GitHubRepoMeta repoMeta) throws IOException {
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(repoMeta);
     when(productContentService.getReadmeAndProductContentsFromVersion(any(), anyString(), anyString(),
         any(), anyString())).thenReturn(mockReadmeProductContent());
 
     Map<String, List<GHContent>> mockGHContentMap = new HashMap<>();
-    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList());
+    mockGHContentMap.put(SAMPLE_PRODUCT_ID, mockMetaJsonAndLogoList(false));
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productModuleContentRepo.saveAll(anyList())).thenReturn(List.of(mockReadmeProductContent()));
 

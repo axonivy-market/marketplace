@@ -26,6 +26,7 @@ public class GitHubConstants {
   public static final String ADMIN_SESSION_TOKEN = "adminSessionToken";
   public static final String README_FILE_PATH = "README.md";
   public static final String GITHUB_TEXTS_RESOURCE_PATH = "github/githubUnsupportedText.json";
+  public static final String BEARER_PREFIX = "Bearer ";
   public static final String HEADS_PREFIX = "heads/";
   public static final String REFS_HEADS_PREFIX = "refs/" + HEADS_PREFIX;
 
@@ -44,6 +45,7 @@ public class GitHubConstants {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Url {
     private static final String BASE_URL = "https://api.github.com";
+    public static final String REPOS_BASE_URL = BASE_URL + "/repos/";
     public static final String REPO_DEPENDABOT_ALERTS_OPEN = BASE_URL + "/repos/%s/%s/dependabot/alerts?state=open";
     public static final String REPO_SECRET_SCANNING_ALERTS_OPEN =
         BASE_URL + "/repos/%s/%s/secret-scanning/alerts?state=open";

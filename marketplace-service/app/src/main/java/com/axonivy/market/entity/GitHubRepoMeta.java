@@ -1,6 +1,8 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.core.entity.AbstractAuditableEntity;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -23,9 +25,13 @@ public class GitHubRepoMeta extends AbstractAuditableEntity<String> {
   private static final long serialVersionUID = 1;
 
   @Id
+  @Column(name = "repourl")
   private String repoURL;
+
   private String repoName;
   private Long lastChange;
+
+  @Column(name = "lastsha1")
   private String lastSHA1;
 
   @Override
