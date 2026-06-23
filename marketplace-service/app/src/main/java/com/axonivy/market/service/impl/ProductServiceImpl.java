@@ -327,7 +327,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
 
   private void updateLatestReleaseVersionContentsFromProductRepo() {
-    List<Product> products = productRepo.findAllProductsWithNamesAndShortDescriptions();
+    List<Product> products = productRepo.findProductsWithEnglishNameAndArtifacts();
     if (ObjectUtils.isEmpty(products)) {
       return;
     }
