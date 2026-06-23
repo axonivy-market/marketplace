@@ -152,21 +152,8 @@ while true; do
             health_path="/actuator/health"
         else
             health_path="/${app_name}/actuator/health"
-        fi
-        HEALTH_URL="http://localhost:${health_port}${health_path}"
-        HEALTH_RESPONSE="$(curl -sf "${HEALTH_URL}" 2>/dev/null || true)"
-        HEALTH="$(
-            echo "${HEALTH_RESPONSE}" \
-            | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' \
-            | cut -d'"' -f4 \
-            || true
-        )"
-
-        echo "Health check URL: ${HEALTH_URL}"
-        echo "Health check raw response: ${HEALTH_RESPONSE:-empty}"
-        echo "Health check parsed status: ${HEALTH:-unknown}"
-        
-        HEALTH="$(curl -sf "http://localhost:${health_port}${health_path}" 2>/dev/null | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' | cut -d'"' -f4 || true)"
+        fi   
+        HEALTH="$(curl -sf "http://localhost:${health_port}${health_path}?_nocache=$(date +%s%N)-$$" 2>/dev/null | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' | cut -d'"' -f4 || true)"
         if [[ "${HEALTH}" != "UP" ]]; then
             ALL_HEALTHY=false
             PENDING_STATUS+=("${health_target}:${HEALTH:-unknown}")
