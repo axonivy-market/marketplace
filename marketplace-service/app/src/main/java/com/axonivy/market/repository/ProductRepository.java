@@ -14,7 +14,7 @@ public interface ProductRepository extends CoreProductRepository, CustomProductR
   List<Product> findByMarketDirectory(String marketDirectory);
 
   @Query("""
-      SELECT DISTINCT p
+      SELECT p
       FROM Product p
       LEFT JOIN FETCH p.artifacts a
       LEFT JOIN FETCH a.archivedArtifacts
