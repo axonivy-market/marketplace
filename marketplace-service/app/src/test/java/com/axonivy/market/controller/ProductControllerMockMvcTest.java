@@ -1,15 +1,13 @@
 package com.axonivy.market.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
-import java.util.Map;
-
+import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.model.ProductModel;
+import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
+import com.axonivy.market.github.service.GitHubService;
+import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.service.ExternalDocumentService;
+import com.axonivy.market.service.ProductDependencyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,18 +20,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.axonivy.market.assembler.ProductModelAssembler;
-import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.core.model.ProductModel;
-import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.github.service.GitHubService;
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(com.axonivy.market.controller.ProductController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@TestPropertySource("classpath:application-test.properties")
+@ActiveProfiles("test")
 class ProductControllerMockMvcTest {
 
   @Autowired
@@ -53,6 +55,9 @@ class ProductControllerMockMvcTest {
 
   @MockBean
   private PagedResourcesAssembler<Product> pagedResourcesAssembler;
+
+  @MockBean
+  private AppSettingService appSettingService;
 
   @MockBean
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
