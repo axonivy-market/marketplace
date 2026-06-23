@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.model.UserInfo;
@@ -21,15 +20,13 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 @Service
 public class OAuth2ServiceImpl implements OAuth2Service {
-  private final GitHubProperty gitHubProperty;
   private final GitHubService gitHubService;
   private final JwtService jwtService;
 
   @Override
   public String loginToGitHubAndGetJWT(Oauth2AuthorizationCode oauth2AuthorizationCode) {
     try {
-      GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode(),
-          gitHubProperty);
+      GitHubAccessTokenResponse tokenResponse = gitHubService.getAccessToken(oauth2AuthorizationCode.getCode());
       String accessToken = tokenResponse.getAccessToken();
       var githubUser = gitHubService.getAndUpdateUser(accessToken);
       return jwtService.generateToken(githubUser, accessToken);

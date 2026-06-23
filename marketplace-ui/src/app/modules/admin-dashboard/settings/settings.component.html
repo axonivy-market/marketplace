@@ -1,0 +1,183 @@
+<div class="row col-md-12">
+  <h1
+    class="text-primary admin-title"
+    [lang]="languageService.selectedLanguage()">
+    {{ 'common.admin.settings.title' | translate }}
+  </h1>
+
+  <div class="introduction-container">
+    <div class="d-sm-block admin-about">
+      <h3 class="text-secondary">
+        {{ 'common.admin.settings.description' | translate }}
+      </h3>
+    </div>
+
+    <div
+      class="d-sm-block align-items-center admin-help-text-container flex-fill">
+      <h4
+        class="text-secondary"
+        [lang]="languageService.selectedLanguage()">
+        {{ 'common.admin.settings.helpText' | translate }}
+      </h4>
+    </div>
+  </div>
+</div>
+
+<div class="feature-bar">
+  <div class="input-group m-0">
+    <div
+      class="input-group-text text-primary bg-secondary border-0">
+      <i class="ti ti-search search-icon"></i>
+    </div>
+    <input
+      type="text"
+      autocomplete="on"
+      class="form-control input__search bg-secondary border-0 rounded-start-0 ps-0 search-input"
+      [placeholder]="'common.search.placeholder' | translate"
+      [(ngModel)]="searchText"
+      (ngModelChange)="onSearchChanged($event)" />
+    @if (searchText) {
+      <div
+        class="input-group-text text-primary bg-secondary border-0 clear-search-btn"
+        (click)="onClearSearch()">
+        <i class="ti ti-x clear-icon"></i>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="settings-wrapper position-relative">
+  <app-loading-spinner
+    containerClasses="d-flex justify-content-center position-absolute align-items-center w-100 h-100 fixed-top rounded"
+    [key]="LoadingComponentId.APP_SETTINGS">
+  </app-loading-spinner>
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-primary sortable" (click)="sortBy('category')">
+          <h5 class="table-header">
+            {{ 'common.admin.settings.category' | translate }}
+            <i class="ti" [ngClass]="getSortIcon('category')"></i>
+          </h5>
+        </th>
+        <th class="text-primary sortable" (click)="sortBy('settingKey')">
+          <h5 class="table-header">
+            {{ 'common.admin.settings.key' | translate }}
+            <i class="ti" [ngClass]="getSortIcon('settingKey')"></i>
+          </h5>
+        </th>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.admin.settings.value' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary">
+          <h5 class="table-header">
+            {{ 'common.admin.settings.settingDescription' | translate }}
+          </h5>
+        </th>
+        <th class="text-primary text-end">
+          <h5 class="table-header">
+            {{ 'common.admin.settings.action' | translate }}
+          </h5>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (filteredSettings.length > 0) {
+        @for (setting of pagedSettings; track setting.settingKey) {
+          <tr>
+            <td class="align-middle">
+              <span
+                class="badge"
+                [ngClass]="getCategoryClass(setting.category)">
+                {{ setting.category }}
+              </span>
+            </td>
+            <td class="align-middle">
+              <code>
+                {{ setting.settingKey }}
+              </code>
+            </td>
+            <td>
+              @if (setting.encrypted) {
+                <div class="input-group">
+                  <input
+                    class="form-control"
+                    [type]="isSecretVisible(setting.settingKey) ? 'text' : 'password'"
+                    [(ngModel)]="setting.settingValue" />
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="toggleSecret(setting.settingKey)">
+
+                    <i
+                      [class]="
+                        isSecretVisible(setting.settingKey)
+                          ? 'ti ti-eye-off'
+                          : 'ti ti-eye'
+                      ">
+                    </i>
+                  </button>
+                </div>
+              } @else {
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="setting.settingValue" />
+              }
+            </td>
+            <td class="align-middle">
+              {{ setting.description }}
+            </td>
+            <td class="align-middle text-end">
+              @if (savedKey === setting.settingKey) {
+                <i class="ti ti-circle-check text-success me-2 fs-5"></i>
+              }
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="savingKey === setting.settingKey"
+                (click)="save(setting)">
+                @if (savingKey === setting.settingKey) {
+                  <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                } @else {
+                  <i class="ti ti-device-floppy me-1"></i>
+                }
+                {{
+                  'common.admin.settings.save.label'
+                  | translate
+                }}
+              </button>
+            </td>
+          </tr>
+        }
+      } @else {
+        <tr>
+          <td colspan="5" class="border-0">
+            <p
+              class="text-primary m-0 text-center"
+              [lang]="languageService.selectedLanguage()">
+              {{
+                'common.admin.settings.noSettings'
+                | translate
+              }}
+            </p>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  @if (totalElements > 0) {
+  <div class="d-flex justify-content-between py-2">
+    <ngb-pagination
+      [collectionSize]="totalElements"
+      [(page)]="page"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)">
+    </ngb-pagination>
+  </div>
+}
+
+</div>
