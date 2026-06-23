@@ -52,18 +52,10 @@ public class MatomoTrackerBuilder {
       TrackerConfiguration config = TrackerConfiguration.builder().apiEndpoint(URI.create(rawEndpoint)).defaultSiteId(
           newSiteId).enabled(newEnabled).build();
 
-      MatomoTracker oldTracker = tracker;
-      MatomoTracker newTracker = new MatomoTracker(config);
+      var oldTracker = tracker;
+      closeTracker(oldTracker);
 
-      if (oldTracker != null) {
-        try {
-          oldTracker.close();
-        } catch (Exception e) {
-          log.warn("Failed to close old MatomoTracker instance", e);
-        }
-      }
-
-      tracker = newTracker;
+      tracker = new MatomoTracker(config);
       endpoint = rawEndpoint;
       siteId = newSiteId;
       enabled = newEnabled;
@@ -72,6 +64,16 @@ public class MatomoTrackerBuilder {
     } catch (IllegalArgumentException ex) {
       log.error("Invalid Matomo configuration. Use old tracker instance.", ex);
       return tracker;
+    }
+  }
+
+  private void closeTracker(MatomoTracker tracker) {
+    if (tracker != null) {
+      try {
+        tracker.close();
+      } catch (Exception e) {
+        log.warn("Failed to close MatomoTracker instance", e);
+      }
     }
   }
 }
