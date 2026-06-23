@@ -153,7 +153,19 @@ while true; do
         else
             health_path="/${app_name}/actuator/health"
         fi
+        HEALTH_URL="http://${NODE_IP}:${health_port}${health_path}"
+        HEALTH_RESPONSE="$(curl -sf "${HEALTH_URL}" 2>/dev/null || true)"
+        HEALTH="$(
+            echo "${HEALTH_RESPONSE}" \
+            | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' \
+            | cut -d'"' -f4 \
+            || true
+        )"
 
+        echo "Health check URL: ${HEALTH_URL}"
+        echo "Health check raw response: ${HEALTH_RESPONSE:-empty}"
+        echo "Health check parsed status: ${HEALTH:-unknown}"
+        
         HEALTH="$(curl -sf "http://${NODE_IP}:${health_port}${health_path}" 2>/dev/null | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' | cut -d'"' -f4 || true)"
         if [[ "${HEALTH}" != "UP" ]]; then
             ALL_HEALTHY=false
