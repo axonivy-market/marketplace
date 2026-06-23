@@ -406,7 +406,7 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     verify(gitHubService).unArchivedTheRepository(MOCK_PRODUCT_REPOSITORY_NAME);
     verify(gitHubService, never()).archiveTheRepository(anyString());
-    assertNull(product.getIsArchived(), "isArchived should be null after unarchive");
+    assertNull(ReflectionTestUtils.getField(product, "isArchived"), "isArchived should be null after unarchive");
     verify(productRepo).save(product);
   }
 
@@ -421,7 +421,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
 
     verify(gitHubService).hasDeprecationWarningInReadme(MOCK_PRODUCT_REPOSITORY_NAME);
     verify(gitHubService).archiveTheRepository(MOCK_PRODUCT_REPOSITORY_NAME);
-    assertTrue(product.getIsArchived(), "isArchived should be true after archive");
+    assertTrue(Boolean.TRUE.equals(ReflectionTestUtils.getField(product, "isArchived")),
+        "isArchived should be true after archive");
     verify(productRepo).save(product);
   }
 

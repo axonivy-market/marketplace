@@ -215,8 +215,8 @@ public class GitHubServiceImpl implements GitHubService {
       String team) throws UnauthorizedException {
     try {
       var gitHub = getGitHub(accessToken);
+      GHMyself myself = gitHub.getMyself();
       if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
-        GHMyself myself = gitHub.getMyself();
         var userInfo = new UserInfo();
         userInfo.setGitHubId(String.valueOf(myself.getId()));
         userInfo.setName(myself.getName());
@@ -275,14 +275,32 @@ public class GitHubServiceImpl implements GitHubService {
     if (gitHub == null) {
       return false;
     }
+    GHMyself myself = gitHub.getMyself();
+    if (myself == null || StringUtils.isBlank(myself.getLogin())) {
+      return false;
+    }
+    return isUserInOrganizationAndTeam(myself.getLogin(), organization, teamName);
+  }
 
-    var hashMapTeams = gitHub.getMyTeams();
-    var hashSetTeam = hashMapTeams.get(organization);
-    if (CollectionUtils.isEmpty(hashSetTeam)) {
+  private boolean isUserInOrganizationAndTeam(String username, String organization, String teamIdentifier)
+      throws IOException {
+    GitHub serviceGitHub = getGitHub();
+    GHOrganization ghOrganization = serviceGitHub.getOrganization(organization);
+    GHUser user = serviceGitHub.getUser(username);
+    if (ghOrganization == null || user == null || !ghOrganization.hasMember(user)) {
       return false;
     }
 
-    return hashSetTeam.stream().anyMatch((GHTeam team) -> teamName.equals(team.getName()));
+    GHTeam team = findTeam(ghOrganization, teamIdentifier);
+    return team != null && team.hasMember(user);
+  }
+
+  private GHTeam findTeam(GHOrganization organization, String teamIdentifier) throws IOException {
+    GHTeam team = organization.getTeamBySlug(teamIdentifier);
+    if (team != null) {
+      return team;
+    }
+    return organization.getTeamByName(teamIdentifier);
   }
 
   public ProductSecurityInfo fetchSecurityInfoSafe(GHRepository repo, GHOrganization organization,

@@ -99,6 +99,12 @@ class GitHubServiceImplTest extends BaseSetup {
   private GHTeam ghTeam;
 
   @Mock
+  private GHOrganization ghOrganization;
+
+  @Mock
+  private GHUser ghUser;
+
+  @Mock
   private GithubUserRepository githubUserRepository;
 
   @Mock
@@ -338,7 +344,7 @@ class GitHubServiceImplTest extends BaseSetup {
     doReturn(true).when(gitHubService).isUserInOrganizationAndTeam(gitHub, organization, team);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
-    GithubUser result = gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
+    var result = gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
 
     assertEquals(String.valueOf(123L), result.getGitHubId(), "GitHub ID should match the fake user");
     assertEquals("test-user", result.getName(), "Name should match the fake user");
@@ -361,23 +367,30 @@ class GitHubServiceImplTest extends BaseSetup {
   void testIsUserInOrganizationAndTeamWhenEmptyTeams() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(false);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertFalse(result, "Expected result to be false when user has no teams in GitHub");
+    assertFalse(result, "Expected result to be false when user is not a member of the organization");
   }
 
   @Test
   void testIsUserInOrganizationAndTeamWhenTeamNotFound() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Set<GHTeam> teams = new HashSet<>();
-    teams.add(ghTeam);
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    hashMapTeams.put(organization, teams);
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(true);
+    when(ghOrganization.getTeamBySlug(teamName)).thenReturn(null);
+    when(ghOrganization.getTeamByName(teamName)).thenReturn(null);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
@@ -385,15 +398,17 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testIsUserInOrganizationAndTeamWhenTeamFound() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenTeamFoundBySlug() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Set<GHTeam> teams = new HashSet<>();
-    when(ghTeam.getName()).thenReturn(teamName);
-    teams.add(ghTeam);
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    hashMapTeams.put(organization, teams);
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(true);
+    when(ghOrganization.getTeamBySlug(teamName)).thenReturn(ghTeam);
+    when(ghTeam.hasMember(ghUser)).thenReturn(true);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
@@ -401,16 +416,22 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testIsUserInOrganizationAndTeamWhenTeamListNull() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenTeamFoundByNameFallback() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    hashMapTeams.put(organization, null);
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(true);
+    when(ghOrganization.getTeamBySlug(teamName)).thenReturn(null);
+    when(ghOrganization.getTeamByName(teamName)).thenReturn(ghTeam);
+    when(ghTeam.hasMember(ghUser)).thenReturn(true);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertFalse(result, "Expected result to be false when the organization exists but its team list is null");
+    assertTrue(result, "Expected result to be true when the fallback team name lookup succeeds");
   }
 
   @Test

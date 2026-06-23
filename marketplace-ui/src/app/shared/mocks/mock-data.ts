@@ -10,8 +10,7 @@ import { ProductModuleContent } from '../models/product-module-content.model';
 import { ReleasePreviewData } from '../models/release-preview-data.model';
 
 export const MOCK_PRODUCTS = {
-  _embedded: {
-    products: [
+  content: [
       {
         id: 'amazon-comprehend',
         names: {
@@ -33,9 +32,8 @@ export const MOCK_PRODUCTS = {
           }
         }
       }
-    ]
-  },
-  _links: {
+    ],
+  links: {
     first: {
       href: 'http://localhost:8080/marketplace-service/api/product?type=all&page=0&size=20'
     },
@@ -58,8 +56,7 @@ export const MOCK_PRODUCTS = {
 } as unknown as ProductApiResponse;
 
 export const MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS = {
-  _embedded: {
-    products: [
+  content: [
       {
         id: 'amazon-comprehend',
         names: {
@@ -80,9 +77,8 @@ export const MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS = {
           }
         }
       }
-    ]
-  },
-  _links: {
+    ],
+  links: {
     first: {
       href: 'http://localhost:8080/marketplace-service/api/product?type=all&page=0&size=20'
     },
@@ -105,8 +101,7 @@ export const MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS = {
 } as unknown as ProductApiResponse;
 
 export const MOCK_PRODUCTS_FILTER_CONNECTOR = {
-  _embedded: {
-    products: [
+  content: [
       {
         id: 'amazon-comprehend',
         names: {
@@ -168,9 +163,8 @@ export const MOCK_PRODUCTS_FILTER_CONNECTOR = {
           }
         }
       }
-    ]
-  },
-  _links: {
+    ],
+  links: {
     first: {
       href: 'http://localhost:8080/marketplace-service/api/product?type=all&page=0&size=20'
     },
@@ -193,10 +187,8 @@ export const MOCK_PRODUCTS_FILTER_CONNECTOR = {
 } as unknown as ProductApiResponse;
 
 export const MOCK_PRODUCTS_NEXT_PAGE = {
-  _embedded: {
-    products: []
-  },
-  _links: {
+  content: [],
+  links: {
     first: {
       href: 'http://localhost:8080/marketplace-service/api/product?type=all&page=0&size=20'
     },

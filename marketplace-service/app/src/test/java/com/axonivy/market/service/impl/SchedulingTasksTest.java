@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,19 +28,19 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class SchedulingTasksTest {
 
-  @SpyBean
+  @MockitoSpyBean
   ScheduledTasks tasks;
 
-  @MockBean
+  @MockitoBean
   GitHubService gitHubService;
 
-  @MockBean
+  @MockitoBean
   GithubReposService gitHubReposService;
 
-  @MockBean
+  @MockitoBean
   ProductSecurityInfoRepository productSecurityInfoRepository;
 
-  @MockBean
+  @MockitoBean
   NotificationService notificationService;
 
   @Test

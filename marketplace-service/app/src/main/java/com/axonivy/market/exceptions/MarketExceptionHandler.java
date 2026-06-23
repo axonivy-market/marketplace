@@ -15,11 +15,15 @@ import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.SyncTaskInProgressException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.model.Message;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,75 +33,52 @@ import java.util.Map;
 public class MarketExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException exception) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(exception.getDetailMessageCode());
-    errorMessage.setMessageDetails(exception.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, exception.getDetailMessageCode(), exception.getMessage());
   }
 
   @ExceptionHandler(MarketException.class)
   public ResponseEntity<Object> handleAMarketException(MarketException marketException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(marketException.getCode());
-    errorMessage.setMessageDetails(marketException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, marketException.getCode(), marketException.getMessage());
   }
 
   @ExceptionHandler(AlreadyExistedException.class)
   public ResponseEntity<Object> handleAlreadyExistedException(AlreadyExistedException alreadyExistedException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(alreadyExistedException.getCode());
-    errorMessage.setMessageDetails(alreadyExistedException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, alreadyExistedException.getCode(),
+        alreadyExistedException.getMessage());
   }
 
   @ExceptionHandler(MissingHeaderException.class)
   public ResponseEntity<Object> handleMissingServletRequestParameter(Throwable missingHeaderException) {
-    var errorMessage = new Message();
-    errorMessage.setMessageDetails(missingHeaderException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, null, missingHeaderException.getMessage());
   }
 
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<Object> handleNotFoundException(NotFoundException notFoundException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(notFoundException.getCode());
-    errorMessage.setMessageDetails(notFoundException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+    return messageResponse(HttpStatus.NOT_FOUND, notFoundException.getCode(), notFoundException.getMessage());
   }
 
   @ExceptionHandler(NoContentException.class)
   public ResponseEntity<Object> handleNoContentException(NoContentException noContentException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(noContentException.getCode());
-    errorMessage.setMessageDetails(noContentException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.NO_CONTENT);
+    return messageResponse(HttpStatus.NO_CONTENT, noContentException.getCode(), noContentException.getMessage());
   }
 
   @ExceptionHandler(InvalidParamException.class)
   public ResponseEntity<Object> handleInvalidException(InvalidParamException invalidDataException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(invalidDataException.getCode());
-    errorMessage.setMessageDetails(invalidDataException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, invalidDataException.getCode(), invalidDataException.getMessage());
   }
 
   @ExceptionHandler(Oauth2ExchangeCodeException.class)
   public ResponseEntity<Object> handleOauth2ExchangeCodeException(
       Oauth2ExchangeCodeException oauth2ExchangeCodeException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(oauth2ExchangeCodeException.getError());
-    errorMessage.setMessageDetails(oauth2ExchangeCodeException.getErrorDescription());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, oauth2ExchangeCodeException.getError(),
+        oauth2ExchangeCodeException.getErrorDescription());
   }
 
   @ExceptionHandler(UnauthorizedException.class)
   public ResponseEntity<Object> handleUnauthorizedException(
       UnauthorizedException unauthorizedException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(unauthorizedException.getError());
-    errorMessage.setMessageDetails(unauthorizedException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
+    return messageResponse(HttpStatus.UNAUTHORIZED, unauthorizedException.getError(),
+        unauthorizedException.getMessage());
   }
 
   @ExceptionHandler(InvalidZipEntryException.class)
@@ -109,17 +90,19 @@ public class MarketExceptionHandler {
 
   @ExceptionHandler(FileProcessingException.class)
   public ResponseEntity<Object> handleFileProcess(FileProcessingException fileProcessingException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(fileProcessingException.getCode());
-    errorMessage.setMessageDetails(fileProcessingException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, fileProcessingException.getCode(),
+        fileProcessingException.getMessage());
   }
 
   @ExceptionHandler(IOException.class)
-  public ResponseEntity<Message> handleIOException(IOException ex) {
+  public ResponseEntity<?> handleIOException(IOException ex, HttpServletRequest request) {
+    var responseBuilder = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
+    if (isServerSentEventRequest(request)) {
+      return responseBuilder.build();
+    }
     var message = new Message(ErrorCode.INTERNAL_EXCEPTION.getCode(),
         ErrorCode.INTERNAL_EXCEPTION.getHelpText(), ex.getMessage());
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+    return responseBuilder.body(message);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
@@ -137,21 +120,37 @@ public class MarketExceptionHandler {
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(message);
   }
 
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<Message> handleResponseStatusException(ResponseStatusException exception) {
+    var message = new Message(String.valueOf(exception.getStatusCode().value()), exception.getReason(),
+        exception.getReason());
+    return ResponseEntity.status(exception.getStatusCode()).body(message);
+  }
+
   @ExceptionHandler(ArchiveNotAllowedException.class)
   public ResponseEntity<Object> handleArchiveNotAllowedException(
       ArchiveNotAllowedException archiveNotAllowedException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(archiveNotAllowedException.getCode());
-    errorMessage.setMessageDetails(archiveNotAllowedException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    return messageResponse(HttpStatus.BAD_REQUEST, archiveNotAllowedException.getCode(),
+        archiveNotAllowedException.getMessage());
   }
 
   @ExceptionHandler(UnarchiveFailedException.class)
   public ResponseEntity<Object> handleUnarchiveFailedException(
       UnarchiveFailedException unarchiveFailedException) {
-    var errorMessage = new Message();
-    errorMessage.setHelpCode(unarchiveFailedException.getCode());
-    errorMessage.setMessageDetails(unarchiveFailedException.getMessage());
-    return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+    return messageResponse(HttpStatus.INTERNAL_SERVER_ERROR, unarchiveFailedException.getCode(),
+        unarchiveFailedException.getMessage());
+  }
+
+  private boolean isServerSentEventRequest(HttpServletRequest request) {
+    return request != null
+        && request.getHeader(HttpHeaders.ACCEPT) != null
+        && request.getHeader(HttpHeaders.ACCEPT).contains(MediaType.TEXT_EVENT_STREAM_VALUE);
+  }
+
+  private ResponseEntity<Object> messageResponse(HttpStatus status, String helpCode, String messageDetails) {
+    Message errorMessage = new Message();
+    errorMessage.setHelpCode(helpCode);
+    errorMessage.setMessageDetails(messageDetails);
+    return new ResponseEntity<>(errorMessage, status);
   }
 }

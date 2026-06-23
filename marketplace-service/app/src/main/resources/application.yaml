@@ -2,10 +2,13 @@ server:
   port: '8080'
   forward-headers-strategy: framework
   servlet:
-    context-path: /app
     session:
+      timeout: '${SESSION_TIMEOUT:2h}'
       cookie:
-        secure: '${SESSION_COOKIE_SECURE}'
+        name: '${SESSION_COOKIE_NAME:ADMIN_SESSION}'
+        http-only: true
+        secure: '${SESSION_COOKIE_SECURE:true}'
+    context-path: /app
   tomcat:
     connection-timeout: 240000ms
     threads:
@@ -116,6 +119,11 @@ market:
     connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:10000}'
     market:
       branch: '${MARKET_GITHUB_MARKET_BRANCH}'
+  passkey:
+    rp-id: '${MARKET_PASSKEY_RP_ID:}'
+    rp-name: '${MARKET_PASSKEY_RP_NAME:Axon Ivy Marketplace Admin}'
+    origins: '${MARKET_PASSKEY_ORIGINS:}'
+    timeout-ms: '${MARKET_PASSKEY_TIMEOUT_MS:300000}'
   allowed:
     click-capacity: '${MARKET_CLICK_LIMIT}'
   info:

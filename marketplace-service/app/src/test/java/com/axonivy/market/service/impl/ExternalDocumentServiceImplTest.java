@@ -21,9 +21,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -73,22 +73,22 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private final List<String> majorVersions = List.of(TEN_VERSION, TEST_VERSION_12_5, TEST_VERSION, "13.2", DEV_VERSION);
 
-  @MockBean
+  @MockitoBean
   ProductRepository productRepository;
 
-  @MockBean
+  @MockitoBean
   ExternalDocumentMetaRepository externalDocumentMetaRepository;
 
-  @MockBean
+  @MockitoBean
   FileDownloadService fileDownloadService;
 
-  @MockBean
+  @MockitoBean
   AxonIvyClient axonIvyClient;
 
-  @MockBean
+  @MockitoBean
   ArtifactRepository artifactRepository;
 
-  @SpyBean
+  @MockitoSpyBean
   ExternalDocumentServiceImpl service;
 
   @TempDir
