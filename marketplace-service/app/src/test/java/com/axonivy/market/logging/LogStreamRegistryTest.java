@@ -446,7 +446,6 @@ class LogStreamRegistryTest {
     Sinks.Many<String> mockSink = Mockito.mock(Sinks.Many.class);
     Mockito.when(mockSink.tryEmitNext("retry-line")).thenReturn(Sinks.EmitResult.FAIL_TERMINATED);
 
-    @SuppressWarnings("unchecked")
     Map<String, Sinks.Many<String>> map =
         (Map<String, Sinks.Many<String>>) ReflectionTestUtils
             .getField(LogStreamRegistry.class, "taskSinks");
