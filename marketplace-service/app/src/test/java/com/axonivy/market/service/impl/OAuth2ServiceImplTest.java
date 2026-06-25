@@ -44,7 +44,7 @@ class OAuth2ServiceImplTest extends BaseSetup {
     GithubUser githubUser = createUserMock();
     String jwtToken = "sampleJwtToken";
 
-    when(gitHubService.getAccessToken(any(), any())).thenReturn(createGitHubAccessTokenResponseMock());
+    when(gitHubService.getAccessToken(any())).thenReturn(createGitHubAccessTokenResponseMock());
     when(gitHubService.getAndUpdateUser(accessToken)).thenReturn(githubUser);
     when(jwtService.generateToken(githubUser, accessToken)).thenReturn(jwtToken);
 
@@ -56,7 +56,7 @@ class OAuth2ServiceImplTest extends BaseSetup {
 
   @Test
   void testGitHubLoginOauth2ExchangeCodeException() throws Exception {
-    when(gitHubService.getAccessToken(any(), any())).thenThrow(
+    when(gitHubService.getAccessToken(any())).thenThrow(
         new Oauth2ExchangeCodeException("invalid_grant", "Invalid authorization code"));
 
     Oauth2ExchangeCodeException exception = assertThrows(
@@ -71,7 +71,7 @@ class OAuth2ServiceImplTest extends BaseSetup {
 
   @Test
   void testGitHubLoginGeneralException() throws Exception {
-    when(gitHubService.getAccessToken(any(), any())).thenThrow(new RuntimeException("Unexpected error"));
+    when(gitHubService.getAccessToken(any())).thenThrow(new RuntimeException("Unexpected error"));
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
