@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { ENV_VAR_NAMES } from './src/app/core/models/runtime-config';
 
 const isCI = !!process.env['CI'];
-const localBaseURL = isCI ? 'http://127.0.0.1:4000' : 'http://127.0.0.1:4200';
+const localBaseURL = isCI ? process.env[ENV_VAR_NAMES.MARKET_ALLOWED_HOSTS] : 'http://127.0.0.1:4200';
 const baseURL = process.env['E2E_BASE_URL'] ?? localBaseURL;
 const useExternalBaseURL = !!process.env['E2E_BASE_URL'];
 
@@ -23,9 +24,7 @@ export default defineConfig({
       command: isCI ? 'npm run serve:ssr:marketplace-ui' : 'npm run start -- --host 127.0.0.1 --port 4200',
       url: localBaseURL,
       reuseExistingServer: !isCI,
-      timeout: 300000,
-      stdout: 'pipe',
-      stderr: 'pipe'
+      timeout: 120000,
     },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
