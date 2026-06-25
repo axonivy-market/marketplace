@@ -39,7 +39,7 @@ public enum FeedbackSortOption {
       option = option.trim();
     }
     for (var feedbackSortOption : values()) {
-      if (Strings.CS.equals(feedbackSortOption.option, option)) {
+      if (Strings.CI.equals(feedbackSortOption.option, option)) {
         return feedbackSortOption;
       }
     }
