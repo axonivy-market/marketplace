@@ -37,6 +37,7 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -261,8 +262,8 @@ class FeedbackControllerTest extends BaseSetup {
   }
 
   private Claims createMockClaims() {
-    Claims claims = new io.jsonwebtoken.impl.DefaultClaims();
-    claims.setSubject(USER_ID_SAMPLE);
+    Claims claims = mock(Claims.class);
+    when(claims.getSubject()).thenReturn(USER_ID_SAMPLE);
     return claims;
   }
 }
