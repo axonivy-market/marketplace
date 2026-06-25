@@ -6,17 +6,21 @@ import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
+import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.NotificationService;
+import com.axonivy.market.service.ProductDependencyService;
+import com.axonivy.market.service.ProductService;
+import com.axonivy.market.controller.ProductDetailsController;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,44 +28,44 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class SchedulingTasksTest {
 
-  @SpyBean
+  @InjectMocks
   ScheduledTasks tasks;
 
-  @MockBean
+  @Mock
+  private com.axonivy.market.repository.ProductRepository productRepo;
+
+  @Mock
+  private ProductService productService;
+
+  @Mock
+  private ProductDetailsController productDetailsController;
+
+  @Mock
+  private ExternalDocumentService externalDocumentService;
+
+  @Mock
+  private ProductDependencyService productDependencyService;
+
+  @Mock
+  private GithubReposService gitHubReposService;
+
+  @Mock
   GitHubService gitHubService;
 
-  @MockBean
-  GithubReposService gitHubReposService;
-
-  @MockBean
+  @Mock
   ProductSecurityInfoRepository productSecurityInfoRepository;
 
-  @MockBean
+  @Mock
   NotificationService notificationService;
 
   @Test
   void testShouldNotTriggerAfterApplicationStarted() {
-    Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductFromGitHubRepo());
-
-    Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductDocuments());
-
-    Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductMavenDependencies());
-
-    Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).syncDataForProductReleases());
-
-    Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).sendNotificationForSecurityMonitor());
-
-    Awaitility.await().atMost(Durations.TEN_SECONDS)
-        .untilAsserted(() -> verify(tasks, atLeast(0)).syncSecurityMonitor());
+    verifyNoInteractions(productService, productRepo, productDetailsController, externalDocumentService,
+        productDependencyService, gitHubReposService, gitHubService, productSecurityInfoRepository,
+        notificationService);
   }
 
   @Test
@@ -91,9 +95,7 @@ class SchedulingTasksTest {
   @Test
   void testShouldSendNotificationWhenSecurityChecksAreDisabled() throws Exception {
     ProductSecurityInfo securityInfo = mock(ProductSecurityInfo.class);
-    when(gitHubService.syncSecurityDetailsForProduct()).thenReturn(List.of(securityInfo));
     DisabledSecurityEvent event = mock(DisabledSecurityEvent.class);
-    // Mock repository to return the same ProductSecurityInfo as in the service
     when(productSecurityInfoRepository.findAll()).thenReturn(List.of(securityInfo));
     try (MockedStatic<DisabledSecurityEventFactory> mockedFactory =
              Mockito.mockStatic(DisabledSecurityEventFactory.class)) {

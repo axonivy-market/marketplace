@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.OkHttpClientBuilder;
+import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
@@ -27,30 +28,38 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.util.MultiTaskUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
 import org.kohsuke.github.function.InputStreamFunction;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.util.MultiValueMap;
+import okhttp3.OkHttpClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -63,8 +72,16 @@ import java.util.function.Consumer;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class GitHubServiceImplTest extends BaseSetup {
 
   private static final String BASE_BRANCH = "master";
@@ -82,13 +99,7 @@ class GitHubServiceImplTest extends BaseSetup {
       .build();
 
   @Mock
-  RestTemplate restTemplate;
-
-  @Mock
   private GitHub gitHub;
-
-  @Mock
-  private ResponseEntity<GitHubAccessTokenResponse> responseEntity;
 
   @Mock
   private GitHubAccessTokenResponse gitHubAccessTokenResponse;
@@ -106,7 +117,16 @@ class GitHubServiceImplTest extends BaseSetup {
   private OkHttpClientBuilder okHttpClientBuilder;
 
   @Mock
+  private RestClientBuilder restClientBuilder;
+  private MockRestServiceServer server;
+
+  private RestClient restClient;
+
+  @Mock
   private AppSettingService appSettingService;
+
+  @Mock
+  private MultiTaskUtils multiTaskUtils;
 
   @Mock
   private ThreadPoolTaskScheduler taskScheduler;
@@ -115,10 +135,56 @@ class GitHubServiceImplTest extends BaseSetup {
   @InjectMocks
   private GitHubServiceImpl gitHubService;
 
+  @BeforeEach
+  void setUpRestClientMocks() {
+    RestClient.Builder builder = RestClient.builder();
+    server = MockRestServiceServer.bindTo(builder).ignoreExpectOrder(true).build();
+    restClient = builder.build();
+    lenient().when(restClientBuilder.build()).thenReturn(restClient);
+    lenient().when(okHttpClientBuilder.build()).thenReturn(new OkHttpClient());
+    gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository, appSettingService,
+        productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils));
+  }
+
+  @AfterEach
+  void verifyHttp() {
+    if (server != null) {
+      server.verify();
+    }
+  }
+
+  private void expectGet(String url, String body) {
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
+  }
+
+  private void expectGet(String url, org.springframework.test.web.client.ResponseCreator responseCreator) {
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(responseCreator);
+  }
+
+  private void expectPost(String url, org.springframework.test.web.client.ResponseCreator responseCreator) {
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.POST))
+        .andRespond(responseCreator);
+  }
+
+  private void expectPatch(String url, org.springframework.test.web.client.ResponseCreator responseCreator) {
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.PATCH))
+        .andRespond(responseCreator);
+  }
+
+  private void mockGitHubBuild(String accessToken) throws IOException {
+    doReturn(gitHub).when(gitHubService).buildGitHub(accessToken);
+  }
+
   @Test
   void testGetGitHubWithValidToken() throws IOException {
-    stubOkHttpClientBuilder();
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("validToken");
+    mockGitHubBuild("validToken");
     assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
     verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
@@ -126,7 +192,7 @@ class GitHubServiceImplTest extends BaseSetup {
   @Test
   void testGetGitHubWithExplicitAccessToken() throws IOException {
     String accessToken = "explicitToken";
-    stubOkHttpClientBuilder();
+    mockGitHubBuild(accessToken);
     GitHub result = gitHubService.getGitHub(accessToken);
 
     assertNotNull(result, "Expected GitHub object to be created with an explicit access token");
@@ -223,15 +289,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
-    when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
-    when(gitHubAccessTokenResponse.getError()).thenReturn(null);
-    when(gitHubAccessTokenResponse.getAccessToken()).thenReturn(accessToken);
-
-    when(restTemplate.postForEntity(
-        eq(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL),
-        any(HttpEntity.class),
-        eq(GitHubAccessTokenResponse.class)
-    )).thenReturn(responseEntity);
+    expectPost(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL,
+        withSuccess("{\"access_token\":\"" + accessToken + "\"}", MediaType.APPLICATION_JSON));
 
     GitHubAccessTokenResponse result = gitHubService.getAccessToken(code);
 
@@ -239,7 +298,6 @@ class GitHubServiceImplTest extends BaseSetup {
     assertEquals(accessToken, result.getAccessToken(),
         "Expected access token in response to match the mocked access token");
 
-    verify(restTemplate).postForEntity(anyString(), any(HttpEntity.class), eq(GitHubAccessTokenResponse.class));
   }
 
   @Test
@@ -253,15 +311,10 @@ class GitHubServiceImplTest extends BaseSetup {
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
-    when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
-    when(gitHubAccessTokenResponse.getError()).thenReturn(error);
-    when(gitHubAccessTokenResponse.getErrorDescription()).thenReturn(errorDescription);
-
-    when(restTemplate.postForEntity(
-        eq(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL),
-        any(HttpEntity.class),
-        eq(GitHubAccessTokenResponse.class)
-    )).thenReturn(responseEntity);
+    expectPost(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL,
+        withSuccess("""
+            {"error":"invalid_grant","error_description":"The authorization code is invalid"}
+            """.trim(), MediaType.APPLICATION_JSON));
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
@@ -285,15 +338,9 @@ class GitHubServiceImplTest extends BaseSetup {
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
-    when(responseEntity.getBody()).thenReturn(gitHubAccessTokenResponse);
-    when(gitHubAccessTokenResponse.getError()).thenReturn("error_code");
-    when(gitHubAccessTokenResponse.getErrorDescription()).thenReturn("Error description");
-
-    when(restTemplate.postForEntity(
-        eq(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL),
-        any(HttpEntity.class),
-        eq(GitHubAccessTokenResponse.class)
-    )).thenReturn(responseEntity);
+    expectPost(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL,
+        withSuccess("{\"error\":\"error_code\",\"error_description\":\"Error description\"}",
+            MediaType.APPLICATION_JSON));
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
@@ -435,43 +482,20 @@ class GitHubServiceImplTest extends BaseSetup {
     when(ghRepository.getCommit(branchSHA1)).thenReturn(commit);
     when(ghRepository.getBranch(any())).thenReturn(branch);
     String urlSecretScanning = String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, orgName, repoName);
-    List<Map<String, Object>> responseBodySecretScanning = new ArrayList<>();
-    responseBodySecretScanning.add(Map.of(
-        "number", 1
-    ));
-    when(restTemplate.exchange(
-        eq(urlSecretScanning),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenReturn(new ResponseEntity<>(responseBodySecretScanning, HttpStatus.OK));
+    server.expect(requestTo(urlSecretScanning))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withSuccess("[{\"number\":1}]", MediaType.APPLICATION_JSON));
     String urlCodeScanning = String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, orgName, repoName);
-    List<Map<String, Object>> responseBodyCodeScanning = new ArrayList<>();
-    responseBodyCodeScanning.add(Map.of(
-        "number", 1,
-        "state", "open",
-        "rule", Map.of("security_severity_level", "high")
-    ));
-    when(restTemplate.exchange(
-        eq(urlCodeScanning),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenReturn(new ResponseEntity<>(responseBodyCodeScanning, HttpStatus.OK));
-
+    server.expect(requestTo(urlCodeScanning))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withSuccess("[{\"number\":1,\"state\":\"open\",\"rule\":{\"security_severity_level\":\"high\"}}]",
+            MediaType.APPLICATION_JSON));
     String urlDependabotScanning = String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, orgName, repoName);
-    List<Map<String, Object>> responseBodyDependabotScanning = new ArrayList<>();
-    responseBodyDependabotScanning.add(Map.of(
-        "number", 1,
-        "state", "open",
-        "security_advisory", Map.of("severity", "high")
-    ));
-    when(restTemplate.exchange(
-        eq(urlDependabotScanning),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenReturn(new ResponseEntity<>(responseBodyDependabotScanning, HttpStatus.OK));
+    server.expect(requestTo(urlDependabotScanning))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withSuccess("""
+            [{"number":1,"state":"open","security_advisory":{"severity":"high"}}]
+            """.trim(), MediaType.APPLICATION_JSON));
 
     ProductSecurityInfo result = gitHubService.fetchSecurityInfoSafe(ghRepository, ghOrganization, accessToken);
     assertNotNull(result, "Expected non-null ProductSecurityInfo result when security scanning responses are mocked");
@@ -483,20 +507,13 @@ class GitHubServiceImplTest extends BaseSetup {
     String orgName = "orgName";
     String repoName = "repoName";
     String url = String.format(GitHubConstants.Url.REPO_SECRET_SCANNING_ALERTS_OPEN, orgName, repoName);
-    List<Map<String, Object>> responseBody = new ArrayList<>();
-    responseBody.add(Map.of(
-        "number", 1
-    ));
     GHRepository ghRepository = mock(GHRepository.class);
     GHOrganization ghOrganization = mock(GHOrganization.class);
     when(ghOrganization.getLogin()).thenReturn(orgName);
     when(ghRepository.getName()).thenReturn(repoName);
-    when(restTemplate.exchange(
-        eq(url),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withSuccess("[{\"number\":1}]", MediaType.APPLICATION_JSON));
     SecretScanning result = gitHubService.getNumberOfSecretScanningAlerts(ghRepository, ghOrganization, accessToken);
     assertEquals(
         AccessLevel.ENABLED,
@@ -511,22 +528,14 @@ class GitHubServiceImplTest extends BaseSetup {
     String orgName = "orgName";
     String repoName = "repoName";
     String url = String.format(GitHubConstants.Url.REPO_CODE_SCANNING_ALERTS_OPEN, orgName, repoName);
-    List<Map<String, Object>> responseBody = new ArrayList<>();
-    responseBody.add(Map.of(
-        "number", 1,
-        "state", "open",
-        "rule", Map.of("security_severity_level", "high")
-    ));
     GHRepository ghRepository = mock(GHRepository.class);
     GHOrganization ghOrganization = mock(GHOrganization.class);
     when(ghOrganization.getLogin()).thenReturn(orgName);
     when(ghRepository.getName()).thenReturn(repoName);
-    when(restTemplate.exchange(
-        eq(url),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withSuccess("[{\"number\":1,\"state\":\"open\",\"rule\":{\"security_severity_level\":\"high\"}}]",
+            MediaType.APPLICATION_JSON));
     CodeScanning result = gitHubService.getCodeScanningAlerts(ghRepository, ghOrganization, accessToken);
     assertEquals(
         AccessLevel.ENABLED,
@@ -541,22 +550,14 @@ class GitHubServiceImplTest extends BaseSetup {
     String orgName = "orgName";
     String repoName = "repoName";
     String url = String.format(GitHubConstants.Url.REPO_DEPENDABOT_ALERTS_OPEN, orgName, repoName);
-    List<Map<String, Object>> responseBody = new ArrayList<>();
-    responseBody.add(Map.of(
-        "number", 1,
-        "state", "open",
-        "security_advisory", Map.of("severity", "high")
-    ));
     GHRepository ghRepository = mock(GHRepository.class);
     GHOrganization ghOrganization = mock(GHOrganization.class);
     when(ghOrganization.getLogin()).thenReturn(orgName);
     when(ghRepository.getName()).thenReturn(repoName);
-    when(restTemplate.exchange(
-        eq(url),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withSuccess("[{\"number\":1,\"state\":\"open\",\"security_advisory\":{\"severity\":\"high\"}}]",
+            MediaType.APPLICATION_JSON));
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
     assertEquals(
         AccessLevel.ENABLED,
@@ -575,12 +576,9 @@ class GitHubServiceImplTest extends BaseSetup {
     GHOrganization ghOrganization = mock(GHOrganization.class);
     when(ghOrganization.getLogin()).thenReturn(orgName);
     when(ghRepository.getName()).thenReturn(repoName);
-    when(restTemplate.exchange(
-        eq(url),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
     assertEquals(
         AccessLevel.NO_PERMISSION,
@@ -600,19 +598,10 @@ class GitHubServiceImplTest extends BaseSetup {
     GHOrganization ghOrganization = mock(GHOrganization.class);
     when(ghOrganization.getLogin()).thenReturn(orgName);
     when(ghRepository.getName()).thenReturn(repoName);
-
-    when(restTemplate.exchange(
-        eq(url),
-        eq(HttpMethod.GET),
-        any(HttpEntity.class),
-        any(ParameterizedTypeReference.class))
-    ).thenThrow(HttpClientErrorException.Forbidden.create(
-        "Forbidden",
-        HttpStatus.FORBIDDEN,
-        "Forbidden",
-        HttpHeaders.EMPTY,
-        "Code Security must be enabled for this repository to use code scanning.".getBytes(StandardCharsets.UTF_8),
-        StandardCharsets.UTF_8));
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.GET))
+        .andRespond(withStatus(HttpStatus.FORBIDDEN)
+            .body("Code Security must be enabled for this repository to use code scanning."));
 
     Dependabot result = gitHubService.getDependabotAlerts(ghRepository, ghOrganization, accessToken);
 
@@ -1215,6 +1204,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(List.of(mockRepo));
+    when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt())).thenReturn(List.of(mockInfo));
 
     doReturn(mockInfo).when(gitHubService).fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
     when(productSecurityInfoRepository.saveAll(anyList())).thenReturn(List.of(mockInfo));
@@ -1246,6 +1236,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(List.of(repoA, repoB, repoC));
+    when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt()))
+        .thenReturn(List.of(infoA, infoB, infoC));
 
     doReturn(infoA).when(gitHubService).fetchSecurityInfoSafe(repoA, mockOrg, "token");
     doReturn(infoB).when(gitHubService).fetchSecurityInfoSafe(repoB, mockOrg, "token");
@@ -1272,6 +1264,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(Collections.emptyList());
+    when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt())).thenReturn(Collections.emptyList());
     // Act
     List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
 
@@ -1378,42 +1371,39 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testUnArchivedTheRepositoryWhenSuccessful() throws IOException {
-    okhttp3.OkHttpClient mockClient = mock(okhttp3.OkHttpClient.class);
-    okhttp3.Call mockCall = setupUnarchiveCall(mockClient, 200, "OK");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
+    String url = GitHubConstants.Url.REPOS_BASE_URL + "org/repo";
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.PATCH))
+        .andRespond(withNoContent());
 
     gitHubService.unArchivedTheRepository("org/repo");
 
-    verify(mockClient).newCall(any(okhttp3.Request.class));
-    verify(mockCall).execute();
+    verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   @Test
   void testUnArchivedTheRepositoryWhenResponseNotSuccessful() throws IOException {
-    okhttp3.OkHttpClient mockClient = mock(okhttp3.OkHttpClient.class);
-    okhttp3.Call mockCall = setupUnarchiveCall(mockClient, 403, "Forbidden");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
+    String url = GitHubConstants.Url.REPOS_BASE_URL + "org/repo";
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.PATCH))
+        .andRespond(withStatus(HttpStatus.FORBIDDEN));
 
     assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
         "Expected UnarchiveFailedException when GitHub API returns a non-successful response");
-
-    verify(mockClient).newCall(any(okhttp3.Request.class));
-    verify(mockCall).execute();
   }
 
   @Test
   void testUnArchivedTheRepositoryWhenIOExceptionThrown() throws IOException {
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
-
-    okhttp3.OkHttpClient mockClient = mock(okhttp3.OkHttpClient.class);
-    when(okHttpClientBuilder.build()).thenReturn(mockClient);
-    okhttp3.Call mockCall = mock(okhttp3.Call.class);
-    when(mockClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
-    when(mockCall.execute()).thenThrow(new IOException("Network error"));
+    String url = GitHubConstants.Url.REPOS_BASE_URL + "org/repo";
+    server.expect(requestTo(url))
+        .andExpect(method(org.springframework.http.HttpMethod.PATCH))
+        .andRespond(withServerError());
 
     assertThrows(UnarchiveFailedException.class, () -> gitHubService.unArchivedTheRepository("org/repo"),
         "Expected UnarchiveFailedException when an IOException occurs during the unarchive request");
-
-    verify(mockClient).newCall(any(okhttp3.Request.class));
-    verify(mockCall).execute();
   }
 
   private void setupDeprecationReadmeMocks(String readmeContent) throws IOException {
@@ -1423,24 +1413,6 @@ class GitHubServiceImplTest extends BaseSetup {
     when(mockRepo.getDefaultBranch()).thenReturn("main");
     when(mockRepo.getFileContent(README_FILE_PATH, "main")).thenReturn(mockReadme);
     when(mockReadme.read()).thenReturn(new ByteArrayInputStream(readmeContent.getBytes(StandardCharsets.UTF_8)));
-  }
-
-  private okhttp3.Call setupUnarchiveCall(okhttp3.OkHttpClient mockClient, int code, String message) throws IOException {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
-
-    okhttp3.Call mockCall = mock(okhttp3.Call.class);
-    okhttp3.Response mockResponse = new okhttp3.Response.Builder()
-        .request(new okhttp3.Request.Builder().url(Url.REPOS_BASE_URL + "org/repo").build())
-        .protocol(okhttp3.Protocol.HTTP_1_1)
-        .code(code)
-        .message(message)
-        .body(okhttp3.ResponseBody.create("{}", okhttp3.MediaType.parse("application/json")))
-        .build();
-
-    when(okHttpClientBuilder.build()).thenReturn(mockClient);
-    when(mockClient.newCall(any(okhttp3.Request.class))).thenReturn(mockCall);
-    when(mockCall.execute()).thenReturn(mockResponse);
-    return mockCall;
   }
 
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
@@ -1462,10 +1434,6 @@ class GitHubServiceImplTest extends BaseSetup {
     when(pullRequestQueryBuilder.state(GHIssueState.OPEN)).thenReturn(pullRequestQueryBuilder);
     when(pullRequestQueryBuilder.list()).thenReturn(pagedPullRequests);
     when(pagedPullRequests.toList()).thenReturn(pullRequests);
-  }
-
-  private void stubOkHttpClientBuilder() {
-    when(okHttpClientBuilder.build()).thenReturn(new okhttp3.OkHttpClient.Builder().build());
   }
 
 }
