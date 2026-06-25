@@ -3,6 +3,7 @@ package com.axonivy.market.core.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * <p>
@@ -26,7 +27,7 @@ public enum TypeOption {
       option = option.trim();
     }
     for (var filter : values()) {
-      if (StringUtils.equalsIgnoreCase(filter.option, option)) {
+      if (Strings.CS.equals(filter.option, option)) {
         return filter;
       }
     }

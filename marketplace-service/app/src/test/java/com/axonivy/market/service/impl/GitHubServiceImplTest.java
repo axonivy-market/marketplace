@@ -29,7 +29,6 @@ import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MultiTaskUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,17 +47,12 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.util.MultiValueMap;
 import okhttp3.OkHttpClient;
 
 import java.io.ByteArrayInputStream;
@@ -74,7 +68,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -118,8 +111,10 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Mock
   private RestClientBuilder restClientBuilder;
+
   private MockRestServiceServer server;
 
+  @Mock
   private RestClient restClient;
 
   @Mock

@@ -81,7 +81,7 @@ class MarketApiDocumentConfigTest {
     pathItem.setDelete(deleteOperation);
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(pathItem));
+    when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
     groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
@@ -107,7 +107,7 @@ class MarketApiDocumentConfigTest {
     pathItem.setPost(postOperation);
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(pathItem));
+    when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
     groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
@@ -122,7 +122,7 @@ class MarketApiDocumentConfigTest {
     PathItem emptyPathItem = new PathItem();
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(emptyPathItem));
+    when(paths.values()).thenReturn(List.of(emptyPathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
 
@@ -166,7 +166,7 @@ class MarketApiDocumentConfigTest {
     pathItem.setPost(postOperation);
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(pathItem));
+    when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
 

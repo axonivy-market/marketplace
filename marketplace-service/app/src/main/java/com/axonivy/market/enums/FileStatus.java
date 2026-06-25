@@ -4,7 +4,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * <p>
@@ -23,7 +23,7 @@ public enum FileStatus {
 
   public static FileStatus of(String code) {
     for (var status : values()) {
-      if (StringUtils.equalsIgnoreCase(code, status.code)) {
+      if (Strings.CS.equals(code, status.code)) {
         return status;
       }
     }

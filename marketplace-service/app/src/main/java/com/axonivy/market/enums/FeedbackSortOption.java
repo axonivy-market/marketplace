@@ -5,6 +5,7 @@ import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public enum FeedbackSortOption {
       option = option.trim();
     }
     for (var feedbackSortOption : values()) {
-      if (StringUtils.equalsIgnoreCase(feedbackSortOption.option, option)) {
+      if (Strings.CS.equals(feedbackSortOption.option, option)) {
         return feedbackSortOption;
       }
     }

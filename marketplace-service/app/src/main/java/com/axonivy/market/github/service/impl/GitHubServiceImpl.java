@@ -39,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.kohsuke.github.*;
 import org.kohsuke.github.extras.okhttp3.OkHttpGitHubConnector;
 import org.springframework.cache.annotation.Cacheable;
@@ -56,7 +57,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.HttpStatusCodeException;
 
@@ -456,7 +456,7 @@ public class GitHubServiceImpl implements GitHubService {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(productRepoName).getName();
       for (GHRelease ghRelease : ProductContentUtils.extractReleasesPage(ghReleases, pageable)) {
         gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, productSourceUrl, productId,
-            StringUtils.equals(latestGitHubReleaseName, ghRelease.getName())));
+            Strings.CS.equals(latestGitHubReleaseName, ghRelease.getName())));
       }
     }
     return new PageImpl<>(gitHubReleaseModels, pageable, ghReleases.size());
@@ -496,7 +496,7 @@ public class GitHubServiceImpl implements GitHubService {
     var ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
     return this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
-        StringUtils.equals(githubLatestRelease.getName(), ghRelease.getName()));
+        Strings.CS.equals(githubLatestRelease.getName(), ghRelease.getName()));
   }
 
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {

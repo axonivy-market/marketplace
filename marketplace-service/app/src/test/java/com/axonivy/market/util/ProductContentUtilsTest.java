@@ -233,12 +233,12 @@ class ProductContentUtilsTest extends BaseSetup {
         "German description should start with 'Der'");
     assertTrue(StringUtils.isNotBlank(productModuleContent.getSetup().get(Language.DE.getValue())),
         "German setup content should not be blank");
-    assertTrue(StringUtils.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
+    assertTrue(Strings.CS.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
             productModuleContent.getSetup().get(Language.EN.getValue())),
         "German and English setup content should be equal");
     assertTrue(StringUtils.isNotBlank(productModuleContent.getDemo().get(Language.DE.getValue())),
         "German demo content should not be blank");
-    assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
+    assertTrue(Strings.CS.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
             productModuleContent.getDemo().get(Language.EN.getValue())),
         "German and English demo content should be equal");
     assertNotNull(productModuleContent.getComponent(),

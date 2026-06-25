@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
@@ -18,18 +17,13 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_EXTENSION;
-import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
-import static com.axonivy.market.constants.RegexConstants.SAFE_PATH_PATTERN;
 
 @Service
 @Log4j2

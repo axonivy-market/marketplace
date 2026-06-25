@@ -97,7 +97,8 @@ app/target/classes/db/migration/
 
 This matches the Flyway configuration:
 ```yaml
-flyway:
+spring:
+  flyway:
   locations: classpath:db/migration
   baseline-on-migrate: true
   baseline-version: 1

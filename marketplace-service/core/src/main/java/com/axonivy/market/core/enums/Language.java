@@ -2,7 +2,7 @@ package com.axonivy.market.core.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * <p>
@@ -21,7 +21,7 @@ public enum Language {
 
   public static Language of(String lang) {
     for (var language : values()) {
-      if (StringUtils.equalsIgnoreCase(lang, language.value)) {
+      if (Strings.CS.equals(lang, language.value)) {
         return language;
       }
     }

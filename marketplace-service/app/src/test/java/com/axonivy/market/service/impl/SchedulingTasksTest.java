@@ -12,8 +12,6 @@ import com.axonivy.market.service.NotificationService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.controller.ProductDetailsController;
-import org.awaitility.Awaitility;
-import org.awaitility.Durations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
