@@ -27,7 +27,7 @@ public enum TypeOption {
       option = option.trim();
     }
     for (var filter : values()) {
-      if (Strings.CS.equals(filter.option, option)) {
+      if (Strings.CI.equals(filter.option, option)) {
         return filter;
       }
     }

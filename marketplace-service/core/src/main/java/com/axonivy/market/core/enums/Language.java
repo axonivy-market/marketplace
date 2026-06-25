@@ -21,7 +21,7 @@ public enum Language {
 
   public static Language of(String lang) {
     for (var language : values()) {
-      if (Strings.CS.equals(lang, language.value)) {
+      if (Strings.CI.equals(lang, language.value)) {
         return language;
       }
     }

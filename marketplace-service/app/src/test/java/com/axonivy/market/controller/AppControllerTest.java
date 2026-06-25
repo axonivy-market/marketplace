@@ -1,10 +1,8 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Objects;
 
@@ -17,9 +15,9 @@ class AppControllerTest {
 
   @Test
   void testRoot() {
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
+    MockServletRequestUtils.createAndBindMockRequest();
     var response = appController.root();
-    RequestContextHolder.resetRequestAttributes();
+    MockServletRequestUtils.resetRequestAttributes();
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK for the root endpoint.");

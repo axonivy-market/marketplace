@@ -8,6 +8,7 @@ import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.service.ReleaseLetterService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 import java.util.Objects;
@@ -166,8 +164,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
   void testCreateReleaseLetterShouldReturnCreated() {
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
-    MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(mockRequest));
+    MockServletRequestUtils.createAndBindMockRequest();
 
     when(releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false))
         .thenReturn(releaseLetterMock);

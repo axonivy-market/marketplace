@@ -854,7 +854,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testCreateSymlinkForParentOutsideCacheRoot() throws IOException {
-    Path tempPath = tempDir.resolve(RELATIVE_WORKING_LOCATION);
+    Path tempPath = tempDir.resolve(MARKET_CACHE).resolve(PORTAL).resolve(TEST_VERSION).resolve(DOC_DIR);
     Files.createDirectories(tempPath);
 
     String result = service.createSymlinkForMajorVersion(tempPath, TEST_VERSION);

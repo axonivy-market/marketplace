@@ -9,6 +9,7 @@ import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.service.GithubUserService;
@@ -25,9 +26,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -200,8 +198,7 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
     mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
 
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    var request = MockServletRequestUtils.createAndBindMockRequest();
     request.setAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE, MODERATOR_NAME);
 
     when(service.updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME)).thenReturn(updatedFeedback);
@@ -227,8 +224,7 @@ class FeedbackControllerTest extends BaseSetup {
     FeedbackModelRequest mockFeedbackModel = createFeedbackModelRequestMock();
     Feedback mockFeedback = createFeedbackMock();
     Claims mockClaims = createMockClaims();
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    var request = MockServletRequestUtils.createAndBindMockRequest();
     when(jwtService.getClaimsFromToken(any())).thenReturn(mockClaims);
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
 
