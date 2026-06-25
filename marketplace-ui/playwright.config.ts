@@ -23,7 +23,9 @@ export default defineConfig({
       command: isCI ? 'npm run serve:ssr:marketplace-ui' : 'npm run start -- --host 127.0.0.1 --port 4200',
       url: localBaseURL,
       reuseExistingServer: !isCI,
-      timeout: 120000
+      timeout: 300000,
+      stdout: 'pipe',
+      stderr: 'pipe'
     },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
