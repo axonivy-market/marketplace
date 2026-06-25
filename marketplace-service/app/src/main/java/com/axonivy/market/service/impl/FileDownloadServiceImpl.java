@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
+import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.util.FileUtils;
 import lombok.RequiredArgsConstructor;
@@ -9,11 +10,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -46,12 +46,13 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String IAR = "iar";
   private static final int URL_PATHS_TO_GET = 3;
   private static final int BUFFER_SIZE = 4096;
-  private final RestTemplate restTemplate;
+  private final RestClientBuilder restClientBuilder;
 
   @Override
   public byte[] downloadFile(String url) {
     try {
-      return restTemplate.getForObject(url, byte[].class);
+      byte[] body = restClientBuilder.build().get().uri(url).retrieve().body(byte[].class);
+      return body == null ? new byte[0] : body;
     } catch (RestClientException e) {
       addWarningLogWhenFailingToFetchResource(url, e);
       return new byte[0];
@@ -61,7 +62,8 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   @Override
   public String getFileAsString(String url) {
     try {
-      return restTemplate.getForObject(url, String.class);
+      String body = restClientBuilder.build().get().uri(url).retrieve().body(String.class);
+      return StringUtils.defaultString(body);
     } catch (RestClientException e) {
       addWarningLogWhenFailingToFetchResource(url, e);
       return EMPTY;
@@ -71,7 +73,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   @Override
   public ResponseEntity<Resource> fetchUrlResource(String url) {
       try {
-        return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
+        return restClientBuilder.build().get().uri(url).retrieve().toEntity(Resource.class);
       } catch (RestClientException e) {
         addWarningLogWhenFailingToFetchResource(url, e);
     }

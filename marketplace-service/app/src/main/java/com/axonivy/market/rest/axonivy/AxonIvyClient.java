@@ -1,13 +1,14 @@
 package com.axonivy.market.rest.axonivy;
 
 import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.model.DocumentInfoResponse;
 import com.axonivy.market.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,14 +21,15 @@ import static com.axonivy.market.rest.axonivy.AxonIvyClientConstant.*;
 @RequiredArgsConstructor
 public class AxonIvyClient {
 
-  private final RestTemplate restTemplate;
+  private final RestClientBuilder restClientBuilder;
   private final AppSettingService settingService;
 
   public List<String> getDocumentVersions() {
     var host = settingService.getStringValueByKey(AppSettingKey.AXON_IVY_DEVELOPER_URL);
     var url = String.format(HOST_PATH_FORMAT, host, DOCUMENT_VERSION_PATH);
     try {
-      DocumentInfoResponse response = restTemplate.getForObject(url, DocumentInfoResponse.class);
+      DocumentInfoResponse response = restClientBuilder.build().get().uri(url).retrieve()
+          .body(DocumentInfoResponse.class);
       if (response != null) {
         return response.getVersions().stream()
             .map(DocumentInfoResponse.DocumentVersion::getVersion)
@@ -43,7 +45,8 @@ public class AxonIvyClient {
     var host = settingService.getStringValueByKey(AppSettingKey.AXON_IVY_DEVELOPER_URL);
     var url = String.format(HOST_PATH_FORMAT, host ,DOCUMENT_VERSION_PATH);
     try {
-      DocumentInfoResponse response = restTemplate.getForObject(url, DocumentInfoResponse.class);
+      DocumentInfoResponse response = restClientBuilder.build().get().uri(url).retrieve()
+          .body(DocumentInfoResponse.class);
       if (response != null) {
         return response.getVersions().stream()
             .map(this::extractVersion)

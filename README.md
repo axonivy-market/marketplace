@@ -13,8 +13,8 @@ The project consists of three main components:
 **Setup**: See [marketplace-ui/README.md](marketplace-ui/README.md)
 
 ### Marketplace Service  
-**Backend**: Spring Boot 3.2.5 microservices with three specialized modules  
-**Technology**: Java 21 LTS, PostgreSQL, Spring Data JPA, Maven  
+**Backend**: Spring Boot 4.1.0 microservices with three specialized modules  
+**Technology**: Java 25, PostgreSQL, Spring Data JPA, Maven  
 **Modules**: 
 - **Core**: Shared data models and services
 - **App**: Full CRUD marketplace API (port 8080)
@@ -30,7 +30,7 @@ The project consists of three main components:
 
 ### Prerequisites
 - Node.js 18+ (for UI)
-- JDK 21+ (for service)
+- JDK 25+ (for service)
 - Maven 3.9+ (for service)
 - PostgreSQL 17+ (for service)
 - Docker & Docker Compose (for deployment)
@@ -77,7 +77,7 @@ marketplace/
 ## Key Technologies
 
 - **Frontend**: Angular 18, TypeScript, SCSS
-- **Backend**: Java 21 LTS, Spring Boot 3.2.5, Spring Data JPA
+- **Backend**: Java 25, Spring Boot 4.1.0, Spring Data JPA
 - **Database**: PostgreSQL
 - **Build**: Maven, npm
 - **Deployment**: Docker, NGINX, Docker Compose

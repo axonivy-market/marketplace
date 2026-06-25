@@ -2,6 +2,7 @@ package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.config.OkHttpClientBuilder;
+import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.core.entity.Product;
@@ -45,9 +46,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -57,9 +56,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -67,7 +66,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -113,22 +111,24 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
   private static final Pattern FORMAT_SPECIFIER_PATTERN = Pattern.compile("%s");
 
-  private final RestTemplate restTemplate;
+  private final RestClientBuilder restClientBuilder;
   private final GithubUserRepository githubUserRepository;
   private final AppSettingService appSettingService;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
   private final OkHttpClientBuilder okHttpClientBuilder;
+  private final MultiTaskUtils multiTaskUtils;
 
   @Override
   public GitHub getGitHub() throws IOException {
-    var client = okHttpClientBuilder.build();
-    var gitHubConnector = new OkHttpGitHubConnector(client);
-    String token = getConfiguredToken();
-    return new GitHubBuilder().withOAuthToken(token).withConnector(gitHubConnector).build();
+    return buildGitHub(getConfiguredToken());
   }
 
   @Override
   public GitHub getGitHub(String accessToken) throws IOException {
+    return buildGitHub(accessToken);
+  }
+
+  public GitHub buildGitHub(String accessToken) throws IOException {
     var client = okHttpClientBuilder.build();
     var gitHubConnector = new OkHttpGitHubConnector(client);
     return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
@@ -184,12 +184,13 @@ public class GitHubServiceImpl implements GitHubService {
     params.add(Json.CLIENT_SECRET, clientSecret);
     params.add(Json.CODE, code);
 
-    var headers = new HttpHeaders();
-    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-    ResponseEntity<GitHubAccessTokenResponse> responseEntity = restTemplate.postForEntity(
-        GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class);
-    GitHubAccessTokenResponse response = responseEntity.getBody();
+    GitHubAccessTokenResponse response = restClientBuilder.build().post()
+        .uri(GITHUB_GET_ACCESS_TOKEN_URL)
+        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+        .accept(MediaType.APPLICATION_JSON)
+        .body(params)
+        .retrieve()
+        .body(GitHubAccessTokenResponse.class);
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
       log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code, clientId));
@@ -259,7 +260,7 @@ public class GitHubServiceImpl implements GitHubService {
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
         repo -> fetchSecurityInfoSafe(repo, organization, token);
 
-    List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
+    List<ProductSecurityInfo> productSecurityInfos = multiTaskUtils.parallelProcessWithLimit(
         organization.listRepositories().toList().stream().filter(repo -> !repo.isArchived()).toList(),
         MdcContextUtils.wrapMdcContext(fetchInfoWithContext),
         MAX_CONCURRENCY);
@@ -439,12 +440,12 @@ public class GitHubServiceImpl implements GitHubService {
   public ResponseEntity<List<Map<String, Object>>> fetchApiResponseAsList(
       String accessToken,
       String url) throws RestClientException {
-    var headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    return restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
-    });
+    return restClientBuilder.build().get()
+        .uri(url)
+        .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + accessToken)
+        .retrieve()
+        .toEntity(new ParameterizedTypeReference<>() {
+        });
   }
 
   @Override
@@ -602,27 +603,22 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public void unArchivedTheRepository(String repoPath) {
-    var okHttpClient = okHttpClientBuilder.build();
     String url = Url.REPOS_BASE_URL + repoPath;
-    okhttp3.RequestBody body = okhttp3.RequestBody.create(
-        "{\"archived\": false}",
-        okhttp3.MediaType.parse("application/json")
-    );
-    okhttp3.Request request = new okhttp3.Request.Builder()
-        .url(url)
-        .patch(body)
-        .addHeader(HttpHeaders.AUTHORIZATION,
-            BEARER_PREFIX + appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN))
-        .build();
+    try {
+      ResponseEntity<Void> response = restClientBuilder.build().patch()
+          .uri(url)
+          .header(HttpHeaders.AUTHORIZATION,
+              BEARER_PREFIX + appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN))
+          .body("{\"archived\": false}")
+          .retrieve()
+          .toBodilessEntity();
 
-    try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
-      if (!response.isSuccessful()) {
+      if (!response.getStatusCode().is2xxSuccessful()) {
         throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
-            String.format("Failed to unarchive repository '%s': %d %s", repoPath, response.code(),
-                response.message()));
+            String.format("Failed to unarchive repository '%s': %s", repoPath, response.getStatusCode()));
       }
       log.info("Repository '{}' has been unarchived successfully.", repoPath);
-    } catch (IOException e) {
+    } catch (RestClientException e) {
       throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
           String.format("Error unarchiving repository '%s': %s", repoPath, e.getMessage()));
     }
