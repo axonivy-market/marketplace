@@ -5,7 +5,10 @@ const isCI = !!process.env['CI'];
 const localBaseURL = isCI ? `http://${process.env[ENV_VAR_NAMES.MARKET_ALLOWED_HOSTS]?.split(',')[0]?.trim()}:4500` : 'http://127.0.0.1:4200';
 const baseURL = process.env['E2E_BASE_URL'] ?? localBaseURL;
 const useExternalBaseURL = !!process.env['E2E_BASE_URL'];
-
+console.log(
+  'localBaseURL =',
+  `http://${process.env[ENV_VAR_NAMES.MARKET_ALLOWED_HOSTS]?.split(',')[0]?.trim()}:4500`
+);
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
