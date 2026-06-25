@@ -1,6 +1,9 @@
 pipeline {
 
   agent any
+  tools {
+    jdk 'graalvm-26'
+  }
   options {
     ansiColor('xterm')
     timestamps()
@@ -109,9 +112,8 @@ pipeline {
     stage('Build Maven skip tests') {
       steps {
         script {
-          sh '''
-            mvn clean install --file ./target-source/marketplace-service/pom.xml -DskipTests=true
-          '''
+          sh 'java -version'
+          sh 'mvn clean install --file ./target-source/marketplace-service/pom.xml -Pnative -DskipTests -Dspring.aot.enabled=true'
         }
       }
     }

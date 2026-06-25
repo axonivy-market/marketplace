@@ -6,6 +6,10 @@ pipeline {
     cron '@midnight'
   }
 
+  tools {
+    jdk 'graalvm-26'
+  }
+
   options {
     ansiColor('xterm')
   }
@@ -44,9 +48,8 @@ pipeline {
     stage('Build and Test with Maven') {
       steps {
         script {
-          sh '''
-            mvn clean install --file ./marketplace-service/pom.xml -DskipTests=true
-          '''
+          sh 'java -version'
+          sh 'mvn clean install --file ./marketplace-service/pom.xml -Pnative -DskipTests -Dspring.aot.enabled=true'
         }
       }
     }
