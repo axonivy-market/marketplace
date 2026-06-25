@@ -46,6 +46,8 @@ jobs:
         run: npm run build
 
       - name: Run Playwright mock tests
+        env:
+          MARKET_ALLOWED_HOSTS: 127.0.0.1
         run: npx playwright test --grep-invert @real-endpoint --reporter=github,html
 
       - name: Upload Playwright report
