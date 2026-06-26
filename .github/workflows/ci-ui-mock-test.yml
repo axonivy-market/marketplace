@@ -1,0 +1,65 @@
+name: ci-ui-mock-test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "marketplace-ui/**"
+      - ".github/workflows/ci-ui-mock-test.yml"
+  push:
+    branches:
+      - master
+    paths:
+      - "marketplace-ui/**"
+      - ".github/workflows/ci-ui-mock-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  ui-mock-e2e:
+    name: Playwright Mock Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+
+    defaults:
+      run:
+        working-directory: marketplace-ui
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: marketplace-ui/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application for production
+        run: npm run build
+
+      - name: Run Playwright mock tests
+        run: npx playwright test --grep-invert @real-endpoint --reporter=github,html
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-mock-report
+          path: marketplace-ui/playwright-report
+          if-no-files-found: ignore
+
+      - name: Upload Playwright failure artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-mock-test-results
+          path: marketplace-ui/test-results
+          if-no-files-found: ignore

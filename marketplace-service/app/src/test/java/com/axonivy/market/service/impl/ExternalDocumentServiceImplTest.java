@@ -1,18 +1,21 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.SchedulingConfig;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
-import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.entity.ExternalDocumentMeta;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
+import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.service.FileDownloadService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +26,7 @@ import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,7 +41,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@TestPropertySource("classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest
 class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String TEST_VERSION_12_5 = "12.5";
@@ -77,6 +80,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   ProductRepository productRepository;
 
   @MockBean
+  private SchedulingConfig schedulingConfig;
+
+  @MockBean
   ExternalDocumentMetaRepository externalDocumentMetaRepository;
 
   @MockBean
@@ -88,13 +94,22 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   @MockBean
   ArtifactRepository artifactRepository;
 
+  @MockBean
+  AppSettingService appSettingService;
+
   @SpyBean
   ExternalDocumentServiceImpl service;
 
   @TempDir
   Path tempDir;
+
   @BeforeEach
   void setup() {
+    lenient().when(appSettingService.getStringValueByKey(any(AppSettingKey.class)))
+        .thenAnswer(inv -> {
+          AppSettingKey key = inv.getArgument(0);
+          return key.getDefaultValue();
+        });
     when(axonIvyClient.getDocumentVersions()).thenReturn(majorVersions);
     service.init();
   }
