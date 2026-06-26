@@ -24,9 +24,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -76,28 +76,28 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private final List<String> majorVersions = List.of(TEN_VERSION, TEST_VERSION_12_5, TEST_VERSION, "13.2", DEV_VERSION);
 
-  @MockBean
+  @MockitoBean
   ProductRepository productRepository;
 
-  @MockBean
+  @MockitoBean
   private SchedulingConfig schedulingConfig;
 
-  @MockBean
+  @MockitoBean
   ExternalDocumentMetaRepository externalDocumentMetaRepository;
 
-  @MockBean
+  @MockitoBean
   FileDownloadService fileDownloadService;
 
-  @MockBean
+  @MockitoBean
   AxonIvyClient axonIvyClient;
 
-  @MockBean
+  @MockitoBean
   ArtifactRepository artifactRepository;
 
-  @MockBean
+  @MockitoBean
   AppSettingService appSettingService;
 
-  @SpyBean
+  @MockitoSpyBean
   ExternalDocumentServiceImpl service;
 
   @TempDir
@@ -854,7 +854,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testCreateSymlinkForParentOutsideCacheRoot() throws IOException {
-    Path tempPath = tempDir.resolve(RELATIVE_WORKING_LOCATION);
+    Path tempPath = tempDir.resolve(MARKET_CACHE).resolve(PORTAL).resolve(TEST_VERSION).resolve(DOC_DIR);
     Files.createDirectories(tempPath);
 
     String result = service.createSymlinkForMajorVersion(tempPath, TEST_VERSION);

@@ -2,15 +2,16 @@ package com.axonivy.market.util;
 
 import org.slf4j.MDC;
 
+import lombok.NoArgsConstructor;
+
 import java.util.function.Function;
 
 /**
  * Utility for propagating MDC (Mapped Diagnostic Context) across async threads.
  * This solves the MDC context loss issue when using CompletableFuture.supplyAsync().
  */
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class MdcContextUtils {
-
-  private MdcContextUtils() {}
 
   /**
    * Wraps a Function to preserve MDC context across async thread boundaries.

@@ -2,6 +2,7 @@ package com.axonivy.market.aspect;
 
 import com.axonivy.market.aop.aspect.TrackApiCallFromNeoAspect;
 import com.axonivy.market.service.MatomoService;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
 import org.junit.jupiter.api.AfterEach;
@@ -13,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static com.axonivy.market.constants.CommonConstants.REQUESTED_BY;
 import static com.axonivy.market.constants.LoggingConstants.MARKET_WEBSITE;
@@ -45,10 +45,8 @@ class TrackApiCallFromNeoAspectTest {
 
     when(request.getHeader(REQUESTED_BY)).thenReturn("ivy");
 
-    ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
-    when(attributes.getRequest()).thenReturn(request);
-
-    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(attributes);
+    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
+        .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
     aspect.afterTrackedApiCall(mock(JoinPoint.class));
 
@@ -61,10 +59,8 @@ class TrackApiCallFromNeoAspectTest {
 
     when(request.getHeader(REQUESTED_BY)).thenReturn(MARKET_WEBSITE);
 
-    ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
-    when(attributes.getRequest()).thenReturn(request);
-
-    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(attributes);
+    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
+        .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
     aspect.afterTrackedApiCall(mock(JoinPoint.class));
 

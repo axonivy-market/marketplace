@@ -2,7 +2,7 @@ package com.axonivy.market.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * <p>
@@ -21,7 +21,7 @@ public enum FileType {
 
   public static FileType of(String name) {
     for (var type : values()) {
-      if (StringUtils.endsWithIgnoreCase(name, type.getFileName())) {
+      if (Strings.CI.endsWith(name, type.getFileName())) {
         return type;
       }
     }

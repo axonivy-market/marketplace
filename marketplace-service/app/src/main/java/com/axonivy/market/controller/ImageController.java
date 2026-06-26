@@ -12,10 +12,8 @@ import static com.axonivy.market.core.constants.CoreRequestMappingConstants.IMAG
 @RequestMapping(IMAGE)
 @Tag(name = "Image Controllers", description = "API collection to get image's detail.")
 public class ImageController extends CoreImageController {
-  private final ImageService imageService;
 
   public ImageController(ImageService imageService) {
     super(imageService);
-    this.imageService = imageService;
   }
 }
