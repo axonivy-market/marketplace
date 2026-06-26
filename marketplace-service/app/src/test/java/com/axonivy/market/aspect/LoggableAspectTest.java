@@ -5,6 +5,7 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.LoggingConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.util.LoggingUtils;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -41,7 +42,7 @@ class LoggableAspectTest {
 
   @AfterEach
   void tearDown() {
-    RequestContextHolder.resetRequestAttributes();
+    MockServletRequestUtils.resetRequestAttributes();
   }
 
   @Test
@@ -78,7 +79,7 @@ class LoggableAspectTest {
   private void mockRequestAttributes(String requestedBy, String userAgent) {
     when(request.getHeader(CommonConstants.REQUESTED_BY)).thenReturn(requestedBy);
     when(request.getHeader(CommonConstants.USER_AGENT)).thenReturn(userAgent);
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    MockServletRequestUtils.bindRequest(request);
   }
 
   private MethodSignature mockMethodSignature() {

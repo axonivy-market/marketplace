@@ -3,6 +3,7 @@ package com.axonivy.market.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 @Getter
 @AllArgsConstructor
@@ -21,7 +22,7 @@ public enum ProductSecuritySortOption {
       return REPO_NAME;
     }
     for (var option : values()) {
-      if (StringUtils.equalsIgnoreCase(option.field, field)) {
+      if (Strings.CS.equals(option.field, field)) {
         return option;
       }
     }

@@ -59,7 +59,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.Strings;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
@@ -282,7 +282,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     searchCriteria.setFields(List.of(DocumentField.MARKET_DIRECTORY));
     var product = productRepo.findByCriteria(searchCriteria);
     if (product != null) {
-      var isLogoDark = StringUtils.endsWith(fileContent.getName(), ProductJsonConstants.LOGO_DARK_FILE);
+      var isLogoDark = Strings.CS.endsWith(fileContent.getName(), ProductJsonConstants.LOGO_DARK_FILE);
       Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), fileContent)).ifPresent(
           (Image image) -> {
             updateLogoOfProduct(isLogoDark, product, image.getId());
@@ -306,7 +306,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void deleteOldLogo(String oldLogoImageId, String newLogoImageId) {
-    if (StringUtils.isNotBlank(oldLogoImageId) && !StringUtils.equals(oldLogoImageId, newLogoImageId)) {
+    if (StringUtils.isNotBlank(oldLogoImageId) && !Strings.CS.equals(oldLogoImageId, newLogoImageId)) {
       imageRepo.deleteById(oldLogoImageId);
     }
   }
@@ -318,7 +318,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       lastCommitTime = marketRepoMeta.getLastChange();
     }
     lastGHCommit = axonIvyMarketRepoService.getLastCommit(lastCommitTime);
-    if (lastGHCommit != null && marketRepoMeta != null && StringUtils.equals(lastGHCommit.getSHA1(),
+    if (lastGHCommit != null && marketRepoMeta != null && Strings.CS.equals(lastGHCommit.getSHA1(),
         marketRepoMeta.getLastSHA1())) {
       isLastCommitCovered = true;
     }
@@ -369,10 +369,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (ghContent != null) {
-      if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
+      if (Strings.CS.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
         Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
             .ifPresent(image -> product.setLogoId(image.getId()));
-      } else if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_DARK_FILE)) {
+      } else if (Strings.CS.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_DARK_FILE)) {
         Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
             .ifPresent(image -> product.setLogoDarkId(image.getId()));
       }
@@ -380,7 +380,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void mappingVendorImageFromGHContent(Product product, GHContent ghContent) {
-    if (StringUtils.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
+    if (Strings.CS.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
       if (StringUtils.isNotBlank(product.getVendorImagePath())) {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
@@ -393,7 +393,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private String mapVendorImage(String productId, GHContent ghContent, String imageName) {
     if (StringUtils.isNotBlank(imageName)) {
-      var imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
+      var imagePath = Strings.CS.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
       try {
         var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, getMarketRepoBranch());
         return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent))
@@ -545,7 +545,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
       String productName) {
-    String snapshotVersionValue = Strings.EMPTY;
+    String snapshotVersionValue = StringUtils.EMPTY;
     if (version.contains(CoreMavenConstants.SNAPSHOT_VERSION)) {
       String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
           mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
