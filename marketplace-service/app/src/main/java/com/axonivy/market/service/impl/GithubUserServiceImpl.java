@@ -5,18 +5,18 @@ import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.service.GithubUserService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class GithubUserServiceImpl implements GithubUserService {
 
   private final GithubUserRepository githubUserRepository;
-
-  public GithubUserServiceImpl(GithubUserRepository githubUserRepository) {
-    this.githubUserRepository = githubUserRepository;
-  }
 
   @Override
   public List<GithubUser> getAllUsers() {
