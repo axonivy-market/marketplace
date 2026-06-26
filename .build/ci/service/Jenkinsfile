@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  parameters {
+    string(name: 'JDK_TOOL', defaultValue: 'JDK-25', description: 'Jenkins JDK tool name from Global Tool Configuration')
+  }
+
   triggers {
     pollSCM 'H H/6 * * *'
     cron '@midnight'
@@ -44,9 +48,16 @@ pipeline {
     stage('Build and Test with Maven') {
       steps {
         script {
-          sh '''
-            mvn clean install --file ./marketplace-service/pom.xml -DskipTests=true
-          '''
+          def javaHome = tool name: params.JDK_TOOL, type: 'hudson.model.JDK'
+          withEnv([
+            "JAVA_HOME=${javaHome}",
+            "PATH+JAVA=${javaHome}/bin"
+          ]) {
+            sh '''
+              java -version
+              mvn clean install --file ./marketplace-service/pom.xml -DskipTests=true
+            '''
+          }
         }
       }
     }
@@ -61,6 +72,7 @@ pipeline {
       steps {
         withSonarQubeEnv('Sonar') {
           script {
+            def javaHome = tool name: params.JDK_TOOL, type: 'hudson.model.JDK'
             def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
             def sonarArgs = "-Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=\"${SONAR_PROJECT_NAME}\""
 
@@ -72,7 +84,15 @@ pipeline {
               sonarArgs += " -Dsonar.branch.name=${gitBranch}"
             }
 
-            sh "mvn -B verify sonar:sonar --file marketplace-service/app/pom.xml ${sonarArgs}"
+            withEnv([
+              "JAVA_HOME=${javaHome}",
+              "PATH+JAVA=${javaHome}/bin"
+            ]) {
+              sh """
+                java -version
+                mvn -B verify sonar:sonar --file marketplace-service/app/pom.xml ${sonarArgs}
+              """
+            }
           }
         }
       }

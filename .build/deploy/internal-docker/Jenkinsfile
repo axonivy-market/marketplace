@@ -4,19 +4,20 @@ pipeline {
         ansiColor('xterm')
     }
 
-        parameters {
-                gitParameter(
-                        name: 'BRANCH',
-                        type: 'PT_BRANCH',
-                        defaultValue: 'origin/develop',
-                        description: 'Choose your GitHub branch',
-                        branchFilter: '.*',
-                        tagFilter: '*',
-                        sortMode: 'NONE',
-                        selectedValue: 'DEFAULT',
-                        quickFilterEnabled: true
-                )
-        }
+    parameters {
+        string(name: 'JDK_TOOL', defaultValue: 'JDK-25', description: 'Jenkins JDK tool name from Global Tool Configuration')
+        gitParameter(
+                name: 'BRANCH',
+                type: 'PT_BRANCH',
+                defaultValue: 'origin/develop',
+                description: 'Choose your GitHub branch',
+                branchFilter: '.*',
+                tagFilter: '*',
+                sortMode: 'NONE',
+                selectedValue: 'DEFAULT',
+                quickFilterEnabled: true
+        )
+    }
 
     environment {
         MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
@@ -70,9 +71,16 @@ pipeline {
         stage('Build skip tests with Maven') {
           steps {
             script {
-              sh '''
-                mvn clean install --file ./marketplace-service/pom.xml -DskipTests=true
-              '''
+              def javaHome = tool name: params.JDK_TOOL, type: 'hudson.model.JDK'
+              withEnv([
+                "JAVA_HOME=${javaHome}",
+                "PATH+JAVA=${javaHome}/bin"
+              ]) {
+                sh '''
+                  java -version
+                  mvn clean install --file ./marketplace-service/pom.xml -DskipTests=true
+                '''
+              }
             }
           }
         }
