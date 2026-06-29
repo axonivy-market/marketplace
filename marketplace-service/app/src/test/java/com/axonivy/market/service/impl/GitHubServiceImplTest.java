@@ -916,7 +916,6 @@ class GitHubServiceImplTest extends BaseSetup {
     GHWorkflow workflow = mock(GHWorkflow.class);
     GHWorkflowRunQueryBuilder queryBuilder = mock(GHWorkflowRunQueryBuilder.class);
     PagedIterable<GHWorkflowRun> pagedRuns = mock(PagedIterable.class);
-    PagedIterator<GHWorkflowRun> pagedIterator = mock(PagedIterator.class);
     GHWorkflowRun nonMatchingRun = mock(GHWorkflowRun.class);
     GHWorkflowRun matchingRun = mock(GHWorkflowRun.class);
 
@@ -926,9 +925,7 @@ class GitHubServiceImplTest extends BaseSetup {
     when(queryBuilder.status(GHWorkflowRun.Status.COMPLETED)).thenReturn(queryBuilder);
     when(queryBuilder.list()).thenReturn(pagedRuns);
     when(pagedRuns.withPageSize(anyInt())).thenReturn(pagedRuns);
-    when(pagedRuns.iterator()).thenReturn(pagedIterator);
-    when(pagedIterator.hasNext()).thenReturn(true, true, false);
-    when(pagedIterator.next()).thenReturn(nonMatchingRun, matchingRun);
+    when(pagedRuns.toList()).thenReturn(List.of(nonMatchingRun, matchingRun));
     when(workflow.getId()).thenReturn(42L);
     when(nonMatchingRun.getStatus()).thenReturn(GHWorkflowRun.Status.COMPLETED);
     when(nonMatchingRun.getWorkflowId()).thenReturn(41L);
