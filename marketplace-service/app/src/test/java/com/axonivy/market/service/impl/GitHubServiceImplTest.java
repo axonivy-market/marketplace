@@ -911,6 +911,41 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testGetLatestWorkflowRunUsesQueryWorkflowRuns() throws IOException {
+    GHRepository repo = mock(GHRepository.class);
+    GHWorkflow workflow = mock(GHWorkflow.class);
+    GHWorkflowRunQueryBuilder queryBuilder = mock(GHWorkflowRunQueryBuilder.class);
+    PagedIterable<GHWorkflowRun> pagedRuns = mock(PagedIterable.class);
+    PagedIterator<GHWorkflowRun> pagedIterator = mock(PagedIterator.class);
+    GHWorkflowRun nonMatchingRun = mock(GHWorkflowRun.class);
+    GHWorkflowRun matchingRun = mock(GHWorkflowRun.class);
+
+    when(repo.getWorkflow("build.yml")).thenReturn(workflow);
+    when(repo.queryWorkflowRuns()).thenReturn(queryBuilder);
+    when(queryBuilder.branch(DEFAULT_BRANCH)).thenReturn(queryBuilder);
+    when(queryBuilder.status(GHWorkflowRun.Status.COMPLETED)).thenReturn(queryBuilder);
+    when(queryBuilder.list()).thenReturn(pagedRuns);
+    when(pagedRuns.withPageSize(anyInt())).thenReturn(pagedRuns);
+    when(pagedRuns.iterator()).thenReturn(pagedIterator);
+    when(pagedIterator.hasNext()).thenReturn(true, true, false);
+    when(pagedIterator.next()).thenReturn(nonMatchingRun, matchingRun);
+    when(workflow.getId()).thenReturn(42L);
+    when(nonMatchingRun.getStatus()).thenReturn(GHWorkflowRun.Status.COMPLETED);
+    when(nonMatchingRun.getWorkflowId()).thenReturn(41L);
+    when(matchingRun.getStatus()).thenReturn(GHWorkflowRun.Status.COMPLETED);
+    when(matchingRun.getWorkflowId()).thenReturn(42L);
+
+    GHWorkflowRun result = gitHubService.getLatestWorkflowRun(repo, "build.yml");
+
+    assertSame(matchingRun, result, "Should return the completed run that matches the workflow id.");
+    verify(repo).queryWorkflowRuns();
+    verify(queryBuilder).branch(DEFAULT_BRANCH);
+    verify(queryBuilder).status(GHWorkflowRun.Status.COMPLETED);
+    verify(queryBuilder).list();
+    verify(workflow, never()).listRuns();
+  }
+
+  @Test
   void testDownloadArtifactZipReturnsStreamWithDownloadedBytes() throws Exception {
     GHArtifact artifact = mock(GHArtifact.class);
     byte[] expected = new byte[]{1, 2, 3};
