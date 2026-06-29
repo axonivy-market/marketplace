@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -105,7 +106,7 @@ public class CoreVersionUtils {
     }
     // Filter matching version first
     String bestMatchVersion = versions.stream().filter(
-        version -> StringUtils.equals(version, designerVersion)).findAny().orElse(null);
+        version -> Strings.CS.equals(version, designerVersion)).findAny().orElse(null);
     //Next priority: prior released version
     if (StringUtils.isBlank(bestMatchVersion)) {
       bestMatchVersion = versions.stream().filter(

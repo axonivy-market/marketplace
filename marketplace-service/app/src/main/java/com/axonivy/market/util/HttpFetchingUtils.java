@@ -6,10 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -21,12 +20,13 @@ import java.nio.file.Paths;
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HttpFetchingUtils {
-  private static final RestTemplate restTemplate = new RestTemplate();
+  private static final RestClient restClient = RestClient.create();
   private static final String UNKNOWN_FILE_NAME = "unknown_file";
 
   public static ResponseEntity<Resource> fetchResourceUrl(String url) {
     try {
-      return restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
+      ResponseEntity<Resource> response = restClient.get().uri(url).retrieve().toEntity(Resource.class);
+      return response.getStatusCode().is2xxSuccessful() ? response : null;
     } catch (RestClientException | IllegalArgumentException e) {
        log.warn("Failed to fetch resource from URL: {}", url, e);
       return null;
@@ -35,7 +35,8 @@ public class HttpFetchingUtils {
 
   public static String getFileAsString(String url) {
     try {
-      return restTemplate.getForObject(url, String.class);
+      ResponseEntity<String> response = restClient.get().uri(url).retrieve().toEntity(String.class);
+      return response.getStatusCode().is2xxSuccessful() ? StringUtils.defaultString(response.getBody()) : StringUtils.EMPTY;
     } catch (RestClientException | IllegalArgumentException e) {
        log.warn("Failed to fetch string from URL: {}", url, e);
       return StringUtils.EMPTY;

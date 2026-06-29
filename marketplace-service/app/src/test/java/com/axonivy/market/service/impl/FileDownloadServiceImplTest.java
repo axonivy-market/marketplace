@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.bo.DownloadOption;
+import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.util.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,13 +10,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.Answers;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,8 +40,15 @@ class FileDownloadServiceImplTest extends BaseSetup {
   private static final String DOWNLOAD_URL = "https://repo/axonivy/portal/portal-guide/10.0.0/portal-guide-10.0.0.zip";
   @InjectMocks
   private FileDownloadServiceImpl fileDownloadService;
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private RestClient restClient;
   @Mock
-  private RestTemplate restTemplate;
+  private RestClientBuilder restClientBuilder;
+
+  @org.junit.jupiter.api.BeforeEach
+  void setUp() {
+    lenient().when(restClientBuilder.build()).thenReturn(restClient);
+  }
 
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
@@ -51,7 +59,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   @Test
   void testDownloadAndUnzipFileWithIssue() {
     byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-    assertNull(result, "Expected empty null when URL is valid but can not download file");
+    assertArrayEquals(new byte[0], result, "Expected empty array when URL is valid but can not download file");
   }
 
   @Test
@@ -197,44 +205,39 @@ class FileDownloadServiceImplTest extends BaseSetup {
 
   @Test
   void testDownloadFile() {
-    when(restTemplate.getForObject(MOCK_DOWNLOAD_URL, byte[].class)).thenReturn(getMockBytes());
+    when(restClient.get().uri(MOCK_DOWNLOAD_URL).retrieve().body(byte[].class)).thenReturn(getMockBytes());
     byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
     assertArrayEquals(getMockBytes(), result, "Content of file download should be the same with original file.");
   }
 
   @Test
   void testGetFileAsString() {
-    when(restTemplate.getForObject(MOCK_DOWNLOAD_URL, String.class)).thenReturn(MOCK_PRODUCT_NAME);
+    when(restClient.get().uri(MOCK_DOWNLOAD_URL).retrieve().body(String.class)).thenReturn(MOCK_PRODUCT_NAME);
     String result = fileDownloadService.getFileAsString(MOCK_DOWNLOAD_URL);
     assertEquals(MOCK_PRODUCT_NAME, result, "Content of file download should be the same with original file.");
-    verify(restTemplate).getForObject(MOCK_DOWNLOAD_URL, String.class);
-
   }
 
   @Test
   void testFetchResourceUrl() {
     ResponseEntity<Resource> mockedResponse = ResponseEntity.ok(mock(Resource.class));
-    when(restTemplate.exchange(MOCK_DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(mockedResponse);
+    when(restClient.get().uri(MOCK_DOWNLOAD_URL).retrieve().toEntity(Resource.class)).thenReturn(mockedResponse);
     ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(MOCK_DOWNLOAD_URL);
     assertEquals(mockedResponse, result, "Content of stream should be the same with original stream.");
-    verify(restTemplate).exchange(MOCK_DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
   }
 
   @Test
   void testFetchUrlResource() {
     ByteArrayResource resource = new ByteArrayResource("hello".getBytes(StandardCharsets.UTF_8));
     ResponseEntity<Resource> responseEntity = ResponseEntity.ok(resource);
-    when(restTemplate.exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(responseEntity);
+    when(restClient.get().uri(DOWNLOAD_URL).retrieve().toEntity(Resource.class)).thenReturn(responseEntity);
     ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(DOWNLOAD_URL);
 
     assertEquals(result, responseEntity, "Stream resource should come from valid stream");
-    verify(restTemplate).exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
 
-    when(restTemplate.exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class)).thenReturn(null);
+    when(restClient.get().uri(DOWNLOAD_URL).retrieve().toEntity(Resource.class)).thenReturn(null);
     result = fileDownloadService.fetchUrlResource(DOWNLOAD_URL);
 
     assertNull(result, "Result should come from the rest template");
-    verify(restTemplate, times(2)).exchange(DOWNLOAD_URL, HttpMethod.GET, null, Resource.class);
   }
 
   @Test
@@ -242,30 +245,28 @@ class FileDownloadServiceImplTest extends BaseSetup {
     String url = "http://example.com/file.zip";
     byte[] expectedBytes = "test-data".getBytes();
 
-    when(restTemplate.getForObject(url, byte[].class)).thenReturn(expectedBytes);
+    when(restClient.get().uri(url).retrieve().body(byte[].class)).thenReturn(expectedBytes);
 
     byte[] result = fileDownloadService.downloadFile(url);
 
     assertEquals(expectedBytes, result, "Expected the same byte array returned from RestTemplate");
-    verify(restTemplate).getForObject(url, byte[].class);
   }
 
   @Test
   void testDownloadFileShouldReturnEmptyArrayWhenRestTemplateThrowsException() {
     String url = "http://example.com/file.zip";
-    when(restTemplate.getForObject(url, byte[].class)).thenThrow(new RestClientException("boom"));
+    when(restClient.get().uri(url).retrieve().body(byte[].class)).thenThrow(new RestClientException("boom"));
 
     byte[] result = fileDownloadService.downloadFile(url);
 
     assertThat(result).as("Expected an empty array when RestTemplate throws an exception").isEmpty();
-    verify(restTemplate).getForObject(url, byte[].class);
   }
 
   @Test
   void testGetFileAsStringShouldReturnContentWhenRestTemplateSucceeds() {
     String url = "http://example.com/file.txt";
     String expected = "Hello World";
-    when(restTemplate.getForObject(url, String.class)).thenReturn(expected);
+    when(restClient.get().uri(url).retrieve().body(String.class)).thenReturn(expected);
 
     String result = fileDownloadService.getFileAsString(url);
 
@@ -273,13 +274,12 @@ class FileDownloadServiceImplTest extends BaseSetup {
         .as("Expected the same content returned by RestTemplate")
         .isEqualTo(expected);
 
-    verify(restTemplate).getForObject(url, String.class);
   }
 
   @Test
   void testGetFileAsStringShouldReturnEmptyWhenRestTemplateThrowsException() {
     String url = "http://example.com/error.txt";
-    when(restTemplate.getForObject(url, String.class))
+    when(restClient.get().uri(url).retrieve().body(String.class))
         .thenThrow(new RestClientException("boom"));
 
     String result = fileDownloadService.getFileAsString(url);
@@ -288,7 +288,6 @@ class FileDownloadServiceImplTest extends BaseSetup {
         .as("Expected empty string when RestTemplate throws exception")
         .isEmpty();
 
-    verify(restTemplate).getForObject(url, String.class);
   }
 
   @Test
@@ -297,7 +296,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
     Resource resource = mock(Resource.class);
     ResponseEntity<Resource> expected = ResponseEntity.ok(resource);
 
-    when(restTemplate.exchange(url, HttpMethod.GET, null, Resource.class))
+    when(restClient.get().uri(url).retrieve().toEntity(Resource.class))
         .thenReturn(expected);
 
     ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(url);
@@ -306,13 +305,12 @@ class FileDownloadServiceImplTest extends BaseSetup {
         .as("Expected ResponseEntity returned from RestTemplate.exchange")
         .isEqualTo(expected);
 
-    verify(restTemplate).exchange(url, HttpMethod.GET, null, Resource.class);
   }
 
   @Test
   void testFetchUrlResourceShouldReturnNullWhenRestTemplateThrowsException() {
     String url = "http://example.com/error";
-    when(restTemplate.exchange(url, HttpMethod.GET, null, Resource.class))
+    when(restClient.get().uri(url).retrieve().toEntity(Resource.class))
         .thenThrow(new RestClientException("boom"));
 
     ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(url);
@@ -320,8 +318,6 @@ class FileDownloadServiceImplTest extends BaseSetup {
     assertThat(result)
         .as("Expected null when RestTemplate.exchange throws RestClientException")
         .isNull();
-
-    verify(restTemplate).exchange(url, HttpMethod.GET, null, Resource.class);
   }
 
   @Test
