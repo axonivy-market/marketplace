@@ -506,10 +506,13 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
     try {
-      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns().withPageSize(
-          PAGE_SIZE_OF_WORKFLOW);
+      GHWorkflow workflow = repo.getWorkflow(workflowFileName);
+      PagedIterable<GHWorkflowRun> runs = Optional.ofNullable(repo.queryWorkflowRuns())
+          .map(query -> query.branch(DEFAULT_BRANCH).status(GHWorkflowRun.Status.COMPLETED).list())
+          .orElseGet(workflow::listRuns)
+          .withPageSize(PAGE_SIZE_OF_WORKFLOW);
       for (GHWorkflowRun run : runs) {
-        if (GHWorkflowRun.Status.COMPLETED == run.getStatus()) {
+        if (GHWorkflowRun.Status.COMPLETED == run.getStatus() && workflow.getId() == run.getWorkflowId()) {
           return run;
         }
       }
