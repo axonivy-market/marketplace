@@ -105,12 +105,12 @@ class MonitorDashBoardControllerTest extends BaseSetup {
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
-    doNothing().when(githubReposService).updateFocusedRepo(updates);
+    doNothing().when(githubReposService).updateFocusedRepo(updates, true);
     doReturn(gitHub).when(githubService).getGitHub(TOKEN);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
-    ResponseEntity<String> response = controller.updateFocusedRepo(updates);
+    ResponseEntity<String> response = controller.updateFocusedRepo(updates, true);
 
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
     assertEquals("Focused repository updated successfully.", response.getBody(),

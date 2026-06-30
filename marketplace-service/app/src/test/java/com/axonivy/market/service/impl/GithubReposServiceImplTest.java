@@ -220,27 +220,45 @@ class GithubReposServiceImplTest {
   void testUpdateFocused() {
     List<String> updates = List.of("repo1", "repo2");
 
-    service.updateFocusedRepo(updates);
+    service.updateFocusedRepo(updates, true);
 
-    verify(githubRepoRepository).updateFocusedRepoByName(updates);
+    verify(githubRepoRepository).updateFocusedRepoByName(updates, true);
+  }
+
+  @Test
+  void testUpdateFocusedWithFalse() {
+    List<String> updates = List.of("repo1", "repo2");
+
+    service.updateFocusedRepo(updates, false);
+
+    verify(githubRepoRepository).updateFocusedRepoByName(updates, false);
   }
 
   @Test
   void testUpdateFocusedWithEmptyList() {
     List<String> updates = new ArrayList<>();
 
-    service.updateFocusedRepo(updates);
+    service.updateFocusedRepo(updates, true);
 
-    verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
+    verify(githubRepoRepository, never()).updateFocusedRepoByName(any(), any());
   }
 
   @Test
   void testUpdateFocusedWithNullList() {
     List<String> updates = null;
 
-    service.updateFocusedRepo(updates);
+    service.updateFocusedRepo(updates, true);
 
-    verify(githubRepoRepository, never()).updateFocusedRepoByName(any());
+    verify(githubRepoRepository, never()).updateFocusedRepoByName(any(), any());
+  }
+
+  @Test
+  void testUpdateFocusedWithNullIsFocused() {
+    List<String> updates = List.of("repo1", "repo2");
+
+    service.updateFocusedRepo(updates, null);
+
+    verify(githubRepoRepository, never()).updateFocusedRepoByName(any(), any());
   }
 
   @Test

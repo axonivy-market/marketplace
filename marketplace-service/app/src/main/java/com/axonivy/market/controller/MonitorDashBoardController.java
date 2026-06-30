@@ -76,8 +76,9 @@ public class MonitorDashBoardController {
   @Authorized
   @PutMapping(FOCUSED)
   @Operation(hidden = true)
-  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {
-    githubReposService.updateFocusedRepo(repos);
+  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos,
+      @RequestParam Boolean isFocused) {
+    githubReposService.updateFocusedRepo(repos, isFocused);
     return ResponseEntity.ok("Focused repository updated successfully.");
   }
 

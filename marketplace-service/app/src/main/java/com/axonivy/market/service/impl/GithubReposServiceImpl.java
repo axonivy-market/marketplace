@@ -227,11 +227,11 @@ public class GithubReposServiceImpl implements GithubReposService {
   }
 
   @Override
-  public void updateFocusedRepo(List<String> repos) {
-    if (repos == null || repos.isEmpty()) {
+  public void updateFocusedRepo(List<String> repos, Boolean isFocused) {
+    if (repos == null || repos.isEmpty() || isFocused == null) {
       return;
     }
-    githubRepoRepository.updateFocusedRepoByName(repos);
+    githubRepoRepository.updateFocusedRepoByName(repos, isFocused);
   }
 
   @Override
