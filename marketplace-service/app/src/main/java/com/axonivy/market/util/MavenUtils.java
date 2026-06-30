@@ -21,6 +21,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -28,15 +29,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -211,7 +204,7 @@ public class MavenUtils {
         .filter(archivedArtifact
             -> MavenVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) <= 0)
         .min((artifact1, artifact2)
-            -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
+            -> Strings.CS.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
         .orElse(null);
   }
 
@@ -299,7 +292,7 @@ public class MavenUtils {
   }
 
   public static boolean isProductArtifactId(String artifactId) {
-    return StringUtils.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+    return Strings.CS.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }
 
   public static Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
@@ -335,11 +328,6 @@ public class MavenUtils {
         artifact -> !artifact.getArtifactId().endsWith(MavenConstants.PRODUCT_ARTIFACT_POSTFIX)).toList();
   }
 
-  public static boolean isProductMetadata(Metadata metadata) {
-    return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
-        MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
-  }
-
   public static boolean isJsonContentContainOnlyMavenDropins(String jsonContent) {
     return jsonContent.contains(ProductJsonConstants.MAVEN_DROPINS_INSTALLER_ID) && !jsonContent.contains(
         ProductJsonConstants.MAVEN_IMPORT_INSTALLER_ID) && !jsonContent.contains(
@@ -347,9 +335,25 @@ public class MavenUtils {
   }
 
   public static String getDefaultMirrorMavenRepo(String repoUrl) {
-    if (StringUtils.isBlank(repoUrl) || StringUtils.equals(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
+    if (StringUtils.isBlank(repoUrl) || Strings.CS.equals(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
       return MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
     }
     return repoUrl;
+  }
+
+  public static String findNextByMajorPrefix(String currentVersion, List<String> versionList) {
+    int currentMajor = extractMajorPrefix(currentVersion);
+
+    return versionList.stream()
+        .map(MavenUtils::extractMajorPrefix)
+        .filter(major -> major > currentMajor)
+        .min(Integer::compareTo)
+        .map(String::valueOf)
+        .orElse(String.valueOf(currentMajor));
+  }
+
+  private static int extractMajorPrefix(String version) {
+    String majorPart = version.split("\\.")[0];
+    return Integer.parseInt(majorPart);
   }
 }

@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.kohsuke.github.GHContent;
 import org.springframework.util.CollectionUtils;
 
@@ -36,7 +37,7 @@ public class ProductFactory {
   private static final int TOKEN_SECOND_LAST_SEGMENT = 2;
 
   private static final ObjectMapper MAPPER = new ObjectMapper()
-      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+      .setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   public static Product mappingByGHContent(Product product, GHContent content) {
@@ -45,7 +46,7 @@ public class ProductFactory {
     }
 
     var contentName = content.getName();
-    if (StringUtils.endsWith(contentName, MetaConstants.META_FILE)) {
+    if (Strings.CS.endsWith(contentName, MetaConstants.META_FILE)) {
       mappingByMetaJSONFile(product, content);
     }
     return product;

@@ -13,6 +13,7 @@ import com.axonivy.market.util.VersionUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
@@ -40,11 +41,11 @@ public class VersionFactory extends CoreVersionFactory {
 
   public static String resolveVersion(String mavenVersion, String defaultVersion) {
     String resolvedVersion = defaultVersion;
-    if (StringUtils.equalsIgnoreCase(PROJECT_VERSION, mavenVersion)) {
+    if (Strings.CI.equals(PROJECT_VERSION, mavenVersion)) {
       return defaultVersion;
-    } else if (StringUtils.containsAnyIgnoreCase(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
+    } else if (Strings.CI.containsAny(mavenVersion, MAVEN_RANGE_VERSION_ARRAYS)) {
       resolvedVersion = extractVersionFromRange(mavenVersion);
-    } else if (StringUtils.isNotBlank(mavenVersion) && !StringUtils.equals(mavenVersion, defaultVersion)) {
+    } else if (StringUtils.isNotBlank(mavenVersion) && !Strings.CS.equals(mavenVersion, defaultVersion)) {
       resolvedVersion = mavenVersion.trim();
     }
 

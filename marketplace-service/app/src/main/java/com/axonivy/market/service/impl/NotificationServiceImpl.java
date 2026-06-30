@@ -1,8 +1,10 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.MailSenderBuilder;
 import com.axonivy.market.core.constants.CoreCommonConstants;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
-import com.axonivy.market.github.model.SecurityMonitorMailProperties;
+import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.service.NotificationService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -24,8 +26,8 @@ import static com.axonivy.market.constants.MailConstants.*;
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
-  private final JavaMailSender mailSender;
-  private final SecurityMonitorMailProperties mailProperties;
+  private final MailSenderBuilder mailSenderService;
+  private final AppSettingService settingService;
 
   @Override
   public void notify(List<DisabledSecurityEvent> events) {
@@ -34,14 +36,19 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     try {
+      JavaMailSender mailSender = this.mailSenderService.build();
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper message = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-      message.setFrom(mailProperties.getFrom());
+      message.setFrom(
+          settingService.getStringValueByKey(AppSettingKey.MAIL_FROM));
+
       message.setTo(
-          Arrays.stream(mailProperties.getTo().split(CoreCommonConstants.COMMA))
+          Arrays.stream(
+                  settingService.getStringValueByKey(AppSettingKey.MAIL_TO)
+                      .split(CoreCommonConstants.COMMA))
               .map(String::trim)
-              .toArray(String[]::new)
-      );
+              .toArray(String[]::new));
+
       message.setSubject(buildMailSubject(events));
       message.setText(buildBodyHtml(events), true);
       mailSender.send(mimeMessage);

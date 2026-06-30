@@ -1,16 +1,28 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.testutil.MockServletRequestUtils;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@ExtendWith(MockitoExtension.class)
-class ImageUtilsTest {
+class ImageUtilsTest extends BaseSetup {
+
+  @BeforeEach
+  void setupRequestContext() {
+    MockServletRequestUtils.createAndBindMockRequest();
+  }
+
+  @AfterEach
+  void resetRequestContext() {
+    MockServletRequestUtils.resetRequestAttributes();
+  }
 
   @Test
   void testMappingImageForProductModuleContent() {

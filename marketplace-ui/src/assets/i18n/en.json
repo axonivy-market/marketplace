@@ -52,7 +52,8 @@
       "monitor": "Monitor",
       "login": "Login with GitHub",
       "logout": "Logout",
-      "logs": "Logs Viewer"
+      "logs": "Logs Viewer",
+      "settings": "Settings"
     },
     "introduction": {
       "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",
@@ -488,6 +489,7 @@
         "order": "Order",
         "deprecatedButton": "Deprecate",
         "updateForReadmeText": "Create Pull Request to update Readme",
+        "archiveGithubRepoText": "Set archive for GitHub repo",
         "hasAlternativeExtension": "Has Alternative Extension?",
         "alternativeExtension": "Alternative extension name:",
         "successor": "Successor:",
@@ -517,7 +519,32 @@
         "hasAlternativeExtensionTooltip": "Check this if there is a newer or alternative extension that replaces this one.",
         "alternativeExtensionTooltip": "The display name of the extension that replaces the deprecated one.",
         "successorTooltip": "The full URL to the successor extension on the marketplace (must start with http:// or https://).",
-        "updateForReadmeTextTooltip": "Creates a Pull Request that automatically updates the README of the deprecated extension with a deprecation notice."
+        "updateForReadmeTextTooltip": "Creates a Pull Request that automatically updates the README of the deprecated extension with a deprecation notice.",
+        "archive": "Archive",
+        "unarchive": "Unarchive",
+        "confirmArchiveTitle": "Archive confirmation",
+        "confirmUnarchiveTitle": "Unarchive confirmation",
+        "confirmArchiveContent": "Are you sure you want to archive the GitHub repository for this extension?",
+        "confirmUnarchiveContent": "Are you sure you want to unarchive the GitHub repository for this extension?",
+        "archiveSuccess": "Extension has been archived successfully!",
+        "unarchiveSuccess": "Extension has been unarchived successfully!"
+      },
+      "settings": {
+        "title": "Application Settings",
+        "description": "Manage runtime configuration for the Marketplace application.",
+        "helpText": "Administrators can update scheduling, integrations, notifications, security, and other application settings without modifying deployment configuration or restarting services. Changes are stored centrally and can be applied across all Marketplace nodes.",
+        "category": "Category",
+        "key": "Setting Key",
+        "value": "Value",
+        "action": "Actions",
+        "settingDescription": "Description",
+        "noSettings": "No settings found.",
+        "saveSuccess": "Setting updated successfully.",
+        "saveError": "Failed to update setting.",
+        "save": {
+          "label": "Save",
+          "saving": "Saving..."
+         }
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

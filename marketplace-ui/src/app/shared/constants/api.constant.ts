@@ -26,8 +26,11 @@ export const API_URI = {
   RELEASE_LETTERS: `${API}/release-letters`,
   LATEST_RELEASE_LETTERS: `${API}/release-letters/latest`,
   PRODUCT_DEPRECATIONS: `${API}/product-marketplace-data/deprecations`,
+  APP_SETTINGS: `${API}/settings`,
   PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID: (id: string) =>
-    `${API}/product-marketplace-data/${encodeURIComponent(id)}/deprecations`
+    `${API}/product-marketplace-data/${encodeURIComponent(id)}/deprecations`,
+  PRODUCT_MARKETPLACE_DATA_ARCHIVE_BY_ID: (id: string) =>
+    `${API}/product-marketplace-data/${encodeURIComponent(id)}/archive`
 };
 
 export const API_PUBLIC_URL = new InjectionToken<any>('ApiPublicUrl');

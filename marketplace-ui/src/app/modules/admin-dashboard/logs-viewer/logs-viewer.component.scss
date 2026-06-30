@@ -72,3 +72,10 @@
   }
 }
 
+.dropdown-menu {
+    z-index: 1030;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}

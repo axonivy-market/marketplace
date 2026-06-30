@@ -7,6 +7,8 @@ import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHCommit.File;
@@ -15,7 +17,8 @@ import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
-import org.springframework.beans.factory.annotation.Value;
+import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.enums.AppSettingKey;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -31,25 +34,20 @@ import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKETPLACE_R
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
+  private final AppSettingService appSettingService;
   private final GitHubService gitHubService;
   private GHOrganization organization;
   private GHRepository repository;
-
-  @Value("${market.github.market.branch}")
-  private String marketRepoBranch;
-
-  public GHAxonIvyMarketRepoServiceImpl(GitHubService gitHubService) {
-    this.gitHubService = gitHubService;
-  }
 
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {
     Map<String, List<GHContent>> ghContentMap = new HashMap<>();
     try {
       List<GHContent> directoryContent = gitHubService.getDirectoryContent(getRepository(),
-          GitHubConstants.AXONIVY_MARKETPLACE_PATH, marketRepoBranch);
+          GitHubConstants.AXONIVY_MARKETPLACE_PATH, getMarketRepoBranch());
       for (var content : directoryContent) {
         extractFileInDirectoryContent(content, ghContentMap);
       }
@@ -90,7 +88,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   }
 
   private GHCommitQueryBuilder createQueryCommitsBuilder(long lastCommitTime) {
-    return getRepository().queryCommits().since(lastCommitTime).from(marketRepoBranch);
+    return getRepository().queryCommits().since(lastCommitTime).from(getMarketRepoBranch());
   }
 
   @Override
@@ -150,10 +148,14 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     List<GHContent> ghContent = new ArrayList<>();
     try {
       ghContent = gitHubService.getDirectoryContent(getRepository(),
-          itemPath, marketRepoBranch);
+          itemPath, getMarketRepoBranch());
     } catch (IOException e) {
       log.error("Cannot fetch GHContent: ", e);
     }
     return ghContent;
+  }
+
+  private String getMarketRepoBranch() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 }

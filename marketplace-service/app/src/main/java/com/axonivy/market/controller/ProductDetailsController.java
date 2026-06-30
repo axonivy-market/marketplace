@@ -233,7 +233,6 @@ public class ProductDetailsController {
     return ResponseEntity.ok(githubReleaseModelAssembler.toModel(githubReleaseModel));
   }
 
-  @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<GitHubReleaseModel>> generateReleasesEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<GitHubReleaseModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         GitHubReleaseModel.class);

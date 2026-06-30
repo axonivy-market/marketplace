@@ -5,7 +5,7 @@ import com.axonivy.market.core.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CoreMavenUtils {
   public static boolean isProductMetadata(Metadata metadata) {
-    return StringUtils.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
+    return Strings.CS.endsWith(Objects.requireNonNullElse(metadata, new Metadata()).getArtifactId(),
         CoreMavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }
 }

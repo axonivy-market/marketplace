@@ -287,4 +287,44 @@ class MavenUtilsTest extends BaseSetup {
     Assertions.assertEquals(ivyRepoUrl, result,
         "Default mirror maven repo should match input ivy repo URL");
   }
+
+  @Test
+  void testFindNextByMajorPrefixReturnsNextMajorVersion() {
+    List<String> versions = List.of("10.0", "12.0", "13.2", "14.0");
+    String result = MavenUtils.findNextByMajorPrefix("12.0", versions);
+    Assertions.assertEquals("13", result,
+        "Should return next major version '13' when current version is '12.0'");
+  }
+
+  @Test
+  void testFindNextByMajorPrefixReturnsCurrentMajorWhenNoHigherExists() {
+    List<String> versions = List.of("10.0", "12.0", "13.2", "14.0");
+    String result = MavenUtils.findNextByMajorPrefix("14.0", versions);
+    Assertions.assertEquals("14", result,
+        "Should return current major '14' when no higher major version exists");
+  }
+
+  @Test
+  void testFindNextByMajorPrefixWithEmptyVersionList() {
+    List<String> versions = Collections.emptyList();
+    String result = MavenUtils.findNextByMajorPrefix("12.0", versions);
+    Assertions.assertEquals("12", result,
+        "Should return current major '12' when version list is empty");
+  }
+
+  @Test
+  void testFindNextByMajorPrefixSkipsEqualMajor() {
+    List<String> versions = List.of("10.0", "10.1", "12.0", "14.0");
+    String result = MavenUtils.findNextByMajorPrefix("10.0", versions);
+    Assertions.assertEquals("12", result,
+        "Should skip versions with same major and return '12'");
+  }
+
+  @Test
+  void testFindNextByMajorPrefixWithBlankCurrentVersionThrowsException() {
+    List<String> versions = List.of("10.0", "12.0", "13.2", "14.0");
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MavenUtils.findNextByMajorPrefix("  ", versions),
+        "Should throw IllegalArgumentException when current version is blank");
+  }
 }

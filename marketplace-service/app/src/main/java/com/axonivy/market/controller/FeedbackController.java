@@ -159,7 +159,6 @@ public class FeedbackController {
     return ResponseEntity.ok(feedbackService.getProductRatingById(productId));
   }
 
-  @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<FeedbackModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<FeedbackModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         FeedbackModel.class);

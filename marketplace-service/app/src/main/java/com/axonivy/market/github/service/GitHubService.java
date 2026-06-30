@@ -8,8 +8,8 @@ import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
+import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import org.kohsuke.github.GHArtifact;
@@ -142,14 +142,12 @@ public interface GitHubService {
    *
    * @param  code
    *              type {@link String} - the OAuth2 authorization code from GitHub
-   * @param  gitHubProperty
-   *              type {@link GitHubProperty} - GitHub OAuth2 app configuration (client ID, secret)
    * @return {@link GitHubAccessTokenResponse} - response containing the access token and user info
    * @throws Oauth2ExchangeCodeException - if token exchange fails or code is invalid
-   * @throws MissingHeaderException - if required headers are missing from GitHub response
+   * @throws MissingHeaderException - if required client id/secret are not configured
    * @author ntqdinh
    */
-  GitHubAccessTokenResponse getAccessToken(String code, GitHubProperty gitHubProperty)
+  GitHubAccessTokenResponse getAccessToken(String code)
       throws Oauth2ExchangeCodeException, MissingHeaderException;
 
   /**
@@ -312,17 +310,59 @@ public interface GitHubService {
 
   /**
    * <p>
-   * Create PullRequest to update the README file in the specified repository to include successor notes, according to
-   * the given pull request action.
-   * This method creates or updates a pull request that documents successor information in the repository's README.
+   * Creates or updates a pull request to modify the README file in the specified repository
+   * with successor/deprecation notes. Depending on the action, this method either adds
+   * an unsupported notice to the README or removes an existing one.
    * </p>
    *
-   * @param repositoryPath type {@link String} - the path or name of the GitHub repository
-   * @param action         type {@link PullRequestAction} - the action to perform on the pull request (e.g., open,
-   *                       update,close)
-   * @return {@link GHPullRequest} - the created or updated pull request for the README changes
+   * @param repoPath        type {@link String} - the repository path (format: "owner/repo")
+   * @param action          type {@link PullRequestAction} - the action to perform (ADD to insert deprecation notice,
+   *                        REMOVE to delete it)
+   * @param marketplaceData type {@link AlternativeExtensionData} - data containing successor URL,
+   *                        alternative extension name, and deprecated version information
+   * @return {@link GHPullRequest} - the created or updated pull request for the README changes;
+   *         returns {@code null} if no changes are needed (content already in desired state)
    * @throws IOException - if an error occurs while updating the README or interacting with GitHub
    * @author tvtphuc
    */
-  GHPullRequest updateReadmeForSuccessorNotes(String repositoryPath, PullRequestAction action) throws IOException;
+  GHPullRequest updateReadmeForSuccessorNotes(String repoPath, PullRequestAction action,
+      AlternativeExtensionData marketplaceData) throws IOException;
+
+  /**
+   * <p>
+   * Archives the specified GitHub repository. Once archived, the repository becomes read-only
+   * and no further commits, issues, or pull requests can be created.
+   * </p>
+   *
+   * @param repoPath type {@link String} - the repository path (format: "owner/repo")
+   * @throws IOException - if GitHub API call fails or repository not found
+   * @author tvtphuc
+   */
+  void archiveTheRepository(String repoPath) throws IOException;
+
+  /**
+   * <p>
+   * Unarchives a previously archived GitHub repository. Restores the repository to an active state,
+   * allowing commits, issues, and pull requests to be created again.
+   * </p>
+   *
+   * @param repoPath type {@link String} - the repository path (format: "owner/repo")
+   * @author tvtphuc
+   */
+  void unArchivedTheRepository(String repoPath);
+
+  /**
+   * <p>
+   * Checks whether the README file of a GitHub repository contains a deprecation warning notice.
+   * This is used as a prerequisite check before archiving a repository — only repositories
+   * whose README already includes the deprecation notice are eligible for archiving.
+   * </p>
+   *
+   * @param repoPath type {@link String} - the repository path (format: "owner/repo")
+   * @return {@code true} if the README contains the deprecation warning (archive allowed),
+   *         {@code false} if the README does NOT contain the deprecation warning (archive not allowed)
+   * @throws IOException - if GitHub API call fails or README cannot be read
+   * @author tvtphuc
+   */
+  boolean hasDeprecationWarningInReadme(String repoPath) throws IOException;
 }

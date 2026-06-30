@@ -4,6 +4,7 @@ import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.domain.Sort;
 
 /**
@@ -32,7 +33,7 @@ public enum SortOption {
       option = option.trim();
     }
     for (var sortOption : values()) {
-      if (StringUtils.equalsIgnoreCase(sortOption.option, option)) {
+      if (Strings.CI.equals(sortOption.option, option)) {
         return sortOption;
       }
     }

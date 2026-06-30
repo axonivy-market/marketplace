@@ -1,6 +1,6 @@
 # Marketplace Stable Module
 
-Read-only Spring Boot 3.2.5 API for Neo Designer, VSCode Extension v14, and AI-powered features.
+Read-only Spring Boot 4.1.0 API for Neo Designer, VSCode Extension v14, and AI-powered features.
 
 ## Overview
 
@@ -13,12 +13,12 @@ Stable, versioned product information as read-only APIs. Depends on Core module 
   
 ## Technology
 
-Java 21 LTS • Spring Boot 3.2.5 • PostgreSQL • Lombok
+Java 25 • Spring Boot 4.1.0 • PostgreSQL • Lombok
 
 ## Quick Start
 
 ### Prerequisites
-JDK 21+, Maven 3.9+, PostgreSQL 17+
+JDK 25+, Maven 3.9+, PostgreSQL 17+
 
 ### Environment
 See [Marketplace Service](../README.md#environment-setup) for environment variable configuration.
@@ -77,7 +77,7 @@ cp stable/target/stable-1.0.0-SNAPSHOT.war $CATALINA_HOME/webapps/
 
 ## Troubleshooting
 
-**Port 8085 in use**: Change `server.port` in application.yaml
+**Port 8080 in use**: Change `server.port` in application.yaml
 
 **Database connection failed**: Check environment variables and PostgreSQL running
 

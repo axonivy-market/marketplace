@@ -2,10 +2,12 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.github.util.GitHubUtils;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.PagedIterable;
@@ -13,7 +15,6 @@ import org.mockito.Mockito;
 
 import static org.mockito.Mockito.when;
 
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.hateoas.Link;
 
 import java.io.IOException;
@@ -25,8 +26,17 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 class GitHubUtilsTest extends BaseSetup {
+
+  @BeforeEach
+  void setupRequestContext() {
+    MockServletRequestUtils.createAndBindMockRequest();
+  }
+
+  @AfterEach
+  void resetRequestContext() {
+    MockServletRequestUtils.resetRequestAttributes();
+  }
 
   @Test
   void testSortMetaJsonFirst() {
