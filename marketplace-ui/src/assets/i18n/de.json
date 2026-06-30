@@ -52,7 +52,8 @@
       "monitor": "Monitor",
       "login": "Mit GitHub anmelden",
       "logout": "Logout",
-      "logs": "Protokoll-Viewer"
+      "logs": "Protokoll-Viewer",
+      "settings": "Einstellungen"
     },
     "introduction": {
       "about": "Durch die vielfältigen Angebote des Axon Ivy Marktplatzes wird die Prozessautomatisierung umfassend erweitert.",
@@ -132,6 +133,7 @@
         "type": "Typ",
         "description": "Beschreibung",
         "installationGuide": "Installation Guide",
+        "components": "Komponenten",
         "demo": "Demo",
         "maven": {
           "label": "Maven",
@@ -527,6 +529,23 @@
         "confirmUnarchiveContent": "Sind Sie sicher, dass Sie das GitHub-Repository für diese Erweiterung dearchivieren möchten?",
         "archiveSuccess": "Erweiterung wurde erfolgreich archiviert!",
         "unarchiveSuccess": "Erweiterung wurde erfolgreich dearchiviert!"
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "description": "Verwalten Sie die Anwendungseinstellungen des Marktplatzes",
+        "helpText": "Administratoren können Zeitpläne, Integrationen, Benachrichtigungen, Sicherheit und andere Anwendungseinstellungen aktualisieren, ohne die Bereitstellungskonfiguration zu ändern oder Dienste neu zu starten. Änderungen werden zentral gespeichert und können auf alle Marketplace-Knoten angewendet werden.",
+        "category": "Kategorie",
+        "key": "Einstellungsschlüssel",
+        "value": "Wert",
+        "action": "Aktionen",
+        "settingDescription": "Beschreibung",
+        "noSettings": "Keine Einstellungen gefunden.",
+        "saveSuccess": "Einstellung erfolgreich aktualisiert.",
+        "saveError": "Fehler beim Aktualisieren der Einstellung.",
+        "save": {
+          "label": "Speichern",
+          "saving": "Speichert..."
+         }
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

@@ -7,7 +7,7 @@ import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
-import com.axonivy.market.model.UserInfo;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.service.ReleaseLetterService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -169,6 +168,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
   void testCreateReleaseLetterShouldReturnCreated() {
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
+    MockServletRequestUtils.createAndBindMockRequest();
 
     when(releaseLetterService.createReleaseLetter(releaseLetterModelRequestMock, false))
         .thenReturn(releaseLetterMock);

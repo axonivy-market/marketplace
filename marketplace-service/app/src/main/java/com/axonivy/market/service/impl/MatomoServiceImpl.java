@@ -1,34 +1,32 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.MatomoTrackerBuilder;
 import com.axonivy.market.constants.HttpHeaderConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.matomo.java.tracking.MatomoRequest;
 import org.matomo.java.tracking.MatomoRequests;
-import org.matomo.java.tracking.MatomoTracker;
 import org.springframework.stereotype.Service;
-
-import static com.axonivy.market.constants.CommonConstants.*;
-import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.axonivy.market.constants.CommonConstants.*;
+import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
+
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class MatomoServiceImpl implements MatomoService {
 
   private static final String NEO_PRODUCT_DASHBOARD = "NEO Product Dashboard";
   private static final String PRODUCT_DETAILS_PREFIX = "/api/product-details/";
 
-  private final MatomoTracker matomoTracker;
-
-  public MatomoServiceImpl(MatomoTracker matomoTracker) {
-    this.matomoTracker = matomoTracker;
-  }
+  private final MatomoTrackerBuilder matomoTrackerBuilder;
 
   @Override
   public void trackEventAsync(HttpServletRequest httpServletRequest) {
@@ -43,15 +41,17 @@ public class MatomoServiceImpl implements MatomoService {
     }
     String referrerUrl = httpServletRequest.getHeader(REFERER);
     Map<String, String> headers = cloneRequestHeaders(httpServletRequest);
-    log.warn("Tracking event for requestUrl={}, referrerUrl={}, headers={}", requestUrl, referrerUrl, headers);
     MatomoRequest req = MatomoRequests.pageView(resolvePageViewName(requestUrl, referrerUrl))
         .actionUrl(requestUrl)
         .headerUserAgent(httpServletRequest.getHeader(USER_AGENT))
         .referrerUrl(referrerUrl)
         .headers(headers)
         .build();
-
-    matomoTracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
+    var tracker = matomoTrackerBuilder.build();
+    if (tracker == null) {
+      return;
+    }
+    tracker.sendRequestAsync(req).exceptionally((Throwable ex) -> {
       log.error("Matomo tracking failed to {}", requestUrl, ex);
       return null;
     });

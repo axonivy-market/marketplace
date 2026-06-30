@@ -59,13 +59,15 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.Strings;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import org.springframework.beans.factory.annotation.Value;
+import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.enums.AppSettingKey;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -106,8 +108,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private final FileDownloadService fileDownloadService;
   private final VersionService versionService;
   private final GithubRepoRepository githubRepo;
-  @Value("${market.github.market.branch}")
-  private String marketRepoBranch;
+  private final AppSettingService appSettingService;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
@@ -120,7 +121,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ProductMarketplaceDataService productMarketplaceDataService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
-      VersionService versionService, GithubRepoRepository githubRepo) {
+      VersionService versionService, GithubRepoRepository githubRepo, AppSettingService appSettingService) {
     super(coreProductRepo);
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -141,6 +142,11 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     this.fileDownloadService = fileDownloadService;
     this.versionService = versionService;
     this.githubRepo = githubRepo;
+    this.appSettingService = appSettingService;
+  }
+
+  private String getMarketRepoBranch() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 
   @Override
@@ -247,7 +253,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private String modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
     try {
       var fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-          marketRepoBranch);
+          getMarketRepoBranch());
       return updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
     } catch (IOException e) {
       log.error("Get GHContent failed: ", e);
@@ -276,7 +282,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     searchCriteria.setFields(List.of(DocumentField.MARKET_DIRECTORY));
     var product = productRepo.findByCriteria(searchCriteria);
     if (product != null) {
-      var isLogoDark = StringUtils.endsWith(fileContent.getName(), ProductJsonConstants.LOGO_DARK_FILE);
+      var isLogoDark = Strings.CS.endsWith(fileContent.getName(), ProductJsonConstants.LOGO_DARK_FILE);
       Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), fileContent)).ifPresent(
           (Image image) -> {
             updateLogoOfProduct(isLogoDark, product, image.getId());
@@ -300,7 +306,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void deleteOldLogo(String oldLogoImageId, String newLogoImageId) {
-    if (StringUtils.isNotBlank(oldLogoImageId) && !StringUtils.equals(oldLogoImageId, newLogoImageId)) {
+    if (StringUtils.isNotBlank(oldLogoImageId) && !Strings.CS.equals(oldLogoImageId, newLogoImageId)) {
       imageRepo.deleteById(oldLogoImageId);
     }
   }
@@ -312,7 +318,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       lastCommitTime = marketRepoMeta.getLastChange();
     }
     lastGHCommit = axonIvyMarketRepoService.getLastCommit(lastCommitTime);
-    if (lastGHCommit != null && marketRepoMeta != null && StringUtils.equals(lastGHCommit.getSHA1(),
+    if (lastGHCommit != null && marketRepoMeta != null && Strings.CS.equals(lastGHCommit.getSHA1(),
         marketRepoMeta.getLastSHA1())) {
       isLastCommitCovered = true;
     }
@@ -321,7 +327,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
 
   private void updateLatestReleaseVersionContentsFromProductRepo() {
-    List<Product> products = productRepo.findAllProductsWithNamesAndShortDescriptions();
+    List<Product> products = productRepo.findProductsWithEnglishNameAndArtifacts();
     if (ObjectUtils.isEmpty(products)) {
       return;
     }
@@ -363,10 +369,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (ghContent != null) {
-      if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
+      if (Strings.CS.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
         Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
             .ifPresent(image -> product.setLogoId(image.getId()));
-      } else if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_DARK_FILE)) {
+      } else if (Strings.CS.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_DARK_FILE)) {
         Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
             .ifPresent(image -> product.setLogoDarkId(image.getId()));
       }
@@ -374,7 +380,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void mappingVendorImageFromGHContent(Product product, GHContent ghContent) {
-    if (StringUtils.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
+    if (Strings.CS.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
       if (StringUtils.isNotBlank(product.getVendorImagePath())) {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
@@ -387,9 +393,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private String mapVendorImage(String productId, GHContent ghContent, String imageName) {
     if (StringUtils.isNotBlank(imageName)) {
-      var imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
+      var imagePath = Strings.CS.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
       try {
-        var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
+        var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, getMarketRepoBranch());
         return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent))
             .map(Image::getId).orElse(EMPTY);
       } catch (IOException e) {
@@ -539,7 +545,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
       String productName) {
-    String snapshotVersionValue = Strings.EMPTY;
+    String snapshotVersionValue = StringUtils.EMPTY;
     if (version.contains(CoreMavenConstants.SNAPSHOT_VERSION)) {
       String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
           mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);

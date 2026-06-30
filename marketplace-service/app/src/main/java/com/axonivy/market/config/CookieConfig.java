@@ -15,4 +15,5 @@ public class CookieConfig {
       @Value("${server.servlet.session.cookie.same-site:None}") String sameSite) {
     return CookieSameSiteSupplier.of(SameSite.valueOf(sameSite.toUpperCase(Locale.ROOT)));
   }
+
 }

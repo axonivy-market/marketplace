@@ -21,6 +21,7 @@ import {
   DeprecationManagementComponent
 } from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
+import { AdminSettingsComponent } from './modules/admin-dashboard/settings/settings.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -102,6 +103,10 @@ export const routes: Routes = [
       {
         path: 'logs',
         component: LogViewerComponent
+      },
+      {
+        path: 'settings',
+        component: AdminSettingsComponent
       }
     ]
   },

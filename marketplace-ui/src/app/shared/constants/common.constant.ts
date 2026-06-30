@@ -63,6 +63,10 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'common.nav.deprecationManagement',
     link: '/internal-dashboard/deprecation-management'
+  },
+  {
+    label: 'common.nav.settings',
+    link: '/internal-dashboard/settings'
   }
 ];
 

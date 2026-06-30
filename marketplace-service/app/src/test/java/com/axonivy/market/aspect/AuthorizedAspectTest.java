@@ -6,6 +6,7 @@ import static org.springframework.http.HttpHeaders.*;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.UserInfo;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
@@ -48,8 +47,7 @@ class AuthorizedAspectTest {
 
   @BeforeEach
   void setup() {
-    ServletRequestAttributes attributes = new ServletRequestAttributes(request);
-    RequestContextHolder.setRequestAttributes(attributes);
+    MockServletRequestUtils.bindRequest(request);
   }
 
   @Test
@@ -91,7 +89,7 @@ class AuthorizedAspectTest {
 
   @Test
   void testValidateAuthorizationWhenRequestAttributesNullShouldThrowException() {
-    RequestContextHolder.resetRequestAttributes();
+    MockServletRequestUtils.resetRequestAttributes();
 
     Oauth2ExchangeCodeException exception = assertThrows(
         Oauth2ExchangeCodeException.class,
@@ -102,8 +100,7 @@ class AuthorizedAspectTest {
     assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
         "Error code should be BAD_REQUEST when request attributes are missing");
 
-    ServletRequestAttributes attributes = new ServletRequestAttributes(request);
-    RequestContextHolder.setRequestAttributes(attributes);
+    MockServletRequestUtils.bindRequest(request);
   }
 
   @Test

@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
 import org.springframework.stereotype.Service;
@@ -18,18 +17,13 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.constants.CommonConstants.IMAGE_EXTENSION;
-import static com.axonivy.market.constants.PreviewConstants.PREVIEW_DIR;
-import static com.axonivy.market.constants.RegexConstants.SAFE_PATH_PATTERN;
 
 @Service
 @Log4j2
@@ -114,46 +108,4 @@ public class ImageServiceImpl implements ImageService {
   public byte[] readImage(String id) {
     return imageRepository.findById(id).map(Image::getImageData).orElse(null);
   }
-
-  /**
-   * @deprecated
-   * This method does not use anymore, and will be removed in release 1.27.0
-   */
-  @Deprecated(since = "1.26.0", forRemoval = true)
-  @Override
-  public byte[] readPreviewImageByName(String imageName) {
-    var imageContent = new byte[0];
-    var previewPath = Paths.get(PREVIEW_DIR);
-    if (!isAllowedPreviewImageName(imageName)) {
-      log.info("#readPreviewImageByName: Rejected preview file name {}", imageName);
-    } else if (!Files.exists(previewPath) || !Files.isDirectory(previewPath)) {
-      log.info("#readPreviewImageByName: Preview folder not found");
-    } else {
-      try {
-        Optional<Path> imagePath = Files.walk(previewPath)
-            .filter(Files::isRegularFile)
-            .filter(path -> isAllowedPreviewImageName(path.getFileName().toString()))
-            .filter(path -> path.getFileName().toString().equalsIgnoreCase(imageName))
-            .findFirst();
-        if (imagePath.isEmpty()) {
-          log.info("#readPreviewImageByName: Image with name {} is missing", imageName);
-        } else {
-          InputStream contentStream = MavenUtils.extractedContentStream(imagePath.get());
-          assert contentStream != null;
-          imageContent = IOUtils.toByteArray(contentStream);
-        }
-      } catch (IOException e) {
-        log.error("#readPreviewImageByName: Error when read preview image {}: {}", imageName, e.getMessage());
-      }
-    }
-    return imageContent;
-  }
-
-  private boolean isAllowedPreviewImageName(String imageName) {
-    if (StringUtils.isBlank(imageName) || !SAFE_PATH_PATTERN.matcher(imageName).matches()) {
-      return false;
-    }
-    return IMAGE_EXTENSION_PATTERN.matcher(imageName.toLowerCase(Locale.getDefault())).matches();
-  }
-
 }

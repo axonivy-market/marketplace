@@ -1,6 +1,8 @@
 package com.axonivy.market.github.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.config.OkHttpClientBuilder;
+import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.core.entity.Product;
@@ -10,6 +12,7 @@ import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.AccessLevel;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -19,7 +22,6 @@ import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -28,6 +30,7 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
+import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -36,17 +39,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.kohsuke.github.*;
-import okhttp3.OkHttpClient;
 import org.kohsuke.github.extras.okhttp3.OkHttpGitHubConnector;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -56,9 +57,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -66,7 +66,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class GitHubServiceImpl implements GitHubService {
    """;
 
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
-  private static final String MUST_BE_ENABLED   = "must be enabled";
+  private static final String MUST_BE_ENABLED = "must be enabled";
   private static final String MULTILINE_START = "(?m)^";
   /**
    * Regex suffix that matches the remainder of a blockquote block:
@@ -112,21 +111,26 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
   private static final Pattern FORMAT_SPECIFIER_PATTERN = Pattern.compile("%s");
 
-  private final RestTemplate restTemplate;
+  private final RestClientBuilder restClientBuilder;
   private final GithubUserRepository githubUserRepository;
-  private final GitHubProperty gitHubProperty;
+  private final AppSettingService appSettingService;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
-  private final OkHttpClient okHttpClient;
+  private final OkHttpClientBuilder okHttpClientBuilder;
+  private final MultiTaskUtils multiTaskUtils;
 
   @Override
   public GitHub getGitHub() throws IOException {
-    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
-    return new GitHubBuilder().withOAuthToken(gitHubProperty.getToken()).withConnector(gitHubConnector).build();
+    return buildGitHub(getConfiguredToken());
   }
 
   @Override
   public GitHub getGitHub(String accessToken) throws IOException {
-    OkHttpGitHubConnector gitHubConnector = new OkHttpGitHubConnector(okHttpClient);
+    return buildGitHub(accessToken);
+  }
+
+  public GitHub buildGitHub(String accessToken) throws IOException {
+    var client = okHttpClientBuilder.build();
+    var gitHubConnector = new OkHttpGitHubConnector(client);
     return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
   }
 
@@ -165,26 +169,31 @@ public class GitHubServiceImpl implements GitHubService {
   }
 
   @Override
-  public GitHubAccessTokenResponse getAccessToken(String code,
-      GitHubProperty gitHubProperty) throws Oauth2ExchangeCodeException, MissingHeaderException {
-    if (gitHubProperty == null) {
+  public GitHubAccessTokenResponse getAccessToken(
+      String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
+    // Read OAuth client id/secret from DB-backed AppSetting; throw if missing
+    var clientId = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
+    var clientSecret = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
+
+    if (StringUtils.isAnyBlank(clientId, clientSecret)) {
       throw new MissingHeaderException();
     }
+
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-    params.add(Json.CLIENT_ID, gitHubProperty.getOauth2ClientId());
-    params.add(Json.CLIENT_SECRET, gitHubProperty.getOauth2ClientSecret());
+    params.add(Json.CLIENT_ID, clientId);
+    params.add(Json.CLIENT_SECRET, clientSecret);
     params.add(Json.CODE, code);
 
-    var headers = new HttpHeaders();
-    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-    ResponseEntity<GitHubAccessTokenResponse> responseEntity = restTemplate.postForEntity(
-        GITHUB_GET_ACCESS_TOKEN_URL, request, GitHubAccessTokenResponse.class);
-    GitHubAccessTokenResponse response = responseEntity.getBody();
+    GitHubAccessTokenResponse response = restClientBuilder.build().post()
+        .uri(GITHUB_GET_ACCESS_TOKEN_URL)
+        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+        .accept(MediaType.APPLICATION_JSON)
+        .body(params)
+        .retrieve()
+        .body(GitHubAccessTokenResponse.class);
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
-      log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code,
-          gitHubProperty.getOauth2ClientId()));
+      log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code, clientId));
       throw new Oauth2ExchangeCodeException(response.getError(), response.getErrorDescription());
     }
 
@@ -244,13 +253,14 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
-    var gitHub = getGitHub(gitHubProperty.getToken());
+    var gitHub = getGitHub(getConfiguredToken());
     GHOrganization organization = gitHub.getOrganization(AXONIVY_MARKET_ORGANIZATION_NAME);
 
+    String token = getConfiguredToken();
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
-        repo -> fetchSecurityInfoSafe(repo, organization, gitHubProperty.getToken());
+        repo -> fetchSecurityInfoSafe(repo, organization, token);
 
-    List<ProductSecurityInfo> productSecurityInfos = MultiTaskUtils.parallelProcessWithLimit(
+    List<ProductSecurityInfo> productSecurityInfos = multiTaskUtils.parallelProcessWithLimit(
         organization.listRepositories().toList().stream().filter(repo -> !repo.isArchived()).toList(),
         MdcContextUtils.wrapMdcContext(fetchInfoWithContext),
         MAX_CONCURRENCY);
@@ -448,12 +458,12 @@ public class GitHubServiceImpl implements GitHubService {
   public ResponseEntity<List<Map<String, Object>>> fetchApiResponseAsList(
       String accessToken,
       String url) throws RestClientException {
-    var headers = new HttpHeaders();
-    headers.setBearerAuth(accessToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    return restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
-    });
+    return restClientBuilder.build().get()
+        .uri(url)
+        .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + accessToken)
+        .retrieve()
+        .toEntity(new ParameterizedTypeReference<>() {
+        });
   }
 
   @Override
@@ -464,7 +474,7 @@ public class GitHubServiceImpl implements GitHubService {
       String latestGitHubReleaseName = this.getGitHubLatestReleaseByProductId(productRepoName).getName();
       for (GHRelease ghRelease : ProductContentUtils.extractReleasesPage(ghReleases, pageable)) {
         gitHubReleaseModels.add(this.toGitHubReleaseModel(ghRelease, productSourceUrl, productId,
-            StringUtils.equals(latestGitHubReleaseName, ghRelease.getName())));
+            Strings.CS.equals(latestGitHubReleaseName, ghRelease.getName())));
       }
     }
     return new PageImpl<>(gitHubReleaseModels, pageable, ghReleases.size());
@@ -504,7 +514,7 @@ public class GitHubServiceImpl implements GitHubService {
     var ghRelease = this.getRepository(product.getRepositoryName()).getRelease(releaseId);
     GHRelease githubLatestRelease = getGitHubLatestReleaseByProductId(product.getRepositoryName());
     return this.toGitHubReleaseModel(ghRelease, product.getSourceUrl(), product.getId(),
-        StringUtils.equals(githubLatestRelease.getName(), ghRelease.getName()));
+        Strings.CS.equals(githubLatestRelease.getName(), ghRelease.getName()));
   }
 
   public GHRelease getGitHubLatestReleaseByProductId(String repositoryName) throws IOException {
@@ -514,10 +524,14 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHWorkflowRun getLatestWorkflowRun(GHRepository repo, String workflowFileName) throws IOException {
     try {
-      PagedIterable<GHWorkflowRun> runs = repo.getWorkflow(workflowFileName).listRuns().withPageSize(
-          PAGE_SIZE_OF_WORKFLOW);
+      GHWorkflow workflow = repo.getWorkflow(workflowFileName);
+      var runs = Optional.ofNullable(repo.queryWorkflowRuns())
+          .map(query -> query.branch(DEFAULT_BRANCH).status(GHWorkflowRun.Status.COMPLETED).list())
+          .orElseGet(workflow::listRuns)
+          .withPageSize(PAGE_SIZE_OF_WORKFLOW)
+          .toList();
       for (GHWorkflowRun run : runs) {
-        if (GHWorkflowRun.Status.COMPLETED == run.getStatus()) {
+        if (GHWorkflowRun.Status.COMPLETED == run.getStatus() && workflow.getId() == run.getWorkflowId()) {
           return run;
         }
       }
@@ -554,7 +568,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
       String repoPath, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
-    String accessToken = gitHubProperty.getToken();
+    String accessToken = getConfiguredToken();
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repoPath);
 
@@ -612,24 +626,21 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public void unArchivedTheRepository(String repoPath) {
     String url = Url.REPOS_BASE_URL + repoPath;
-    okhttp3.RequestBody body = okhttp3.RequestBody.create(
-        "{\"archived\": false}",
-        okhttp3.MediaType.parse("application/json")
-    );
-    okhttp3.Request request = new okhttp3.Request.Builder()
-        .url(url)
-        .patch(body)
-        .addHeader(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + gitHubProperty.getToken())
-        .build();
+    try {
+      ResponseEntity<Void> response = restClientBuilder.build().patch()
+          .uri(url)
+          .header(HttpHeaders.AUTHORIZATION,
+              BEARER_PREFIX + appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN))
+          .body("{\"archived\": false}")
+          .retrieve()
+          .toBodilessEntity();
 
-    try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
-      if (!response.isSuccessful()) {
+      if (!response.getStatusCode().is2xxSuccessful()) {
         throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
-            String.format("Failed to unarchive repository '%s': %d %s", repoPath, response.code(),
-                response.message()));
+            String.format("Failed to unarchive repository '%s': %s", repoPath, response.getStatusCode()));
       }
       log.info("Repository '{}' has been unarchived successfully.", repoPath);
-    } catch (IOException e) {
+    } catch (RestClientException e) {
       throw new UnarchiveFailedException(ErrorCode.UNARCHIVE_FAILED,
           String.format("Error unarchiving repository '%s': %s", repoPath, e.getMessage()));
     }
@@ -780,6 +791,13 @@ public class GitHubServiceImpl implements GitHubService {
     // Build a regex that matches the full deprecation block:
     String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN;
     return readmeContent.replaceFirst(regex, EMPTY);
+  }
+
+  /**
+   * Read the GitHub token from DB-backed AppSetting.
+   */
+  private String getConfiguredToken() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   /**

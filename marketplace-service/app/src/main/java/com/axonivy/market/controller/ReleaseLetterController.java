@@ -180,7 +180,6 @@ public class ReleaseLetterController {
     return ResponseEntity.ok(pageModel);
   }
 
-  @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ReleaseLetterModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ReleaseLetterModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ReleaseLetterModel.class);

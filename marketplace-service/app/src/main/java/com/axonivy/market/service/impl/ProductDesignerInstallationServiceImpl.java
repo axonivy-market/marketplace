@@ -5,6 +5,8 @@ import com.axonivy.market.entity.ProductDesignerInstallation;
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import com.axonivy.market.service.ProductDesignerInstallationService;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -14,13 +16,9 @@ import java.util.List;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class ProductDesignerInstallationServiceImpl implements ProductDesignerInstallationService {
   private final ProductDesignerInstallationRepository productDesignerInstallationRepository;
-
-  public ProductDesignerInstallationServiceImpl(
-      ProductDesignerInstallationRepository productDesignerInstallationRepository) {
-    this.productDesignerInstallationRepository = productDesignerInstallationRepository;
-  }
 
   @Override
   public List<DesignerInstallation> findByProductId(String productId) {

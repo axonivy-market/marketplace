@@ -86,4 +86,5 @@ public class RequestMappingConstants {
   public static final String RELEASE_LETTER = API + "/release-letters";
   public static final String LOG_STREAM_BY_TASK_KEY = "/stream/{taskKey}";
   public static final String ARCHIVE_BY_ID = "{productId}/archive";
+  public static final String APP_SETTING = API + "/settings";
 }

@@ -30,6 +30,8 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
+import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -129,6 +131,8 @@ class ProductServiceImplTest extends BaseSetup {
   private MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Mock
   private FileDownloadService fileDownloadService;
+  @Mock
+  private AppSettingService appSettingService;
   @Spy
   @InjectMocks
   private ProductServiceImpl productService;
@@ -136,6 +140,7 @@ class ProductServiceImplTest extends BaseSetup {
   @BeforeEach
   void setup() {
     mockResultReturn = createPageProductsMock();
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH)).thenReturn("master");
   }
 
   @Test
@@ -146,8 +151,6 @@ class ProductServiceImplTest extends BaseSetup {
         "Product short descriptions should match input short descriptions");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
     // Start testing by adding new meta
@@ -221,8 +224,6 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
     // Start testing by adding new logo
@@ -355,7 +356,7 @@ class ProductServiceImplTest extends BaseSetup {
     when(marketRepoService.getLastCommit(anyLong())).thenReturn(mockCommit);
     when(repoMetaRepo.findByRepoName(anyString())).thenReturn(gitHubRepoMeta);
 
-    when(productRepo.findAllProductsWithNamesAndShortDescriptions()).thenReturn(List.of(mockProduct));
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of(mockProduct));
 
     ProductModuleContent mockReturnProductContent = mockReadmeProductContent();
     mockReturnProductContent.setVersion(MOCK_RELEASED_VERSION);
@@ -392,7 +393,7 @@ class ProductServiceImplTest extends BaseSetup {
     mockGHContentMap.put(SAMPLE_PRODUCT_ID, new ArrayList<>());
     when(marketRepoService.fetchAllMarketItems()).thenReturn(mockGHContentMap);
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
-    when(productRepo.findAllProductsWithNamesAndShortDescriptions()).thenReturn(List.of(getMockProduct()));
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of(getMockProduct()));
 
     // Executes
     productService.syncLatestDataFromMarketRepo(false);
@@ -587,8 +588,6 @@ class ProductServiceImplTest extends BaseSetup {
     return productModuleContent;
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubRemoveOldLogo() throws IOException {
     // Start testing by adding new logo
@@ -623,8 +622,6 @@ class ProductServiceImplTest extends BaseSetup {
     assertFalse(result.isEmpty(), "Latest data from Market repo should not be empty");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubModifyLogo() throws IOException {
     // Start testing by adding new logo
@@ -681,8 +678,6 @@ class ProductServiceImplTest extends BaseSetup {
         "Sync one product should be failed");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHubAddVendorLogo() throws IOException {
     // Start testing by adding new meta
@@ -1029,6 +1024,25 @@ class ProductServiceImplTest extends BaseSetup {
     verify(imageRepo, never()).deleteById(anyString());
     verify(productRepo, never()).save(any());
     assertEquals("existing-logo-id", mockProduct.getLogoId(), "Product logo ID should remain unchanged");
+  }
+
+  @Test
+  void testUpdateLatestReleaseVersionContentsSkipsWhenNoProducts() {
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of());
+
+    productService.syncLatestDataFromMarketRepo(true);
+
+    verify(productRepo, never()).save(any(Product.class));
+  }
+
+  @Test
+  void testUpdateLatestReleaseVersionContentsSavesEachProduct() {
+    List<Product> mockProducts = getMockProducts();
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(mockProducts);
+
+    productService.syncLatestDataFromMarketRepo(true);
+
+    verify(productRepo, times(mockProducts.size())).save(any(Product.class));
   }
 
   private void prepareMockDataForSync(GitHubRepoMeta repoMeta) throws IOException {

@@ -15,7 +15,7 @@ Shared foundation library for Marketplace Service containing data models, reposi
 
 ## Technology
 
-Java 21 LTS • Spring Boot 3.2.5 • Spring Data JPA • PostgreSQL • Lombok • Jackson
+Java 25 • Spring Boot 4.1.0 • Spring Data JPA • PostgreSQL • Lombok • Jackson
 
 ## Build
 
