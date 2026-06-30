@@ -80,7 +80,7 @@ public class ProductController {
   public ResponseEntity<List<ProductModel>> findProducts(
       @RequestParam(name = TYPE, required = false) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
           schema = @Schema(type = "string",
-              allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
+              allowableValues = {"all", "connectors", "utilities", "demos"})) String type,
       @RequestParam(name = KEYWORD, required = false) @Parameter(
           description = "Keyword that exist in product's name or short description", example = "connector",
           in = ParameterIn.QUERY) String keyword,

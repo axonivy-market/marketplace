@@ -68,7 +68,7 @@ public class ProductController {
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
       @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
           schema = @Schema(type = "string",
-              allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
+              allowableValues = {"all", "connectors", "utilities", "demos"})) String type,
       @RequestParam(required = false, name = KEYWORD) @Parameter(
           description = "Keyword that exist in product's name or short description", example = "connector",
           in = ParameterIn.QUERY) String keyword,

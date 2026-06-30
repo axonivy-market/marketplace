@@ -9,9 +9,9 @@ export class ProductTypeIconPipe implements PipeTransform {
     switch (value) {
       case 'connector':
         return 'ti ti-plug';
-      case 'solution':
+      case 'demo':
         return 'ti ti-clipboard-check';
-      case 'util':
+      case 'utils':
         return 'ti ti-tools';
       default:
         return 'ti ti-grid';

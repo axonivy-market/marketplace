@@ -65,9 +65,8 @@
       "value": {
         "allTypes": "Alle",
         "connector": "Konnektoren",
-        "util": "Utilities",
+        "utils": "Utilities",
         "demos": "Demos",
-        "solution": "Lösungen",
         "test": "Test"
       }
     },
@@ -203,11 +202,11 @@
       "detailedReviews": "Ausführliche Reviews",
       "showMoreBtnLabel": "Mehr anzeigen",
       "noFeedbackForConnectorLabel": "Zu diesem Konnektor gibt's noch kein Feedback.",
-      "noFeedbackForSolutionLabel": "Zu dieser Lösung gibt's noch kein Feedback.",
+      "noFeedbackForDemoLabel": "Zu diesem Demo gibt's noch kein Feedback.",
       "noFeedbackForUtilityLabel": "Zu diesem Tool gibt's noch kein Feedback.",
       "noFeedbackSecondLabel": "Sag uns was Du denkst.",
       "rateFeedbackForConnectorBtnLabel": "Bewerte diesen Konnektor",
-      "rateFeedbackForSolutionBtnLabel": "Bewerte diese Lösung",
+      "rateFeedbackForDemoBtnLabel": "Bewerte dieses Demo",
       "rateFeedbackForUtilityBtnLabel": "Bewerte dieses Utility",
       "reviewLabelNoYet": "Noch keine Bewertungen",
       "approvalPending": "Freigabe ausstehend"
