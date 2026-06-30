@@ -4,7 +4,6 @@ import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.AdminGitHubCallbackRequest;
 import com.axonivy.market.model.UserInfo;
@@ -32,7 +31,6 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
   private static final String OAUTH_STATE_SESSION_ATTRIBUTE = AdminSessionAuthServiceImpl.class.getName() + ".state";
   private static final Duration OAUTH_STATE_TTL = Duration.ofMinutes(5);
 
-  private final GitHubProperty gitHubProperty;
   private final GitHubService gitHubService;
   private final AdminAuthenticationSessionService adminAuthenticationSessionService;
 
@@ -110,7 +108,7 @@ public class AdminSessionAuthServiceImpl implements AdminSessionAuthService {
   }
 
   private String exchangeAccessToken(String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
-    return gitHubService.getAccessToken(code, gitHubProperty).getAccessToken();
+    return gitHubService.getAccessToken(code).getAccessToken();
   }
 
   private UserInfo validateAdminMembership(String accessToken) {

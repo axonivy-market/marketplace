@@ -7,6 +7,7 @@ import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.service.ReleaseLetterService;
 import org.junit.jupiter.api.Test;
