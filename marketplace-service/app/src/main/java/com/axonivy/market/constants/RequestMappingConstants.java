@@ -17,6 +17,7 @@ import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestMappingConstants {
   public static final String PRODUCT = API + "/product";
+  public static final String INTERNAL = "/internal";
   public static final String IDS = "ids";
   public static final String DEPRECATIONS = "deprecations";
   public static final String DEPRECATION_BY_ID = "{productId}/deprecations";
@@ -65,7 +66,7 @@ public class RequestMappingConstants {
   public static final String DOCUMENT = API + "/docs";
   public static final String DOCUMENT_VERSION_LANGUAGE = "/{artifact}/{version}/{language}";
   public static final String PRODUCT_MARKETPLACE_DATA = API + "/product-marketplace-data";
-  public static final String SECURITY_MONITOR = API + "/security-monitor";
+  public static final String SECURITY_MONITOR = API + INTERNAL + "/security-monitor";
   public static final String RELEASE_PREVIEW = API + "/release-preview";
   public static final String PRODUCT_PUBLIC_RELEASES = "/{id}/releases";
   public static final String PRODUCT_PUBLIC_RELEASE_BY_RELEASE_ID = "/{product-id}/releases/{release-id}";
@@ -73,9 +74,9 @@ public class RequestMappingConstants {
   public static final String PRODUCT_ID = "product-id";
   public static final String RELEASE_ID = "release-id";
   public static final String FEEDBACK_APPROVAL = "/approval";
-  public static final String MONITOR_DASHBOARD = API + "/monitor-dashboard";
-  public static final String SYNC_TASK_EXECUTION = API + "/sync-task-execution";
-  public static final String LOGS = API + "/logs";
+  public static final String MONITOR_DASHBOARD = API + INTERNAL + "/monitor-dashboard";
+  public static final String SYNC_TASK_EXECUTION = API + INTERNAL + "/sync-task-execution";
+  public static final String LOGS = API + INTERNAL + "/logs";
   public static final String REPOS = "repos";
   public static final String REPOS_REPORT = "/{productId}/{workflow}";
   public static final String WORKFLOW = "workflow";
@@ -86,5 +87,5 @@ public class RequestMappingConstants {
   public static final String RELEASE_LETTER = API + "/release-letters";
   public static final String LOG_STREAM_BY_TASK_KEY = "/stream/{taskKey}";
   public static final String ARCHIVE_BY_ID = "{productId}/archive";
-  public static final String APP_SETTING = API + "/settings";
+  public static final String APP_SETTING = API + INTERNAL + "/settings";
 }

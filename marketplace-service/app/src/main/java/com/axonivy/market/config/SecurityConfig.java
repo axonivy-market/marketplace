@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -56,32 +57,16 @@ public class SecurityConfig {
       SYNC_TASK_EXECUTION,
       SYNC_TASK_EXECUTION + "/{jobKey}"
   };
-  private static final String[] AUTHENTICATED_POST_ENDPOINTS = {
-      ADMIN_AUTH_V2 + PASSKEY + REGISTER + OPTIONS,
-      ADMIN_AUTH_V2 + PASSKEY + REGISTER + COMPLETE,
-      FEEDBACK,
-      PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
-      RELEASE_LETTER,
-      SECURITY_MONITOR
+  private static final String[] PUBLIC_POST_ENDPOINTS = {
+      AUTH + GITHUB_LOGIN,
+      AUTH + GITHUB_REQUEST_ACCESS,
+      RELEASE_PREVIEW,
+      ADMIN_AUTH_V2 + GITHUB_CALLBACK,
+      ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + OPTIONS,
+      ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + COMPLETE
   };
-  private static final String[] AUTHENTICATED_PUT_ENDPOINTS = {
-      FEEDBACK + FEEDBACK_APPROVAL,
-      MONITOR_DASHBOARD + SYNC,
-      MONITOR_DASHBOARD + SYNC_ONE_PRODUCT_BY_ID,
-      MONITOR_DASHBOARD + FOCUSED,
-      PRODUCT + SYNC,
-      PRODUCT + SYNC_ONE_PRODUCT_BY_ID,
-      PRODUCT + SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS,
-      PRODUCT + SYNC_ZIP_ARTIFACTS,
-      PRODUCT_DETAILS + SYNC_RELEASE_NOTES_FOR_PRODUCTS,
-      PRODUCT_MARKETPLACE_DATA + DEPRECATION_BY_ID,
-      PRODUCT_MARKETPLACE_DATA + ARCHIVE_BY_ID,
-      RELEASE_LETTER + BY_ID,
-      RELEASE_LETTER + SAVE_AS_DRAFT,
-      EXTERNAL_DOCUMENT + SYNC
-  };
-  private static final String[] AUTHENTICATED_DELETE_ENDPOINTS = {
-      RELEASE_LETTER + BY_ID
+  private static final String[] PUBLIC_PUT_ENDPOINTS = {
+      AUTH + GITHUB_VALIDATE_TOKEN
   };
   private final WriteAuditLoggingFilter writeAuditLoggingFilter;
   @Value("${server.servlet.session.cookie.name:ADMIN_SESSION}")
@@ -105,14 +90,17 @@ public class SecurityConfig {
         .securityContext(securityContext -> securityContext
             .requireExplicitSave(true)
             .securityContextRepository(securityContextRepository()))
-        .sessionManagement(session -> session.sessionFixation(sessionFixation -> sessionFixation.changeSessionId()))
+        .sessionManagement(session -> session
+            .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .requestMatchers(HttpMethod.HEAD, "/**").permitAll()
+            .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+            .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
-            .requestMatchers(HttpMethod.POST, AUTHENTICATED_POST_ENDPOINTS).authenticated()
-            .requestMatchers(HttpMethod.PUT, AUTHENTICATED_PUT_ENDPOINTS).authenticated()
-            .requestMatchers(HttpMethod.DELETE, AUTHENTICATED_DELETE_ENDPOINTS).authenticated()
-            .requestMatchers(HttpMethod.PUT, ADMIN_AUTH_V2 + GITHUB_VALIDATE_TOKEN).permitAll()
+            .requestMatchers(HttpMethod.POST, "/**").authenticated()
+            .requestMatchers(HttpMethod.PUT, "/**").authenticated()
+            .requestMatchers(HttpMethod.DELETE, "/**").authenticated()
             .anyRequest().permitAll())
         .logout(logout -> logout
             .logoutUrl(ADMIN_AUTH_V2 + LOGOUT)
