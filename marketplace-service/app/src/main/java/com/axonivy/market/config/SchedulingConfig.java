@@ -5,6 +5,7 @@ import com.axonivy.market.schedulingtask.ScheduledTasks;
 import com.axonivy.market.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,14 +30,15 @@ public class SchedulingConfig implements SchedulingConfigurer {
   private static final Duration MULTI_NODES_OFFSET = Duration.ofMinutes(15);
   private static final int NODE_DIVISOR = 2;
 
-  private final AppSettingService appSettingService;
-  private final ScheduledTasks scheduledTasks;
+  private final ObjectProvider<AppSettingService> appSettingService;
+  private final ObjectProvider<ScheduledTasks> scheduledTasks;
 
   @Value("${market.node-number:1}")
   private int nodeNumber;
 
   @Bean
   public ThreadPoolTaskScheduler taskScheduler() {
+    // Keep scheduled triggers on a bounded scheduler; cron coordination should not fan out unboundedly.
     var taskScheduler = new ThreadPoolTaskScheduler();
     taskScheduler.setPoolSize(POOL_SIZE);
     taskScheduler.setThreadNamePrefix(THREAD_NAME_PREFIX);
@@ -49,25 +51,25 @@ public class SchedulingConfig implements SchedulingConfigurer {
 
     registrar.setTaskScheduler(taskScheduler());
 
-    registrar.addTriggerTask(scheduledTasks::syncDataForProductFromGitHubRepo,
+    registrar.addTriggerTask(() -> scheduledTasks.getObject().syncDataForProductFromGitHubRepo(),
         context -> nextExecution(AppSettingKey.PRODUCTS_CRON, context));
 
-    registrar.addTriggerTask(scheduledTasks::syncDataForProductDocuments,
+    registrar.addTriggerTask(() -> scheduledTasks.getObject().syncDataForProductDocuments(),
         context -> nextExecution(AppSettingKey.DOCUMENTS_CRON, context));
 
-    registrar.addTriggerTask(scheduledTasks::syncDataForProductMavenDependencies,
+    registrar.addTriggerTask(() -> scheduledTasks.getObject().syncDataForProductMavenDependencies(),
         context -> nextExecution(AppSettingKey.PRODUCTS_DEPENDENCY_CRON, context));
 
-    registrar.addTriggerTask(scheduledTasks::syncDataForProductReleases,
+    registrar.addTriggerTask(() -> scheduledTasks.getObject().syncDataForProductReleases(),
         context -> nextExecution(AppSettingKey.PRODUCT_RELEASE_NOTES_CRON, context));
 
-    registrar.addTriggerTask(scheduledTasks::syncDataForGithubRepos,
+    registrar.addTriggerTask(() -> scheduledTasks.getObject().syncDataForGithubRepos(),
         context -> nextExecution(AppSettingKey.GITHUB_REPOS_CRON, context));
 
-    registrar.addTriggerTask(scheduledTasks::sendNotificationForSecurityMonitor,
+    registrar.addTriggerTask(() -> scheduledTasks.getObject().sendNotificationForSecurityMonitor(),
         context -> nextExecution(AppSettingKey.SEND_NOTIFICATION_SECURITY_MONITOR_CRON, context));
 
-    registrar.addTriggerTask(scheduledTasks::syncSecurityMonitor,
+    registrar.addTriggerTask(() -> scheduledTasks.getObject().syncSecurityMonitor(),
         context -> nextExecution(AppSettingKey.SECURITY_MONITOR_CRON, context));
   }
 
@@ -76,7 +78,7 @@ public class SchedulingConfig implements SchedulingConfigurer {
    * even-numbered nodes to reduce concurrent load in clustered deployments.
    */
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
-    var cron = appSettingService.getStringValueByKey(key);
+    var cron = appSettingService.getObject().getStringValueByKey(key);
     try {
       return calculateNextExecution(cron, context);
     } catch (IllegalArgumentException ex) {

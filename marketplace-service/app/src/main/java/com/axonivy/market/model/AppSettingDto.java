@@ -20,7 +20,7 @@ public class AppSettingDto {
 
   private String description;
 
-  private boolean encrypted;
+  private Boolean encrypted;
 
   public static AppSettingDto from(AppSetting setting, String value) {
     return AppSettingDto.builder()

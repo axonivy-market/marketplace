@@ -4,6 +4,7 @@ import com.axonivy.market.config.MatomoTrackerBuilder;
 import com.axonivy.market.constants.HttpHeaderConstants;
 import com.axonivy.market.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -19,16 +20,13 @@ import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
 
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class MatomoServiceImpl implements MatomoService {
 
   private static final String NEO_PRODUCT_DASHBOARD = "NEO Product Dashboard";
   private static final String PRODUCT_DETAILS_PREFIX = "/api/product-details/";
 
   private final MatomoTrackerBuilder matomoTrackerBuilder;
-
-  public MatomoServiceImpl(MatomoTrackerBuilder matomoTrackerBuilder) {
-    this.matomoTrackerBuilder = matomoTrackerBuilder;
-  }
 
   @Override
   public void trackEventAsync(HttpServletRequest httpServletRequest) {

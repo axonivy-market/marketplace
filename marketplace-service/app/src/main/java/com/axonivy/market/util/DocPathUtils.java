@@ -3,6 +3,9 @@ package com.axonivy.market.util;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.enums.DocumentLanguage;
+
+import lombok.NoArgsConstructor;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -10,7 +13,9 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
+import static lombok.AccessLevel.PRIVATE;
 
+@NoArgsConstructor(access = PRIVATE)
 public final class DocPathUtils {
   private static final Pattern PATH_PATTERN =
       Pattern.compile("^/?([^/]+)/([^/]+)/([^/]+)(?:/(.*))?$");
@@ -22,9 +27,6 @@ public final class DocPathUtils {
   public static final String DOC_EXTENSION = "-doc";
   public static final String PORTAL_ID = "portal";
   public static final String GUIDE_EXTENSION = "-guide";
-
-  private DocPathUtils() {
-  }
 
   /**
    * Extract the productId from a path like:

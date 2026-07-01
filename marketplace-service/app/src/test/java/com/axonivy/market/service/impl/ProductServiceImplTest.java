@@ -151,8 +151,6 @@ class ProductServiceImplTest extends BaseSetup {
         "Product short descriptions should match input short descriptions");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHub() throws IOException {
     // Start testing by adding new meta
@@ -226,8 +224,6 @@ class ProductServiceImplTest extends BaseSetup {
     assertTrue(result.isEmpty(), "Latest data from Market repo should be empty");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateLogoFromGitHub() throws IOException {
     // Start testing by adding new logo
@@ -592,8 +588,6 @@ class ProductServiceImplTest extends BaseSetup {
     return productModuleContent;
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubRemoveOldLogo() throws IOException {
     // Start testing by adding new logo
@@ -628,8 +622,6 @@ class ProductServiceImplTest extends BaseSetup {
     assertFalse(result.isEmpty(), "Latest data from Market repo should not be empty");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testUpdateNewLogoFromGitHubModifyLogo() throws IOException {
     // Start testing by adding new logo
@@ -686,8 +678,6 @@ class ProductServiceImplTest extends BaseSetup {
         "Sync one product should be failed");
   }
 
-  // Using a random UUID in test; no dedicated constant/ID needed
-  @SuppressWarnings("java:S5977")
   @Test
   void testSyncProductsAsUpdateMetaJSONFromGitHubAddVendorLogo() throws IOException {
     // Start testing by adding new meta

@@ -30,6 +30,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -186,7 +187,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
         .findByProductIdAndLanguage(productId, DocumentLanguage.ENGLISH);
     List<String> docMetaVersion = docMetas.stream().map(ExternalDocumentMeta::getVersion).toList();
     String resolvedVersion = VersionFactory.get(docMetaVersion, version);
-    return docMetas.stream().filter(meta -> StringUtils.equals(meta.getVersion(), resolvedVersion))
+    return docMetas.stream().filter(meta -> Strings.CS.equals(meta.getVersion(), resolvedVersion))
         .findAny().orElse(null);
   }
 
@@ -344,7 +345,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
     try {
       if (Files.isSymbolicLink(symlinkPath)) {
         var currentTargetPath = Files.readSymbolicLink(symlinkPath);
-        if (StringUtils.equals(targetPath.toString(), currentTargetPath.toString())) {
+        if (Strings.CS.equals(targetPath.toString(), currentTargetPath.toString())) {
           return symlinkPath.toString();
         }
         Files.delete(symlinkPath);
@@ -509,7 +510,7 @@ public class ExternalDocumentServiceImpl implements ExternalDocumentService {
       return null;
     }
 
-    DocumentLanguage language = ObjectUtils.defaultIfNull(extractLanguage(path), DocumentLanguage.ENGLISH);
+    DocumentLanguage language = ObjectUtils.getIfNull(extractLanguage(path), DocumentLanguage.ENGLISH);
     if (DevelopmentVersion.DEV.getCode().equalsIgnoreCase(
         version) || DevelopmentVersion.NIGHTLY.getCode().equalsIgnoreCase(version)) {
       return getRedirectURLForDevVersion(productName, artifactName, language);

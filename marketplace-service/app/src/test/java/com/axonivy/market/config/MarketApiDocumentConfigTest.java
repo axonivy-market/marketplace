@@ -59,7 +59,7 @@ class MarketApiDocumentConfigTest {
     when(paths.values()).thenReturn(Arrays.asList(pathItem1, pathItem2));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
-    groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
+    groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
 
     verify(openAPI).getPaths();
     verify(paths).values();
@@ -81,10 +81,10 @@ class MarketApiDocumentConfigTest {
     pathItem.setDelete(deleteOperation);
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(pathItem));
+    when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
-    groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
+    groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
 
     assertEquals(1, putOperation.getParameters().size(),
         "PUT operation should have exactly one header parameter added.");
@@ -107,10 +107,10 @@ class MarketApiDocumentConfigTest {
     pathItem.setPost(postOperation);
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(pathItem));
+    when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
-    groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
+    groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
 
     assertEquals(1, postOperation.getParameters().size(),
         "POST operation should have exactly one header parameter added.");
@@ -122,12 +122,12 @@ class MarketApiDocumentConfigTest {
     PathItem emptyPathItem = new PathItem();
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(emptyPathItem));
+    when(paths.values()).thenReturn(List.of(emptyPathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
 
     assertDoesNotThrow(
-        () -> groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI),
+        () -> groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI),
         "Customizing OpenAPI should not throw an exception even if the PathItem has no operations."
     );
   }
@@ -141,7 +141,7 @@ class MarketApiDocumentConfigTest {
     when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
-    groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
+    groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
 
     Parameter parameter = operation.getParameters().get(0);
     verifyParameterDetails(parameter);
@@ -155,7 +155,7 @@ class MarketApiDocumentConfigTest {
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
 
     assertDoesNotThrow(
-        () -> groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI),
+        () -> groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI),
         "Customizing OpenAPI should not throw an exception when there are no paths."
     );
   }
@@ -166,12 +166,12 @@ class MarketApiDocumentConfigTest {
     pathItem.setPost(postOperation);
 
     when(openAPI.getPaths()).thenReturn(paths);
-    when(paths.values()).thenReturn(Arrays.asList(pathItem));
+    when(paths.values()).thenReturn(Collections.singletonList(pathItem));
 
     GroupedOpenApi groupedOpenApi = marketApiDocumentConfig.buildMarketCustomHeader();
 
-    groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
-    groupedOpenApi.getOpenApiCustomizers().get(0).customise(openAPI);
+    groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
+    groupedOpenApi.getOpenApiCustomizers().iterator().next().customise(openAPI);
 
     assertEquals(2, postOperation.getParameters().size(),
         "POST operation should have exactly two parameters after two customizer calls, without unintended duplicates.");

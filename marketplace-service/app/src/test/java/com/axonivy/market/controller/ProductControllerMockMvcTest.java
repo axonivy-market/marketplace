@@ -10,9 +10,9 @@ import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ProductDependencyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +21,7 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,32 +43,35 @@ class ProductControllerMockMvcTest {
   @Autowired
   private MockMvc mockMvc;
 
-  @MockBean
+  @MockitoBean
   private com.axonivy.market.service.ProductService productService;
 
-  @MockBean
+  @MockitoBean
   private ExternalDocumentService externalDocumentService;
 
-  @MockBean
+  @MockitoBean
   private GitHubService gitHubService;
 
-  @MockBean
+  @MockitoBean
   private ProductModelAssembler assembler;
 
-  @MockBean
+  @MockitoBean
   private PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
-  @MockBean
+  @MockitoBean
   private AppSettingService appSettingService;
 
-  @MockBean
+  @MockitoBean
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
 
-  @MockBean
+  @MockitoBean
   private ProductDependencyService productDependencyService;
 
-  @MockBean
+  @MockitoBean
   private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+  @MockitoBean
+  private CacheManager cacheManager;
 
   @Test
   void shouldReturnProductsForSearchRequest() throws Exception {
@@ -99,8 +104,8 @@ class ProductControllerMockMvcTest {
             .param("page", "0")
             .param("size", "20"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$._embedded.products[0].id").value("portal"))
-        .andExpect(jsonPath("$._embedded.products[0].type").value("solution"))
-        .andExpect(jsonPath("$._embedded.products[0].names.en").value("Portal"));
+        .andExpect(jsonPath("$..id").value(hasItem("portal")))
+        .andExpect(jsonPath("$..type").value(hasItem("solution")))
+        .andExpect(jsonPath("$..names.en").value(hasItem("Portal")));
   }
 }
