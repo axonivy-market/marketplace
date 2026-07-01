@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { HttpClient, HttpContext, HttpHeaders, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, provideHttpClient, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
@@ -204,12 +204,20 @@ describe('AuthInterceptor', () => {
     expect(transferState.get(key, null)).toEqual(body);
   });
 
-  it('should add csrf header to mutating API requests when token is available', () => {
+  it('should add csrf header to mutating API requests via Angular XSRF support', () => {
     TestBed.resetTestingModule();
+
+    document.cookie = 'XSRF-TOKEN=csrf-token; path=/';
 
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptors([apiInterceptor])),
+        provideHttpClient(
+          withXsrfConfiguration({
+            cookieName: 'XSRF-TOKEN',
+            headerName: 'X-XSRF-TOKEN'
+          }),
+          withInterceptors([apiInterceptor])
+        ),
         provideHttpClientTesting(),
         {
           provide: AdminAuthService,

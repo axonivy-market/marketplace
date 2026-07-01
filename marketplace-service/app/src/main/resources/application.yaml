@@ -68,6 +68,7 @@ logging:
     org:
       springframework:
         web: warn
+        security: debug
       hibernate:
         SQL: '${LOGGING_SQL_LEVEL:INFO}'
 loggable:
@@ -86,8 +87,9 @@ market:
         patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
         maxAge: '3600'
   github:
-    oauth2-clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'
-    oauth2-clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
+    oauth2:
+      clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'
+      clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
     token: '${MARKET_GITHUB_TOKEN}'
     connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:10000}'
     market:

@@ -51,39 +51,39 @@ describe('AdminAuthService', () => {
     httpMock.verify();
   });
 
-  it('fetches a csrf token during initialization', async () => {
-    document.cookie = 'XSRF-TOKEN=csrf; path=/';
-    const initPromise = service.initializeSecurity();
+  it('fetches a csrf token and caches the live cookie', async () => {
+    const fetchPromise = firstValueFrom(service.fetchCsrfToken());
 
     const request = httpMock.expectOne(API_URI.ADMIN_CSRF);
     expect(request.request.method).toBe('GET');
-    request.flush({ token: 'ignored-body-token' });
+    document.cookie = 'XSRF-TOKEN=csrf; path=/';
+    request.flush(null);
 
-    await initPromise;
+    await fetchPromise;
     expect(service.csrfToken()).toBe('csrf');
   });
 
   it('prefers the live csrf cookie over the cached token', async () => {
-    const initPromise = service.initializeSecurity();
-
+    const fetchPromise = firstValueFrom(service.fetchCsrfToken());
     const request = httpMock.expectOne(API_URI.ADMIN_CSRF);
-    request.flush({ token: 'cached-csrf' });
+    document.cookie = 'XSRF-TOKEN=cached-csrf; path=/';
+    request.flush(null);
 
-    await initPromise;
+    await fetchPromise;
     document.cookie = 'XSRF-TOKEN=cookie-csrf; path=/';
 
     expect(service.csrfToken()).toBe('cookie-csrf');
   });
 
-  it('falls back to the csrf token from the response body when the cookie is unavailable', async () => {
-    const initPromise = service.initializeSecurity();
+  it('leaves the csrf token empty when the cookie is unavailable', async () => {
+    const fetchPromise = firstValueFrom(service.fetchCsrfToken());
 
     const request = httpMock.expectOne(API_URI.ADMIN_CSRF);
-    request.flush({ token: 'response-csrf' });
+    request.flush(null);
 
-    await initPromise;
+    await fetchPromise;
 
-    expect(service.csrfToken()).toBe('response-csrf');
+    expect(service.csrfToken()).toBeNull();
   });
 
   it('stores and clears the session user locally', () => {

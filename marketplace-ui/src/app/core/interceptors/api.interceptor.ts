@@ -62,7 +62,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const needsCsrf = requiresCsrfProtection(req.method);
   if (needsCsrf && !csrfToken) {
     return adminAuthService.fetchCsrfToken().pipe(
-      switchMap(() => next(buildApiRequest(req, requestURL, adminAuthService.csrfToken()))),
+      switchMap(() => next(buildApiRequest(req, requestURL))),
       finalize(() => {
         if (req.context.get(LoadingComponent)) {
           loadingService.hideLoading(req.context.get(LoadingComponent));
@@ -71,7 +71,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
 
-  return next(buildApiRequest(req, requestURL, csrfToken)).pipe(
+  return next(buildApiRequest(req, requestURL)).pipe(
     tap(event => {
       if (req.method === 'GET'
         && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
@@ -87,10 +87,10 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string, csrfToken: string | null) {
+function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string) {
   return req.clone({
     url: requestURL,
-    headers: addIvyHeaders(req.headers, req.method, csrfToken),
+    headers: addIvyHeaders(req.headers),
     withCredentials: true
   });
 }
@@ -99,13 +99,10 @@ function requiresCsrfProtection(method: string): boolean {
   return method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
 }
 
-function addIvyHeaders(headers: HttpHeaders, method: string, csrfToken: string | null): HttpHeaders {
+function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
   let updatedHeaders = headers;
   if (!updatedHeaders.has(REQUEST_BY)) {
     updatedHeaders = updatedHeaders.append(REQUEST_BY, IVY);
-  }
-  if (requiresCsrfProtection(method) && csrfToken && !updatedHeaders.has('X-XSRF-TOKEN')) {
-    updatedHeaders = updatedHeaders.append('X-XSRF-TOKEN', csrfToken);
   }
   return updatedHeaders;
 }

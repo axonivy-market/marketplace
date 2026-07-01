@@ -36,7 +36,6 @@ export class AppSettingsService {
       API_URI.APP_SETTINGS,
       {
         params,
-        headers: this.adminAuth.getAuthHeaders(),
         context: new HttpContext().set(
           LoadingComponent,
           LoadingComponentId.APP_SETTINGS
@@ -50,9 +49,6 @@ export class AppSettingsService {
       `${API_URI.APP_SETTINGS}/${encodeURIComponent(setting.settingKey)}`,
       {
         settingValue: setting.settingValue
-      },
-      {
-        headers: this.adminAuth.getAuthHeaders()
       }
     );
   }

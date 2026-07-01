@@ -12,7 +12,6 @@ import { RuntimeConfigService } from './core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from './core/models/runtime-config';
 import { provideClientHydration, withI18nSupport } from '@angular/platform-browser';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
-import { AdminAuthService } from './modules/admin-dashboard/admin-auth.service';
 
 const scrollConfig: InMemoryScrollingOptions = {
   scrollPositionRestoration: 'disabled',
@@ -54,7 +53,6 @@ export const appConfig: ApplicationConfig = {
         defaultLanguage: Language.EN
       })
     ),
-    provideAppInitializer(() => inject(BootstrapLoaderService).init()),
-    provideAppInitializer(() => inject(AdminAuthService).initializeSecurity())
+    provideAppInitializer(() => inject(BootstrapLoaderService).init())
   ]
 };

@@ -1,18 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
+import { Observable, catchError, map, of, tap } from 'rxjs';
 import { UserInfo } from '../../auth/auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { WindowRef } from '../../core/services/browser/window-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
 import { ADMIN_SESSION_TOKEN } from '../../shared/constants/common.constant';
-
-interface CsrfTokenResponse {
-  token: string;
-  headerName?: string;
-  parameterName?: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthService {
@@ -31,14 +25,6 @@ export class AdminAuthService {
     if (user) {
       this._userInfo.set(user);
     }
-  }
-
-  initializeSecurity(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return Promise.resolve();
-    }
-
-    return firstValueFrom(this.fetchCsrfToken().pipe(catchError(() => of(null)))).then(() => undefined);
   }
 
   loadFromSessionStorage(): UserInfo | null {
@@ -60,10 +46,9 @@ export class AdminAuthService {
     this._userInfo.set(userInfo);
   }
 
-  fetchCsrfToken(): Observable<CsrfTokenResponse> {
-    return this.httpClient.get<CsrfTokenResponse>(API_URI.ADMIN_CSRF).pipe(
-      tap(response => 
-        this._csrfToken.set(this.getLiveCsrfToken() ?? response?.token ?? null))
+  fetchCsrfToken(): Observable<void> {
+    return this.httpClient.get<void>(API_URI.ADMIN_CSRF).pipe(
+      tap(() => this._csrfToken.set(this.getLiveCsrfToken()))
     );
   }
 
