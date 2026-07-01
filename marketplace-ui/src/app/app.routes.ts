@@ -11,7 +11,6 @@ import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboa
 import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
 import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
-import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 import { TeamIntroductionComponent } from './modules/home/team-introduction/team-introduction.component';
 import { LogViewerComponent } from './modules/admin-dashboard/logs-viewer/logs-viewer.component';
@@ -21,6 +20,7 @@ import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-manag
 import {
   DeprecationManagementComponent
 } from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
+import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminSettingsComponent } from './modules/admin-dashboard/settings/settings.component';
 
 export const routes: Routes = [
@@ -56,8 +56,12 @@ export const routes: Routes = [
     component: MonitoringDashboardComponent
   },
   {
-    path: 'request-access',
+    path: 'admin-login-v2',
     component: AdminTokenComponent
+  },
+  {
+    path: 'request-access',
+    redirectTo: 'admin-login-v2'
   },
   {
     path: 'internal-dashboard',

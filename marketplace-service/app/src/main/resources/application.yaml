@@ -2,10 +2,13 @@ server:
   port: '8080'
   forward-headers-strategy: framework
   servlet:
-    context-path: /app
     session:
+      timeout: '${SESSION_TIMEOUT:2h}'
       cookie:
-        secure: '${SESSION_COOKIE_SECURE}'
+        name: '${SESSION_COOKIE_NAME:ADMIN_SESSION}'
+        http-only: true
+        secure: '${SESSION_COOKIE_SECURE:true}'
+    context-path: /app
   tomcat:
     connection-timeout: 240000ms
     threads:
@@ -65,6 +68,7 @@ logging:
     org:
       springframework:
         web: warn
+        security: debug
       hibernate:
         SQL: '${LOGGING_SQL_LEVEL:INFO}'
 loggable:
@@ -82,6 +86,21 @@ market:
       origin:
         patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
         maxAge: '3600'
+  github:
+    oauth2:
+      clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'
+      clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
+    token: '${MARKET_GITHUB_TOKEN}'
+    connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:10000}'
+    market:
+      branch: '${MARKET_GITHUB_MARKET_BRANCH}'
+  passkey:
+    rp-id: '${MARKET_PASSKEY_RP_ID:}'
+    rp-name: '${MARKET_PASSKEY_RP_NAME:Axon Ivy Marketplace Admin}'
+    origins: '${MARKET_PASSKEY_ORIGINS:}'
+    timeout-ms: '${MARKET_PASSKEY_TIMEOUT_MS:300000}'
+  allowed:
+    click-capacity: '${MARKET_CLICK_LIMIT}'
   encryption:
     key: '${MARKET_ENCRYPTION_SECRET_KEY}'
     salt: '${MARKET_ENCRYPTION_SALT}'

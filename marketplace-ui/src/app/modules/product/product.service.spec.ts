@@ -31,7 +31,7 @@ import { MarketProduct } from '../../shared/models/product.model';
 import { ArchiveAction } from '../../shared/enums/archive-action.enum';
 
 describe('ProductService', () => {
-  let products = MOCK_PRODUCTS._embedded.products;
+  let products = MOCK_PRODUCTS.content;
   let service: ProductService;
   let httpMock: HttpTestingController;
 
@@ -63,7 +63,7 @@ describe('ProductService', () => {
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
-      let products = response._embedded.products;
+      let products = response.content;
       for (let i = 0; i < products.length; i++) {
         expect(products[i].type).toEqual(TypeOption.CONNECTORS);
         expect(products[i].names['en'].toLowerCase()).toContain(searchString);
@@ -86,7 +86,7 @@ describe('ProductService', () => {
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
-      expect(response._embedded.products.length).toEqual(products.length);
+      expect(response.content.length).toEqual(products.length);
     });
   });
 
@@ -100,7 +100,7 @@ describe('ProductService', () => {
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
-      let products = response._embedded.products;
+      let products = response.content;
       for (let i = 0; i < products.length; i++) {
         if (
           products[i].platformReview &&
@@ -124,7 +124,7 @@ describe('ProductService', () => {
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
-      expect(response._embedded.products.length).toEqual(products.length);
+      expect(response.content.length).toEqual(products.length);
     });
   });
 
@@ -140,7 +140,7 @@ describe('ProductService', () => {
       isRESTClientEditor: false
     };
     service.findProductsByCriteria(criteria).subscribe(response => {
-      expect(response._embedded.products.length).toEqual(0);
+      expect(response.content.length).toEqual(0);
       expect(response.page.number).toEqual(1);
     });
   });
@@ -158,7 +158,7 @@ describe('ProductService', () => {
 
     service.findProductsByCriteria(criteria).subscribe(response => {
       expect(criteria.pageable).toEqual(DEFAULT_PAGEABLE_IN_REST_CLIENT);
-      let products = response._embedded.products;
+      let products = response.content;
       for (let i = 0; i < products.length; i++) {
         expect(products[i].type).toEqual(TypeOption.CONNECTORS);
         expect(products[i].names['en'].toLowerCase()).toContain(searchString);
@@ -465,11 +465,9 @@ describe('ProductService', () => {
 
     it('should use custom page size and language', () => {
       const mockResponse = {
-        _embedded: {
-          products: [
+        content: [
             { id: 'product-1', marketDirectory: 'dir1' }
-          ]
-        },
+        ],
         page: {
           number: 0,
           totalPages: 1

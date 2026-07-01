@@ -1,19 +1,17 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.entity.ReleaseLetterDraft;
 import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.service.ReleaseLetterService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -48,8 +46,15 @@ class ReleaseLetterControllerTest extends BaseSetup {
   @Mock
   private PagedResourcesAssembler<ReleaseLetter> pagedResourcesAssembler;
 
-  @InjectMocks
   private ReleaseLetterController releaseLetterController;
+
+  @org.junit.jupiter.api.BeforeEach
+  void setUp() {
+    releaseLetterController = new ReleaseLetterController(
+        releaseLetterService,
+        releaseLetterModelAssembler,
+        pagedResourcesAssembler);
+  }
 
   @Test
   void testFindAllReleaseLettersShouldReturnPagedModelWhenDataExists() {
@@ -182,18 +187,16 @@ class ReleaseLetterControllerTest extends BaseSetup {
   void testUpdateReleaseLetterShouldReturnUpdatedReleaseLetter() {
     String sprint = "S43";
     ReleaseLetterModelRequest releaseLetterModelRequestMock = createReleaseLetterModelRequestMock();
-
     ReleaseLetter releaseLetterMock = createReleaseLetterMock();
     ReleaseLetterModel model = new ReleaseLetterModel();
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    UserInfo currentUser = createCurrentUser(GITHUB_USER_ID);
 
-    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn(GITHUB_USER_ID);
     when(releaseLetterService.updateReleaseLetter(sprint, releaseLetterModelRequestMock, GITHUB_USER_ID))
         .thenReturn(releaseLetterMock);
     when(releaseLetterModelAssembler.toModel(releaseLetterMock))
         .thenReturn(model);
 
-    var response = releaseLetterController.updateReleaseLetter(sprint, releaseLetterModelRequestMock, mockRequest);
+    var response = releaseLetterController.updateReleaseLetter(sprint, releaseLetterModelRequestMock, currentUser);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when a release letter is successfully updated.");
@@ -210,17 +213,14 @@ class ReleaseLetterControllerTest extends BaseSetup {
     model.setId("release-letter-id");
     PagedModel<ReleaseLetterModel> pagedModel =
         PagedModel.of(List.of(model), new PagedModel.PageMetadata(1, 0, 1));
-
-    HttpServletRequest request = mock(HttpServletRequest.class);
-
-    when(request.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE)).thenReturn("github-user-id");
+    UserInfo currentUser = createCurrentUser("github-user-id");
     when(releaseLetterService.findAllReleaseLetters(pageable, false)).thenReturn(page);
     when(pagedResourcesAssembler.toModel(eq(page), any(RepresentationModelAssembler.class))).thenReturn(pagedModel);
     when(releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(anyString(), anyString()))
         .thenReturn(null);
 
     ResponseEntity<PagedModel<ReleaseLetterModel>> response =
-        releaseLetterController.findAllReleaseLettersForManagement(pageable, request);
+        releaseLetterController.findAllReleaseLettersForManagement(pageable, currentUser);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK.");
@@ -246,15 +246,11 @@ class ReleaseLetterControllerTest extends BaseSetup {
         .releaseLetterId(RELEASE_LETTER_ID_SAMPLE)
         .draftContent(RELEASE_LETTER_CONTENT_SAMPLE)
         .build();
-
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-
-    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE))
-        .thenReturn(GITHUB_USER_ID);
+    UserInfo currentUser = createCurrentUser(GITHUB_USER_ID);
     when(releaseLetterService.saveAsDraft(releaseLetterModelRequestMock, GITHUB_USER_ID))
         .thenReturn(releaseLetterDraftModel);
     ResponseEntity<ReleaseLetterDraftModel> response =
-        releaseLetterController.saveAsDraft(releaseLetterModelRequestMock, mockRequest);
+        releaseLetterController.saveAsDraft(releaseLetterModelRequestMock, currentUser);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when saving draft succeeds.");
@@ -262,7 +258,6 @@ class ReleaseLetterControllerTest extends BaseSetup {
         "Response body should contain the saved draft.");
     assertEquals(releaseLetterDraftModel, response.getBody(),
         "Response body should match the saved draft returned from service.");
-    verify(mockRequest).getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     verify(releaseLetterService)
         .saveAsDraft(releaseLetterModelRequestMock, GITHUB_USER_ID);
   }
@@ -273,11 +268,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
     releaseLetterDraft.setId("draft-id");
     releaseLetterDraft.setReleaseLetterId(RELEASE_LETTER_ID_SAMPLE);
     releaseLetterDraft.setDraftContent(RELEASE_LETTER_CONTENT_SAMPLE);
-
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-
-    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE))
-        .thenReturn(GITHUB_USER_ID);
+    UserInfo currentUser = createCurrentUser(GITHUB_USER_ID);
 
     when(releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
         GITHUB_USER_ID,
@@ -285,7 +276,7 @@ class ReleaseLetterControllerTest extends BaseSetup {
     )).thenReturn(releaseLetterDraft);
 
     ResponseEntity<ReleaseLetterDraftModel> response =
-        releaseLetterController.getDraft(RELEASE_LETTER_ID_SAMPLE, mockRequest);
+        releaseLetterController.getDraft(RELEASE_LETTER_ID_SAMPLE, currentUser);
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when draft exists.");
@@ -297,7 +288,6 @@ class ReleaseLetterControllerTest extends BaseSetup {
         "Release letter ID should match the draft entity.");
     assertEquals(releaseLetterDraft.getDraftContent(), response.getBody().getDraftContent(),
         "Draft content should match the draft entity.");
-    verify(mockRequest).getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     verify(releaseLetterService)
         .getDraftContentByGitHubUserIdAndReleaseLetterId(
             GITHUB_USER_ID,
@@ -307,27 +297,30 @@ class ReleaseLetterControllerTest extends BaseSetup {
 
   @Test
   void testGetDraftShouldReturnNullBodyWhenDraftDoesNotExist() {
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-
-    when(mockRequest.getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE))
-        .thenReturn(GITHUB_USER_ID);
+    UserInfo currentUser = createCurrentUser(GITHUB_USER_ID);
     when(releaseLetterService.getDraftContentByGitHubUserIdAndReleaseLetterId(
         GITHUB_USER_ID,
         RELEASE_LETTER_ID_SAMPLE
     )).thenReturn(null);
 
     ResponseEntity<ReleaseLetterDraftModel> response =
-        releaseLetterController.getDraft(RELEASE_LETTER_ID_SAMPLE, mockRequest);
+        releaseLetterController.getDraft(RELEASE_LETTER_ID_SAMPLE, currentUser);
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Response status should be 200 OK when no draft exists.");
     assertNull(response.getBody(),
         "Response body should be null when no draft exists.");
-    verify(mockRequest).getAttribute(AuthorizedAspect.GITHUB_USER_ID_ATTRIBUTE);
     verify(releaseLetterService)
         .getDraftContentByGitHubUserIdAndReleaseLetterId(
             GITHUB_USER_ID,
             RELEASE_LETTER_ID_SAMPLE
         );
+  }
+
+  private UserInfo createCurrentUser(String userId) {
+    var currentUser = new UserInfo();
+    currentUser.setId(userId);
+    currentUser.setUsername("test-user");
+    return currentUser;
   }
 
   private ReleaseLetter createReleaseLetterMock() {

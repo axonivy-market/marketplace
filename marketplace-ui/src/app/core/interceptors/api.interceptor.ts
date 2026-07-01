@@ -2,11 +2,12 @@ import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpSta
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
-import { finalize, of, tap } from 'rxjs';
+import { finalize, of, switchMap, tap } from 'rxjs';
 import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
+import { AdminAuthService } from '../../modules/admin-dashboard/admin-auth.service';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -45,6 +46,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const injector = inject(Injector);
   const runtimeConfig = inject(RuntimeConfigService);
+  const adminAuthService = inject(AdminAuthService);
   let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
 
   if (isPlatformServer(platformId)) {
@@ -56,12 +58,20 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     requestURL = `${apiURL}/${req.url}`;
   }
 
-  const cloneReq = req.clone({
-    url: requestURL,
-    headers: addIvyHeaders(req.headers)
-  });
+  const csrfToken = adminAuthService.csrfToken();
+  const needsCsrf = requiresCsrfProtection(req.method);
+  if (needsCsrf && !csrfToken) {
+    return adminAuthService.fetchCsrfToken().pipe(
+      switchMap(() => next(buildApiRequest(req, requestURL))),
+      finalize(() => {
+        if (req.context.get(LoadingComponent)) {
+          loadingService.hideLoading(req.context.get(LoadingComponent));
+        }
+      })
+    );
+  }
 
-  return next(cloneReq).pipe(
+  return next(buildApiRequest(req, requestURL)).pipe(
     tap(event => {
       if (req.method === 'GET'
         && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
@@ -77,10 +87,23 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
+function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string) {
+  return req.clone({
+    url: requestURL,
+    headers: addIvyHeaders(req.headers),
+    withCredentials: true
+  });
+}
+
+function requiresCsrfProtection(method: string): boolean {
+  return method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
+}
+
 function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
-  if (headers.has(REQUEST_BY)) {
-    return headers;
+  let updatedHeaders = headers;
+  if (!updatedHeaders.has(REQUEST_BY)) {
+    updatedHeaders = updatedHeaders.append(REQUEST_BY, IVY);
   }
-  return headers.append(REQUEST_BY, IVY);
+  return updatedHeaders;
 }
 

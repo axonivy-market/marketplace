@@ -33,6 +33,7 @@ public abstract class BaseCorsWebConfig implements WebMvcConfigurer {
         .allowedOriginPatterns(marketCorsAllowedOriginPatterns)
         .allowedMethods(resolveAllowedMethods())
         .allowedHeaders(resolveAllowedHeaders())
+        .allowCredentials(true)
         .maxAge(marketCorsAllowedOriginMaxAge);
   }
 

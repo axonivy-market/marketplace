@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppControllerTest {
-
   private final AppController appController = new AppController();
 
   @Test

@@ -16,6 +16,21 @@
     <div class="d-none d-lg-flex justify-content-center align-items-center">
       <app-header-toolbar [ngClass]="userInfo() && 'me-4'"></app-header-toolbar>
       @if (userInfo()) {
+        @if (isAdminRoute && supportsPasskeys) {
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm me-3"
+            [disabled]="isPasskeyBusy"
+            (click)="registerPasskey()">
+            @if (isPasskeyBusy) {
+              <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
+              Saving passkey
+            } @else {
+              <i class="ti ti-fingerprint me-2"></i>
+              {{ userInfo()?.hasPasskey ? 'Update passkey' : 'Create passkey' }}
+            }
+          </button>
+        }
         <app-github-user-badge />
       }
     </div>
@@ -27,6 +42,15 @@
         <i class="header__menu-button" [ngClass]="isHeaderOffcanvasOpen() ? 'ti ti-x' : 'ti ti-list'"></i>
       </button>
       @if (userInfo()) {
+        @if (isAdminRoute && supportsPasskeys) {
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm me-2"
+            [disabled]="isPasskeyBusy"
+            (click)="registerPasskey()">
+            <i class="ti ti-fingerprint"></i>
+          </button>
+        }
         <app-github-user-badge />
       }
     </div>
@@ -39,6 +63,15 @@
       <div id="offcanvas-google-search" class="gcse-search"></div>
     </div>
     <app-navigation [isInHeaderOffCanvas]="true" [isAdminPage]="isAdminRoute" class="mt-4" />
+    @if (userInfo() && isAdminRoute && supportsPasskeys) {
+      <button
+        type="button"
+        class="btn btn-outline-primary mt-4"
+        [disabled]="isPasskeyBusy"
+        (click)="registerPasskey()">
+        {{ userInfo()?.hasPasskey ? 'Update passkey' : 'Create passkey' }}
+      </button>
+    }
     <app-header-toolbar [isInHeaderOffCanvas]="true" class="mt-auto" />
   </div>
 </ng-template>

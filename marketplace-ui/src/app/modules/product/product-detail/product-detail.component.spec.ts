@@ -51,7 +51,7 @@ import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { afterEach, describe, beforeEach, expect, it } from 'vitest';
 
 
-const products = MOCK_PRODUCTS._embedded.products;
+const products = MOCK_PRODUCTS.content;
 
 describe('ProductDetailComponent', () => {
   let component: ProductDetailComponent;
@@ -119,6 +119,7 @@ describe('ProductDetailComponent', () => {
 
     mockAuthService = {
       getToken: vi.fn().mockName('AuthService.getToken'),
+      getUserId: vi.fn().mockName('AuthService.getUserId'),
       redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub')
     } as unknown as MockedObject<AuthService>;
     mockAppModalService = {
@@ -275,7 +276,7 @@ describe('ProductDetailComponent', () => {
 
   it('should open add feedback dialog if token is present', () => {
     languageService.selectedLanguage.mockReturnValue(Language.DE);
-    mockAuthService.getToken.mockReturnValue('token');
+    mockAuthService.getUserId.mockReturnValue('user-id');
 
     component.onClickRateBtn();
     fixture.detectChanges();
@@ -285,7 +286,7 @@ describe('ProductDetailComponent', () => {
 
   it('should redirect to Gitub if token is null', () => {
     languageService.selectedLanguage.mockReturnValue(Language.DE);
-    mockAuthService.getToken.mockReturnValue(null);
+    mockAuthService.getUserId.mockReturnValue(null);
 
     component.onClickRateBtn();
     fixture.detectChanges();

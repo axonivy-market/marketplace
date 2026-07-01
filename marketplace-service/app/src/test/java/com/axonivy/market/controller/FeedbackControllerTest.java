@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.entity.GithubUser;
@@ -10,14 +9,15 @@ import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.testutil.MockServletRequestUtils;
-import com.axonivy.market.service.FeedbackService;
-import com.axonivy.market.service.JwtService;
-import com.axonivy.market.service.GithubUserService;
+import com.axonivy.market.model.UserInfo;
 import io.jsonwebtoken.Claims;
+import com.axonivy.market.service.JwtService;
+
+import com.axonivy.market.service.FeedbackService;
+import com.axonivy.market.service.GithubUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import com.axonivy.market.aop.aspect.AuthorizedAspect;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -51,9 +52,6 @@ class FeedbackControllerTest extends BaseSetup {
   private FeedbackService service;
 
   @Mock
-  private JwtService jwtService;
-
-  @Mock
   private GithubUserService githubUserService;
 
   @Mock
@@ -62,14 +60,15 @@ class FeedbackControllerTest extends BaseSetup {
   @Mock
   private PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
-  @InjectMocks
+  @Mock
+  private JwtService jwtService;
+
   private FeedbackController feedbackController;
 
   @BeforeEach
   void setup() {
     feedbackModelAssembler = new FeedbackModelAssembler(githubUserService);
-    feedbackController = new FeedbackController(service, jwtService, feedbackModelAssembler,
-        pagedResourcesAssembler);
+    feedbackController = new FeedbackController(service, feedbackModelAssembler, pagedResourcesAssembler);
   }
 
   @Test
@@ -203,8 +202,9 @@ class FeedbackControllerTest extends BaseSetup {
 
     when(service.updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME)).thenReturn(updatedFeedback);
     when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
+    var currentUser = createCurrentUser(USER_ID_SAMPLE, USER_NAME_SAMPLE);
 
-    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval, request);
+    var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval, currentUser);
 
     verify(service).updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME);
     assertEquals(HttpStatus.OK, result.getStatusCode(),
@@ -227,13 +227,20 @@ class FeedbackControllerTest extends BaseSetup {
     var request = MockServletRequestUtils.createAndBindMockRequest();
     when(jwtService.getClaimsFromToken(any())).thenReturn(mockClaims);
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
-
-    var result = feedbackController.createFeedback(mockFeedbackModel, request);
+    var currentUser = createCurrentUser(USER_ID_SAMPLE, USER_NAME_SAMPLE);
+    var result = feedbackController.createFeedback(mockFeedbackModel, currentUser);
 
     assertEquals(HttpStatus.CREATED, result.getStatusCode(),
         "Response status should be 201 CREATED when a new feedback is successfully created.");
     assertTrue(Objects.requireNonNull(result.getHeaders().getLocation()).toString().contains(mockFeedback.getId()),
         "The Location header should contain the ID of the newly created feedback.");
+  }
+
+  private UserInfo createCurrentUser(String userId, String username) {
+    var currentUser = new UserInfo();
+    currentUser.setId(userId);
+    currentUser.setUsername(username);
+    return currentUser;
   }
 
   private Feedback createFeedbackMock() {

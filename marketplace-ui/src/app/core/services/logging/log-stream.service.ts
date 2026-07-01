@@ -22,7 +22,6 @@ import {
   fetchEventSource,
   FetchEventSourceInit
 } from '@microsoft/fetch-event-source';
-import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +30,6 @@ export class LogStreamService {
   private ctrl: AbortController | null = null;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly runtimeConfig = inject(RuntimeConfigService);
-  private readonly adminAuth = inject(AdminAuthService);
   private readonly taskLogs = signal<Map<string, string[]>>(new Map());
   private readonly controllers = new Map<string, AbortController>();
   private readonly apiInternalUrl = inject(API_INTERNAL_URL, {
@@ -66,19 +64,15 @@ export class LogStreamService {
     params = params.set(RequestParam.TIMESTAMP, ts);
     const logsUrl = `${baseUrl}/${API_URI.LOGS}/stream?${params.toString()}`;
 
-    const headersObj: Record<string, string> = {};
-    const headers = this.adminAuth.getAuthHeaders();
-    for (const key of headers.keys()) {
-      const val = headers.get(key);
-      if (val) {
-        headersObj[key] = val;
-      }
-    }
-
     this.ctrl = new AbortController();
     fetchEventSource(logsUrl, {
-      headers: headersObj,
       signal: this.ctrl.signal,
+      credentials: 'include',
+      onopen: async (response: Response) => {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(`Log stream unauthorized: ${response.status}`);
+        }
+      },
       onmessage: (event: EventSourceMessage) => {
         if (event.data === '') {
           return;
@@ -130,9 +124,6 @@ export class LogStreamService {
   connectTask(taskKey: string): void {
     if (this.controllers.has(taskKey)) { return; }
 
-    const token = this.adminAuth.token;
-    if (!token) { return; }
-
     let baseUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
     if (isPlatformBrowser(this.platformId)) {
       baseUrl = this.apiPublicUrl || baseUrl;
@@ -143,12 +134,12 @@ export class LogStreamService {
     this.controllers.set(taskKey, ctrl);
 
     this._fetchEventSource(url, {
-      headers: { Authorization: `Bearer ${token}` },
       signal: ctrl.signal,
+      credentials: 'include',
 
       onopen: async (response: Response) => {
         if (!response.ok) {
-          this.disconnectTask(taskKey);
+          throw new Error(`Task log stream failed: ${response.status}`);
         }
       },
 

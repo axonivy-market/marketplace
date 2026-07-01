@@ -17,9 +17,9 @@ import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
 
-const products = MOCK_PRODUCTS._embedded.products as Product[];
+const products = MOCK_PRODUCTS.content as Product[];
 const noDeNameAndNoLogoUrlProducts =
-  MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS._embedded.products as Product[];
+  MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS.content as Product[];
 
 describe('ProductCardComponent', () => {
   let component: ProductCardComponent;

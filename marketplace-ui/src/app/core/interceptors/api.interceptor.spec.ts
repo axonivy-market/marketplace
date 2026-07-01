@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { HttpClient, HttpContext, HttpHeaders, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, provideHttpClient, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
@@ -13,6 +13,7 @@ import { makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { LoadingService } from '../services/loading/loading.service';
+import { AdminAuthService } from '../../modules/admin-dashboard/admin-auth.service';
 
 describe('AuthInterceptor', () => {
   let fixture: ComponentFixture<ProductComponent>;
@@ -29,6 +30,10 @@ describe('AuthInterceptor', () => {
       providers: [
         provideHttpClient(withInterceptors([apiInterceptor])),
         provideHttpClientTesting(),
+        {
+          provide: AdminAuthService,
+          useValue: { csrfToken: () => null }
+        },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -105,6 +110,7 @@ describe('AuthInterceptor', () => {
         provideHttpClientTesting(),
         { provide: PLATFORM_ID, useValue: 'server' },
         { provide: API_INTERNAL_URL, useValue: internalUrl },
+        { provide: AdminAuthService, useValue: { csrfToken: () => null } },
         {
           provide: RuntimeConfigService,
           useValue: {
@@ -144,6 +150,7 @@ describe('AuthInterceptor', () => {
         providers: [
           provideHttpClient(withInterceptors([apiInterceptor])),
           provideHttpClientTesting(),
+          { provide: AdminAuthService, useValue: { csrfToken: () => null } },
           {
             provide: RuntimeConfigService,
             useValue: { get: () => '/app' }
@@ -195,6 +202,47 @@ describe('AuthInterceptor', () => {
     const key = makeStateKey<any>(`GET ${url}`);
 
     expect(transferState.get(key, null)).toEqual(body);
+  });
+
+  it('should add csrf header to mutating API requests via Angular XSRF support', () => {
+    TestBed.resetTestingModule();
+
+    document.cookie = 'XSRF-TOKEN=csrf-token; path=/';
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(
+          withXsrfConfiguration({
+            cookieName: 'XSRF-TOKEN',
+            headerName: 'X-XSRF-TOKEN'
+          }),
+          withInterceptors([apiInterceptor])
+        ),
+        provideHttpClientTesting(),
+        {
+          provide: AdminAuthService,
+          useValue: { csrfToken: () => 'csrf-token' }
+        },
+        {
+          provide: RuntimeConfigService,
+          useValue: { get: () => '/app' }
+        },
+        {
+          provide: LoadingService,
+          useValue: { showLoading: () => {}, hideLoading: () => {} }
+        }
+      ]
+    });
+
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    http.post('auth/admin/v2/passkey/register/options', {}).subscribe();
+
+    const req = httpMock.expectOne('/app/auth/admin/v2/passkey/register/options');
+    expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token');
+    req.flush({});
+    httpMock.verify();
   });
 
 });

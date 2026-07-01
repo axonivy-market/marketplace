@@ -1,44 +1,27 @@
-import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AdminTokenComponent } from './admin-token.component';
-import { Router } from '@angular/router';
-import { AdminAuthService } from '../admin-auth.service';
+import { importProvidersFrom } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
-import { of, throwError } from 'rxjs';
-import { UserInfo } from '../../../auth/auth.service';
-
-const mockUser: UserInfo = {
-  login: 'octocat',
-  name: 'The Octocat',
-  avatarUrl: 'https://avatar.url',
-  url: 'https://github.com/octocat',
-  token: 'test-token'
-};
+import { AdminTokenComponent } from './admin-token.component';
+import { AuthService } from '../../../auth/auth.service';
 
 describe('AdminTokenComponent', () => {
-  let component: AdminTokenComponent;
   let fixture: ComponentFixture<AdminTokenComponent>;
-  let authService: MockedObject<AdminAuthService>;
-  let router: MockedObject<Router>;
+  let component: AdminTokenComponent;
+  const authService = {
+    redirectToGitHub: vi.fn(),
+    loginWithPasskey: vi.fn().mockResolvedValue(undefined),
+    isPasskeySupported: vi.fn().mockReturnValue(true)
+  };
 
   beforeEach(async () => {
-    authService = {
-      setUserInfo: vi.fn().mockName('AdminAuthService.setUserInfo'),
-      logout: vi.fn().mockName('AdminAuthService.logout'),
-      requestAccessToken: vi
-        .fn()
-        .mockName('AdminAuthService.requestAccessToken')
-    } as MockedObject<AdminAuthService>;
-    router = {
-      navigate: vi.fn().mockName('Router.navigate')
-    } as MockedObject<Router>;
-
     await TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
+      imports: [AdminTokenComponent],
       providers: [
-        { provide: AdminAuthService, useValue: authService },
-        { provide: Router, useValue: router }
+        importProvidersFrom(TranslateModule.forRoot()),
+        {
+          provide: AuthService,
+          useValue: authService
+        }
       ]
     }).compileComponents();
 
@@ -47,77 +30,19 @@ describe('AdminTokenComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('starts the GitHub login flow', () => {
+    component.onSubmit();
+
+    expect(component.isGitHubProcessing).toBe(true);
+    expect(authService.redirectToGitHub).toHaveBeenCalledWith('/internal-dashboard');
   });
 
-  it('should initialize with button disabled', () => {
-    expect(component.isButtonDisabled).toBe(true);
-    expect(component.tokenControl.value).toBe('');
-  });
+  it('starts the passkey login flow', async () => {
+    component.passkeyUsername = 'octopus';
 
-  it('should enable button when token is entered', () => {
-    component.tokenControl.setValue('some-token');
+    await component.onPasskeyLogin();
 
-    expect(component.isButtonDisabled).toBe(false);
-  });
-
-  it('should disable button when token matches filledToken', () => {
-    component.filledToken = 'same-token';
-    component.tokenControl.setValue('same-token');
-
-    expect(component.isButtonDisabled).toBe(true);
-  });
-
-  describe('onSubmit', () => {
-    it('should call requestAccessToken and navigate on success', () => {
-      authService.requestAccessToken.mockReturnValue(of(mockUser));
-      component.tokenControl.setValue('valid-github-token');
-
-      component.onSubmit();
-
-      expect(component.isProcessing).toBe(false);
-      expect(authService.requestAccessToken).toHaveBeenCalledWith(
-        'valid-github-token'
-      );
-      expect(authService.setUserInfo).toHaveBeenCalledWith(mockUser);
-      expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
-      expect(component.errorMessage).toBe('');
-    });
-
-    it('should set error message when requestAccessToken fails', () => {
-      authService.requestAccessToken.mockReturnValue(
-        throwError(() => new Error('Invalid token'))
-      );
-      component.tokenControl.setValue('invalid-token');
-
-      component.onSubmit();
-
-      expect(component.errorMessage).toBe(ERROR_MESSAGES.INVALID_TOKEN);
-      expect(component.isProcessing).toBe(false);
-      expect(component.isButtonDisabled).toBe(true);
-      expect(authService.setUserInfo).not.toHaveBeenCalled();
-      expect(router.navigate).not.toHaveBeenCalled();
-    });
-
-    it('should disable control during processing', () => {
-      authService.requestAccessToken.mockReturnValue(of(mockUser));
-      component.tokenControl.setValue('valid-token');
-
-      component.onSubmit();
-
-      expect(component.tokenControl.enabled).toBe(true);
-    });
-
-    it('should re-enable control after error', () => {
-      authService.requestAccessToken.mockReturnValue(
-        throwError(() => new Error('Error'))
-      );
-      component.tokenControl.setValue('invalid-token');
-
-      component.onSubmit();
-
-      expect(component.tokenControl.enabled).toBe(true);
-    });
+    expect(authService.loginWithPasskey).toHaveBeenCalledWith('octopus');
+    expect(component.isPasskeyProcessing).toBe(false);
   });
 });

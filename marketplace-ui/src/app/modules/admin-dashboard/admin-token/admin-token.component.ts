@@ -1,12 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, ViewEncapsulation } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
-import { Router } from '@angular/router';
-import { AdminAuthService } from '../admin-auth.service';
-import { ERROR_MESSAGES } from '../../../shared/constants/common.constant';
-import { UserInfo } from '../../../auth/auth.service';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-admin-token',
@@ -15,46 +12,25 @@ import { UserInfo } from '../../../auth/auth.service';
   styleUrls: ['./admin-token.component.scss'],
   encapsulation: ViewEncapsulation.Emulated
 })
-export class AdminTokenComponent implements OnInit {
+export class AdminTokenComponent {
   themeService = inject(ThemeService);
-  authService = inject(AdminAuthService);
-  router = inject(Router);
-
-  filledToken = '';
-  tokenControl = new FormControl('');
-  errorMessage = '';
-  isProcessing = false;
-  isButtonDisabled = true;
-
-  ngOnInit(): void {
-    this.tokenControl.valueChanges.subscribe(newValue => {
-      this.isButtonDisabled = this.isProcessing || !newValue || newValue === this.filledToken;
-      if (!this.isButtonDisabled) {
-        this.errorMessage = '';
-      }
-    });
-  }
+  authService = inject(AuthService);
+  isGitHubProcessing = false;
+  isPasskeyProcessing = false;
+  passkeyUsername = '';
+  readonly supportsPasskeys = this.authService.isPasskeySupported();
 
   onSubmit(): void {
-    this.filledToken = this.tokenControl.value ?? '';
-    this.isProcessing = true;
-    this.tokenControl.disable();
-    
-    this.authService.requestAccessToken(this.filledToken).subscribe({
-      next: (userInfo: UserInfo) => {
-        this.errorMessage = '';
-        this.authService.setUserInfo(userInfo);
-        this.isProcessing = false;
-        this.tokenControl.enable();
-        this.router.navigate(['/internal-dashboard']);
-      },
-      error: () => {
-        this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
-        this.isProcessing = false;
-        this.tokenControl.enable();
-        this.tokenControl.markAsPristine();
-        this.isButtonDisabled = true;
-      }
-    });
+    this.isGitHubProcessing = true;
+    this.authService.redirectToGitHub('/internal-dashboard');
+  }
+
+  async onPasskeyLogin(): Promise<void> {
+    this.isPasskeyProcessing = true;
+    try {
+      await this.authService.loginWithPasskey(this.passkeyUsername);
+    } finally {
+      this.isPasskeyProcessing = false;
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { ApplicationConfig, importProvidersFrom, PLATFORM_ID, provideZoneChangeDetection, TransferState, inject, provideAppInitializer } from '@angular/core';
 import { InMemoryScrollingFeature, InMemoryScrollingOptions, provideRouter, withInMemoryScrolling } from '@angular/router';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -26,7 +26,14 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, inMemoryScrollingFeature),
     provideClientHydration(withI18nSupport()),
-    provideHttpClient(withFetch(), withInterceptors([apiInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withFetch(),
+      withXsrfConfiguration({
+        cookieName: 'XSRF-TOKEN',
+        headerName: 'X-XSRF-TOKEN'
+      }),
+      withInterceptors([apiInterceptor, errorInterceptor])
+    ),
     provideMatomo(() => {
       const configService = inject(RuntimeConfigService);
       return {
