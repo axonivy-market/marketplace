@@ -1,21 +1,21 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.core.entity.Image;
+import com.axonivy.market.core.service.CoreImageService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.repository.ImageRepository;
 import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.MavenUtils;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.kohsuke.github.GHContent;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -33,13 +33,20 @@ import static com.axonivy.market.constants.RegexConstants.SAFE_PATH_PATTERN;
 
 @Service
 @Log4j2
-@AllArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
   private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(IMAGE_EXTENSION);
 
   private final ImageRepository imageRepository;
   private final FileDownloadService fileDownloadService;
+  private final CoreImageService coreImageService;
+
+  public ImageServiceImpl(ImageRepository imageRepository, FileDownloadService fileDownloadService,
+      @Qualifier("CoreImageService") CoreImageService coreImageService) {
+    this.imageRepository = imageRepository;
+    this.fileDownloadService = fileDownloadService;
+    this.coreImageService = coreImageService;
+  }
 
   @Override
   public byte[] getImageBinary(GHContent ghContent, String downloadUrl) {
@@ -112,7 +119,7 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   public byte[] readImage(String id) {
-    return imageRepository.findById(id).map(Image::getImageData).orElse(null);
+    return coreImageService.readImage(id);
   }
 
   /**
