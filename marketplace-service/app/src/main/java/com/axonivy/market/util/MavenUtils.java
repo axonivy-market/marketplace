@@ -20,6 +20,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -202,7 +203,7 @@ public class MavenUtils {
         .filter(archivedArtifact
             -> MavenVersionComparator.getInstance().compare(version, archivedArtifact.getLastVersion()) <= 0)
         .min((artifact1, artifact2)
-            -> StringUtils.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
+            -> Strings.CS.compare(artifact1.getLastVersion(), artifact2.getLastVersion()))
         .orElse(null);
   }
 
@@ -290,7 +291,7 @@ public class MavenUtils {
   }
 
   public static boolean isProductArtifactId(String artifactId) {
-    return StringUtils.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
+    return Strings.CS.endsWith(artifactId, MavenConstants.PRODUCT_ARTIFACT_POSTFIX);
   }
 
   public static Set<Metadata> convertArtifactsToMetadataSet(Set<Artifact> artifacts, String productId) {
@@ -333,7 +334,7 @@ public class MavenUtils {
   }
 
   public static String getDefaultMirrorMavenRepo(String repoUrl) {
-    if (StringUtils.isBlank(repoUrl) || StringUtils.equals(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
+    if (StringUtils.isBlank(repoUrl) || Strings.CS.equals(CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL, repoUrl)) {
       return MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
     }
     return repoUrl;

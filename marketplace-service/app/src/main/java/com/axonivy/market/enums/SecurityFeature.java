@@ -2,7 +2,7 @@ package com.axonivy.market.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * <p>
@@ -24,7 +24,7 @@ public enum SecurityFeature {
 
   public static SecurityFeature of(String name) {
     for (var feature : values()) {
-      if (StringUtils.endsWithIgnoreCase(name, feature.getSecurityLabel())) {
+      if (Strings.CI.endsWith(name, feature.getSecurityLabel())) {
         return feature;
       }
     }

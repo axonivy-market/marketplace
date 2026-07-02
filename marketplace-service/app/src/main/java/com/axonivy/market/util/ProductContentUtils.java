@@ -7,6 +7,9 @@ import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.model.ReadmeContentsModel;
+
+import lombok.NoArgsConstructor;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.kohsuke.github.GHRelease;
@@ -25,6 +28,7 @@ import static com.axonivy.market.constants.ProductJsonConstants.DEFAULT_PRODUCT_
 import static com.axonivy.market.constants.ReadmeConstants.*;
 import static org.apache.commons.lang3.ArrayUtils.INDEX_NOT_FOUND;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class ProductContentUtils {
   /*
    * Accept any combination of #, can be ## or ###, and whitespaces before Demo/Setup word
@@ -49,9 +53,6 @@ public final class ProductContentUtils {
       Pattern.compile(GitHubConstants.README_FILE_LOCALE_REGEX);
   public static final Pattern IMAGE_EXTENSION_PATTERN =
       Pattern.compile(CommonConstants.IMAGE_EXTENSION);
-
-  private ProductContentUtils() {
-  }
 
   /**
    * MARP-810: Sabine requires that content in other languages, which has not been translated, be left empty and

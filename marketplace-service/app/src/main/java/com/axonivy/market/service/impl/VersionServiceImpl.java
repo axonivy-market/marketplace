@@ -21,6 +21,7 @@ import com.axonivy.market.service.VersionService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -115,7 +116,7 @@ public class VersionServiceImpl extends CoreVersionServiceImpl implements Versio
         artifactModels, targetVersion, modelArtifactIds);
 
     String fileType = artifactParts[artifactParts.length - 1];
-    if (!StringUtils.endsWith(downloadUrl, fileType)) {
+    if (!Strings.CS.endsWith(downloadUrl, fileType)) {
       log.warn("**VersionService: the found downloadUrl {} is not match with file type {}", downloadUrl, fileType);
       throw new InvalidParamException(ErrorCode.ARGUMENT_BAD_REQUEST,
           "File type mismatch. Expected: " + fileType + ", found: " + downloadUrl);

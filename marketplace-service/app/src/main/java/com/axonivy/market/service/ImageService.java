@@ -55,18 +55,4 @@ public interface ImageService extends CoreImageService {
    * @author ndkhanh
    */
   Image mappingImageFromDownloadedFolder(String productId, Path imagePath);
-
-  /**
-   * <p>
-   * Reads and returns the binary data of a preview/thumbnail image by its filename. Retrieves scaled-down
-   * versions of product images optimized for quick loading on listing pages and grids.
-   * </p>
-   *
-   * @param  imageName
-   *              type {@link String} - the filename of the preview image (e.g., "product-name-preview.jpg")
-   * @return {@link byte[]} - the raw preview image binary data; returns empty array if image not found
-   *         or cannot be read from storage
-   * @author pvquan
-   */
-  byte[] readPreviewImageByName(String imageName);
 }

@@ -9,6 +9,8 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.service.ImageService;
 import com.axonivy.market.util.ProductContentUtils;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -27,15 +29,11 @@ import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private final GitHubService gitHubService;
   private final ImageService imageService;
   private GHOrganization organization;
-
-  public GHAxonIvyProductRepoServiceImpl(GitHubService gitHubService, ImageService imageService) {
-    this.gitHubService = gitHubService;
-    this.imageService = imageService;
-  }
 
   @Override
   public GHContent getContentFromGHRepoAndTag(String repoName, String filePath, String tagVersion) {

@@ -7,6 +7,8 @@ import com.axonivy.market.github.model.GitHubFile;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHCommit.File;
@@ -32,17 +34,13 @@ import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKETPLACE_R
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoService {
   private static final LocalDateTime INITIAL_COMMIT_DATE = LocalDateTime.of(2020, 10, 30, 0, 0);
+  private final AppSettingService appSettingService;
   private final GitHubService gitHubService;
   private GHOrganization organization;
   private GHRepository repository;
-  private final AppSettingService appSettingService;
-
-  public GHAxonIvyMarketRepoServiceImpl(GitHubService gitHubService, AppSettingService appSettingService) {
-    this.gitHubService = gitHubService;
-    this.appSettingService = appSettingService;
-  }
 
   @Override
   public Map<String, List<GHContent>> fetchAllMarketItems() {

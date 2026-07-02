@@ -92,8 +92,8 @@ class JwtServiceImplTest extends BaseSetup {
 
     Jws<Claims> claimsJws = jwtService.getClaimsJws(token);
     assertNotNull(claimsJws, "getClaimsJws should return a non-null JWS object for a valid token");
-    assertNotNull(claimsJws.getBody(), "JWS body (claims) should not be null for a valid token");
-    assertEquals("123", claimsJws.getBody().getSubject(),
+    assertNotNull(claimsJws.getPayload(), "JWS payload (claims) should not be null for a valid token");
+    assertEquals("123", claimsJws.getPayload().getSubject(),
         "JWS subject should match the GitHub user ID encoded in the token");
   }
 }

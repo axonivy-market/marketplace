@@ -2,6 +2,7 @@ package com.axonivy.market.aspect;
 
 import com.axonivy.market.core.aop.aspect.TrackApiCallFromNeoAspect;
 import com.axonivy.market.core.service.MatomoService;
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static com.axonivy.market.constants.LoggingConstants.MARKET_WEBSITE;
 import static com.axonivy.market.core.constants.CoreCommonConstants.REQUESTED_BY;
@@ -44,12 +44,10 @@ class TrackApiCallFromNeoAspectTest {
 
     when(request.getHeader(REQUESTED_BY)).thenReturn("ivy");
 
-    ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
-    when(attributes.getRequest()).thenReturn(request);
+    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
+        .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
-    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(attributes);
-
-    aspect.afterTrackedApiCall();
+    aspect.afterTrackedApiCall(mock(JoinPoint.class));
 
     verify(matomoService, times(1)).trackEventAsync(request);
   }
@@ -60,12 +58,10 @@ class TrackApiCallFromNeoAspectTest {
 
     when(request.getHeader(REQUESTED_BY)).thenReturn(MARKET_WEBSITE);
 
-    ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
-    when(attributes.getRequest()).thenReturn(request);
+    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
+        .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
-    requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(attributes);
-
-    aspect.afterTrackedApiCall();
+    aspect.afterTrackedApiCall(mock(JoinPoint.class));
 
     verify(matomoService, never()).trackEventAsync(any());
   }
@@ -74,7 +70,7 @@ class TrackApiCallFromNeoAspectTest {
   void testShouldNotTrackWhenNoRequestContext() {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(null);
 
-    aspect.afterTrackedApiCall();
+    aspect.afterTrackedApiCall(mock(JoinPoint.class));
 
     verify(matomoService, never()).trackEventAsync(any());
   }
