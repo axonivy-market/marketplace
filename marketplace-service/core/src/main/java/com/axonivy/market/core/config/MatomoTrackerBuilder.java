@@ -1,9 +1,9 @@
-package com.axonivy.market.config;
+package com.axonivy.market.core.config;
 
-import com.axonivy.market.enums.AppSettingCategory;
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.util.SettingValueParser;
+import com.axonivy.market.core.enums.AppSettingCategory;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.utils.SettingValueParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.matomo.java.tracking.MatomoTracker;

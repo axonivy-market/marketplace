@@ -1,8 +1,9 @@
 package com.axonivy.market.config;
 
 import com.axonivy.market.core.constants.CoreCommonConstants;
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.constants.CoreHttpHeaderConstants;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.FilterChain;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 
 @Log4j2
 @Component
@@ -73,7 +73,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
   }
 
   private static String getClientIp(HttpServletRequest request) {
-    String realIp = StringUtils.trimToNull(request.getHeader(X_REAL_IP));
+    String realIp = StringUtils.trimToNull(request.getHeader(CoreHttpHeaderConstants.X_REAL_IP));
     return isValidIp(realIp) ? realIp : request.getRemoteAddr();
   }
 

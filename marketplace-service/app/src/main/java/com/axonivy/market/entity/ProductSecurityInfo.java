@@ -1,6 +1,7 @@
 package com.axonivy.market.entity;
 
 import com.axonivy.market.core.entity.AbstractAuditableEntity;
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.SecretScanning;
@@ -19,7 +20,6 @@ import lombok.Setter;
 import java.io.Serial;
 import java.util.Date;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT_SECURITY_INFO;
 
 @Getter
 @Setter
@@ -27,7 +27,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_SECURITY_INFO
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = PRODUCT_SECURITY_INFO)
+@Table(name = EntityConstants.PRODUCT_SECURITY_INFO)
 public class ProductSecurityInfo extends AbstractAuditableEntity<String> {
   @Serial
   private static final long serialVersionUID = 1;

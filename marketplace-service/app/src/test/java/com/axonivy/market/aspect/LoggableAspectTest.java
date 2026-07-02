@@ -1,7 +1,6 @@
 package com.axonivy.market.aspect;
 
 import com.axonivy.market.aop.aspect.LoggableAspect;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.LoggingConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.util.LoggingUtils;
@@ -20,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static com.axonivy.market.core.constants.CoreCommonConstants.REQUESTED_BY;
+import static com.axonivy.market.core.constants.CoreCommonConstants.USER_AGENT;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -76,8 +77,8 @@ class LoggableAspectTest {
   }
 
   private void mockRequestAttributes(String requestedBy, String userAgent) {
-    when(request.getHeader(CommonConstants.REQUESTED_BY)).thenReturn(requestedBy);
-    when(request.getHeader(CommonConstants.USER_AGENT)).thenReturn(userAgent);
+    when(request.getHeader(REQUESTED_BY)).thenReturn(requestedBy);
+    when(request.getHeader(USER_AGENT)).thenReturn(userAgent);
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
   }
 

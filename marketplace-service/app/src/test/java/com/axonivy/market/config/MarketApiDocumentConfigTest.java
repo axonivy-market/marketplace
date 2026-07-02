@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.axonivy.market.constants.CommonConstants.REQUESTED_BY;
+import static com.axonivy.market.core.constants.CoreCommonConstants.REQUESTED_BY;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

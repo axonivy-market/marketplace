@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.core.entity.GenericIdEntity;
 import com.axonivy.market.enums.TestStatus;
 import com.axonivy.market.enums.WorkFlowType;
@@ -8,7 +9,6 @@ import lombok.*;
 
 import java.io.Serial;
 
-import static com.axonivy.market.constants.EntityConstants.TEST_STEP;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ import static com.axonivy.market.constants.EntityConstants.TEST_STEP;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = TEST_STEP)
+@Table(name = EntityConstants.TEST_STEP)
 public class TestStep extends GenericIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;

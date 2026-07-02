@@ -15,8 +15,8 @@ import org.kohsuke.github.GHCompare;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRepository;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

@@ -1,6 +1,6 @@
-package com.axonivy.market.model;
+package com.axonivy.market.core.model;
 
-import com.axonivy.market.entity.AppSetting;
+import com.axonivy.market.core.entity.AppSetting;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

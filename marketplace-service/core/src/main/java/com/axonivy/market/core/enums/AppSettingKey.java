@@ -1,9 +1,8 @@
-package com.axonivy.market.enums;
+package com.axonivy.market.core.enums;
 
+import com.axonivy.market.core.constants.SyncTaskConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import static com.axonivy.market.constants.SyncTaskConstants.DEFAULT_SCHEDULE_CRON;
 
 /**
  * Enum representing application setting keys, their default values, categories, descriptions, and encryption status.
@@ -17,49 +16,49 @@ public enum AppSettingKey {
   // =========================
   PRODUCTS_CRON(
       "market.scheduling.products-cron",
-      DEFAULT_SCHEDULE_CRON,
+      SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for product synchronization.",
       false),
 
   PRODUCTS_DEPENDENCY_CRON(
       "market.scheduling.products-dependency-cron",
-      DEFAULT_SCHEDULE_CRON,
+      SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for dependency synchronization.",
       false),
 
   GITHUB_REPOS_CRON(
       "market.scheduling.github-repos-cron",
-      DEFAULT_SCHEDULE_CRON,
+      SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for workflow test status synchronization.",
       false),
 
   DOCUMENTS_CRON(
       "market.scheduling.documents-cron",
-      DEFAULT_SCHEDULE_CRON,
+      SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for documentation synchronization.",
       false),
 
   PRODUCT_RELEASE_NOTES_CRON(
       "market.scheduling.products-release-notes-cron",
-      DEFAULT_SCHEDULE_CRON,
+      SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for release notes synchronization.",
       false),
 
   SECURITY_MONITOR_CRON(
       "market.scheduling.security-monitor-cron",
-      DEFAULT_SCHEDULE_CRON,
+      SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for security monitoring.",
       false),
 
   SEND_NOTIFICATION_SECURITY_MONITOR_CRON(
       "market.scheduling.send-notification-security-monitor-cron",
-      DEFAULT_SCHEDULE_CRON,
+      SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
       AppSettingCategory.SCHEDULING.name(),
       "Cron expression for security monitor notifications.",
       false),

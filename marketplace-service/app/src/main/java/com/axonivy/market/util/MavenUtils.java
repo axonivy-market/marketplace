@@ -1,9 +1,8 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.core.comparator.MavenVersionComparator;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.constants.CoreProductJsonConstants;
@@ -259,7 +258,7 @@ public class MavenUtils {
     return Arrays.stream(artifactId.split(CoreCommonConstants.HYPHEN))
         .map(part -> part.substring(0, 1).toUpperCase(Locale.getDefault()) + part.substring(1).toLowerCase(
             Locale.getDefault()))
-        .collect(Collectors.joining(CommonConstants.SPACE_SEPARATOR));
+        .collect(Collectors.joining(CoreCommonConstants.SPACE_SEPARATOR));
   }
 
   public static Metadata buildSnapshotMetadataFromVersion(Metadata metadata, String version) {
