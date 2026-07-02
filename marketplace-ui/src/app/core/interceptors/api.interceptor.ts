@@ -60,9 +60,13 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const csrfToken = adminAuthService.csrfToken();
   const needsCsrf = requiresCsrfProtection(req.method);
+  console.log(`API Interceptor: ${req.method} ${requestURL} | CSRF Token: ${csrfToken} | Needs CSRF: ${needsCsrf}`);
   if (needsCsrf && !csrfToken) {
     return adminAuthService.fetchCsrfToken().pipe(
-      switchMap(() => next(buildApiRequest(req, requestURL))),
+      switchMap(() => {
+        const refreshedToken = adminAuthService.csrfToken();
+        return next(buildApiRequest(req, requestURL, refreshedToken));
+      }),
       finalize(() => {
         if (req.context.get(LoadingComponent)) {
           loadingService.hideLoading(req.context.get(LoadingComponent));
@@ -71,7 +75,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
 
-  return next(buildApiRequest(req, requestURL)).pipe(
+  return next(buildApiRequest(req, requestURL, csrfToken)).pipe(
     tap(event => {
       if (req.method === 'GET'
         && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
@@ -87,10 +91,15 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string) {
+function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string, csrfToken: string | null = null) {
+  let headers = addIvyHeaders(req.headers);
+  if (csrfToken) {
+    headers = headers.set('X-XSRF-TOKEN', csrfToken);
+  }
+
   return req.clone({
     url: requestURL,
-    headers: addIvyHeaders(req.headers),
+    headers,
     withCredentials: true
   });
 }

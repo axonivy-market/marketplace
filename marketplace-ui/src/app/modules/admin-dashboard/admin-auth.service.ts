@@ -48,7 +48,12 @@ export class AdminAuthService {
 
   fetchCsrfToken(): Observable<void> {
     return this.httpClient.get<void>(API_URI.ADMIN_CSRF).pipe(
-      tap(() => this._csrfToken.set(this.getLiveCsrfToken()))
+      tap(() => {
+        const token = this.getLiveCsrfToken();
+        if (token) {
+          this._csrfToken.set(token);
+        }
+      })
     );
   }
 
