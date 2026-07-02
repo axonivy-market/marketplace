@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 
 const API = 'api';
 const SYNC = 'sync';
+const INTERNAL = 'internal';
 
 export const API_URI = {
   APP: '/',
@@ -17,9 +18,9 @@ export const API_URI = {
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
   SYNC_GITHUB_MONITOR: `${API}/monitor-dashboard/${SYNC}`,
-  SYNC_SECURITY_MONITOR: `${API}/security-monitor`,
-  SYNC_TASK_EXECUTION: `${API}/sync-task-execution`,
-  SECURITY_MONITOR: `${API}/security-monitor`,
+  SYNC_SECURITY_MONITOR: `${API}/${INTERNAL}/security-monitor`,
+  SYNC_TASK_EXECUTION: `${API}/${INTERNAL}/sync-task-execution`,
+  SECURITY_MONITOR: `${API}/${INTERNAL}/security-monitor`,
   GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
   GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
   ADMIN_GITHUB_AUTHORIZATION: 'auth/admin/v2/github/authorization',
@@ -31,7 +32,7 @@ export const API_URI = {
   ADMIN_PASSKEY_AUTHENTICATE_COMPLETE: 'auth/admin/v2/passkey/authenticate/complete',
   ADMIN_CSRF: 'auth/admin/v2/csrf',
   ADMIN_LOGOUT: 'auth/admin/v2/logout',
-  LOGS: `${API}/logs`,
+  LOGS: `${API}/${INTERNAL}/logs`,
   RELEASE_LETTERS: `${API}/release-letters`,
   LATEST_RELEASE_LETTERS: `${API}/release-letters/latest`,
   PRODUCT_DEPRECATIONS: `${API}/product-marketplace-data/deprecations`,

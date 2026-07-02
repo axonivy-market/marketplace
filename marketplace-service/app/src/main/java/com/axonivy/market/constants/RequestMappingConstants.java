@@ -74,7 +74,7 @@ public class RequestMappingConstants {
   public static final String PRODUCT_ID = "product-id";
   public static final String RELEASE_ID = "release-id";
   public static final String FEEDBACK_APPROVAL = "/approval";
-  public static final String MONITOR_DASHBOARD = API + INTERNAL + "/monitor-dashboard";
+  public static final String MONITOR_DASHBOARD = API + "/monitor-dashboard";
   public static final String SYNC_TASK_EXECUTION = API + INTERNAL + "/sync-task-execution";
   public static final String LOGS = API + INTERNAL + "/logs";
   public static final String REPOS = "repos";

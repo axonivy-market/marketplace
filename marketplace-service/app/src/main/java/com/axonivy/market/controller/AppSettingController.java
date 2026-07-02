@@ -26,13 +26,11 @@ public class AppSettingController {
   private final AppSettingService service;
 
   @GetMapping
-  @Authorized
   public ResponseEntity<List<AppSettingDto>> getSettings(@RequestParam(required = false) String search) {
     return ResponseEntity.ok(service.search(search));
   }
 
   @PutMapping("/{key}")
-  @Authorized
   public ResponseEntity<AppSettingDto> updateSetting(
       @PathVariable String key,
       @RequestBody AppSettingDto request) {

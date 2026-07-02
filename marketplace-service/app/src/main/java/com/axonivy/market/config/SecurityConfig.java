@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpRequest;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,6 +34,7 @@ import org.springframework.util.StringUtils;
 import java.util.function.Supplier;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
+import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,29 +43,19 @@ public class SecurityConfig {
   private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
   private static final String RELEASE_LETTER_MANAGEMENT = RELEASE_LETTER + "/management";
   private static final String[] AUTHENTICATED_GET_ENDPOINTS = {
-      ADMIN_AUTH_V2 + SESSION,
-      FEEDBACK,
-      FEEDBACK + FEEDBACK_APPROVAL,
-      LOGS,
-      LOGS + DOWNLOAD_LOG_ARTIFACT,
-      LOGS + LOG_STREAM,
-      LOGS + LOG_STREAM_BY_TASK_KEY,
-      MONITOR_DASHBOARD + REPOS,
-      MONITOR_DASHBOARD + REPOS_REPORT,
-      PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
-      RELEASE_LETTER_MANAGEMENT,
-      RELEASE_LETTER + DRAFT_BY_ID,
-      SECURITY_MONITOR,
-      SYNC_TASK_EXECUTION,
-      SYNC_TASK_EXECUTION + "/{jobKey}"
+        API + INTERNAL +"/**",
+        FEEDBACK + FEEDBACK_APPROVAL,
+//        AUTH + "/**",
+        PRODUCT_MARKETPLACE_DATA+"/**",
+        RELEASE_LETTER + "/**",
   };
   private static final String[] PUBLIC_POST_ENDPOINTS = {
-      AUTH + GITHUB_LOGIN,
-      AUTH + GITHUB_REQUEST_ACCESS,
-      RELEASE_PREVIEW,
+//      AUTH + GITHUB_LOGIN,
+//      AUTH + GITHUB_REQUEST_ACCESS,
+//      RELEASE_PREVIEW,
       ADMIN_AUTH_V2 + GITHUB_CALLBACK,
-      ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + OPTIONS,
-      ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + COMPLETE
+//      ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + OPTIONS,
+//      ADMIN_AUTH_V2 + PASSKEY + AUTHENTICATE + COMPLETE
   };
   private static final String[] PUBLIC_PUT_ENDPOINTS = {
       AUTH + GITHUB_VALIDATE_TOKEN
@@ -86,21 +78,21 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
             .csrfTokenRepository(csrfTokenRepository)
             .csrfTokenRequestHandler(spaCsrfTokenRequestHandler())
-            .ignoringRequestMatchers(ADMIN_AUTH_V2 + GITHUB_CALLBACK))
+            .ignoringRequestMatchers(PUBLIC_POST_ENDPOINTS))
         .securityContext(securityContext -> securityContext
             .requireExplicitSave(true)
             .securityContextRepository(securityContextRepository()))
         .sessionManagement(session -> session
             .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId))
         .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers(HttpMethod.HEAD, "/**").permitAll()
             .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
+//            .requestMatchers(HttpMethod.GET, "/auth/admin/v2/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/**").authenticated()
             .requestMatchers(HttpMethod.DELETE, "/**").authenticated()
+            // Allow all GET, HEAD, OPTION method
             .anyRequest().permitAll())
         .logout(logout -> logout
             .logoutUrl(ADMIN_AUTH_V2 + LOGOUT)
