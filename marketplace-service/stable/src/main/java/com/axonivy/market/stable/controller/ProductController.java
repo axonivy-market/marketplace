@@ -1,5 +1,6 @@
 package com.axonivy.market.stable.controller;
 
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.core.model.ProductModel;
@@ -13,10 +14,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -75,6 +78,7 @@ public class ProductController {
   }
 
   @GetMapping()
+  @TrackApiCallFromNeo
   @Operation(summary = "Retrieve a list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'")
   public ResponseEntity<List<ProductModel>> findProducts(
