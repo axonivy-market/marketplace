@@ -47,7 +47,7 @@ class TrackApiCallFromNeoAspectTest {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
         .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
-    aspect.afterTrackedApiCall(mock(JoinPoint.class));
+    aspect.afterTrackedApiCall();
 
     verify(matomoService, times(1)).trackEventAsync(request);
   }
@@ -61,7 +61,7 @@ class TrackApiCallFromNeoAspectTest {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
         .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
-    aspect.afterTrackedApiCall(mock(JoinPoint.class));
+    aspect.afterTrackedApiCall();
 
     verify(matomoService, never()).trackEventAsync(any());
   }
@@ -70,7 +70,7 @@ class TrackApiCallFromNeoAspectTest {
   void testShouldNotTrackWhenNoRequestContext() {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(null);
 
-    aspect.afterTrackedApiCall(mock(JoinPoint.class));
+    aspect.afterTrackedApiCall();
 
     verify(matomoService, never()).trackEventAsync(any());
   }

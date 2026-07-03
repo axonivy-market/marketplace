@@ -73,12 +73,11 @@
     <dependency>
       <groupId>org.piwik.java.tracking</groupId>
       <artifactId>matomo-java-tracker-spring-boot-starter</artifactId>
-      <version>3.4.0</version>
+      <version>4.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-crypto</artifactId>
-      <version>6.4.5</version>
     </dependency>
   </dependencies>
   <build>

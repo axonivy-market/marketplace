@@ -1,6 +1,6 @@
 package com.axonivy.market.entity;
 
-import com.axonivy.market.constants.RequestMappingConstants;
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
@@ -26,7 +26,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = RequestMappingConstants.FEEDBACK)
+@Table(name = EntityConstants.FEEDBACK)
 public class Feedback extends AuditableIdEntity {
 
   @Serial
