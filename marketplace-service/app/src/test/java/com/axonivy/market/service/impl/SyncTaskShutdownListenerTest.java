@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
@@ -29,6 +30,9 @@ class SyncTaskShutdownListenerTest {
   @Mock
   private SyncTaskExecutionService syncTaskExecutionService;
 
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
+
   @InjectMocks
   private SyncTaskShutdownListener listener;
 
@@ -43,7 +47,7 @@ class SyncTaskShutdownListenerTest {
     listener.onShutdown();
     verify(syncTaskExecutionService, atLeastOnce())
         .markStatusFailure(
-            runningExecution,
+            runningExecution.getType(),
             "Application shutdown during execution"
         );
   }
@@ -73,7 +77,7 @@ class SyncTaskShutdownListenerTest {
 
     listener.onShutdown();
     verify(syncTaskExecutionService, times(1))
-        .markStatusFailure(startedExecution, "Application shutdown during execution");
+        .markStatusFailure(startedExecution.getType(), "Application shutdown during execution");
   }
 
   @Test

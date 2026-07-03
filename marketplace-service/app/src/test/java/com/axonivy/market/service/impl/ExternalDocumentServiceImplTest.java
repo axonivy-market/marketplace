@@ -2,6 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.SchedulingConfig;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
@@ -96,6 +97,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @MockitoBean
   AppSettingService appSettingService;
+
+  @MockitoBean
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @MockitoSpyBean
   ExternalDocumentServiceImpl service;

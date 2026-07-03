@@ -1,6 +1,7 @@
 package com.axonivy.market.service;
 
 import com.axonivy.market.entity.SyncTaskExecution;
+import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 
@@ -28,14 +29,13 @@ public interface SyncTaskExecutionService {
    * the task begins actual execution to track task progress and provide status updates.
    * </p>
    *
-   * @param execution
-   *              type {@link SyncTaskExecution} - the execution record to update
+   * @param syncTaskType
+   *              type {@link SyncTaskType} - the type of sync task to start (PRODUCTS, DOCUMENTS, DEPENDENCIES, etc.)
    * @param message
    *              type {@link String} - progress message or current operation description
-   * @return void - status is updated immediately in the database
    * @author vhhoang
    */
-  void markStatusRunning(SyncTaskExecution execution, String message);
+  void markStatusRunning(SyncTaskType syncTaskType, String message);
 
   /**
    * <p>
@@ -43,14 +43,13 @@ public interface SyncTaskExecutionService {
    * task execution completes successfully to mark task as finished with optional summary message.
    * </p>
    *
-   * @param execution
-   *              type {@link SyncTaskExecution} - the execution record to update
+   * @param syncTaskType
+   *              type {@link SyncTaskType} - the type of sync task to start (PRODUCTS, DOCUMENTS, DEPENDENCIES, etc.)
    * @param message
    *              type {@link String} - completion message or summary of what was synchronized
-   * @return void - status and end time are updated immediately in the database
    * @author nntthuy
    */
-  void markStatusSuccess(SyncTaskExecution execution, String message);
+  void markStatusSuccess(SyncTaskType syncTaskType, String message);
 
   /**
    * <p>
@@ -58,14 +57,27 @@ public interface SyncTaskExecutionService {
    * task execution encounters an error to mark task as failed with error message for troubleshooting.
    * </p>
    *
-   * @param execution
-   *              type {@link SyncTaskExecution} - the execution record to update
+   * @param syncTaskType
+   *              type {@link SyncTaskType} - the type of sync task to start (PRODUCTS, DOCUMENTS, DEPENDENCIES, etc.)
    * @param message
    *              type {@link String} - error message describing why the sync task failed
-   * @return void - status and end time are updated immediately in the database
    * @author nntthuy
    */
-  void markStatusFailure(SyncTaskExecution execution, String message);
+  void markStatusFailure(SyncTaskType syncTaskType, String message);
+
+  /**
+   * <p>
+   * Updates the synchronization task status to CANCELLED and records cancellation details. Called when
+   * task execution is cancelled to mark task as cancelled with optional message for monitoring.
+   * </p>
+   *
+   * @param syncTaskType
+   *              type {@link SyncTaskType} - the type of sync task to start (PRODUCTS, DOCUMENTS, DEPENDENCIES, etc.)
+   * @param message
+   *              type {@link String} - cancellation message or reason for cancelling the sync task
+   * @author pvquan
+   */
+  void markStatusCancelled(SyncTaskType syncTaskType, String message);
 
   /**
    * <p>
@@ -92,4 +104,18 @@ public interface SyncTaskExecutionService {
    * @author nntthuy
    */
   SyncTaskExecutionModel getSyncTaskExecutionByKey(String syncTaskKey);
+
+  /**
+   * <p>
+   * Cancels a running synchronization task identified by its unique job key. If the task is currently
+   * executing, it will be stopped and marked as cancelled. Returns true if cancellation was successful,
+   * false if the task was not found or could not be cancelled.
+   * </p>
+   *
+   * @param  jobKey
+   *              type {@link String} - the unique job key identifying the running sync task
+   * @return {@link boolean} - true if the task was successfully cancelled; false if not found or already completed
+   * @author pvquan
+   */
+  boolean cancel(String jobKey);
 }

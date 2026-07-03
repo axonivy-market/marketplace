@@ -3,6 +3,7 @@ package com.axonivy.market.controller;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.core.enums.ErrorCode;
@@ -55,6 +56,9 @@ class ProductDetailsControllerTest extends BaseSetup {
   private GithubReleaseModelAssembler githubReleaseModelAssembler;
   @Mock
   private ProductContentService productContentService;
+
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @InjectMocks
   private ProductDetailsController productDetailsController;

@@ -136,6 +136,8 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+
+
   // Synchronize
   trigger(syncTask: SyncTaskRow): void {
     this.selectedTask.set(syncTask);
@@ -144,6 +146,33 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
     this.executeTask(syncTask, this.syncTaskTriggers[syncTask.key]());
+  }
+
+  onAction(syncTask: SyncTaskRow): void {
+  if (syncTask.status === SyncTaskStatus.RUNNING) {
+    this.cancel(syncTask);
+  } else {
+    this.trigger(syncTask);
+  }
+}
+
+  // Cancel a running sync task
+  cancel(syncTask: SyncTaskRow) {
+    this.service.cancelSyncTask(syncTask.key).subscribe({
+      next: () => {
+        Object.assign(syncTask, {
+          status: SyncTaskStatus.CANCELLED,
+          completedDate: new Date(),
+          message: 'Cancelled by user'
+        });
+
+        this.loadingSyncTaskKey = null;
+      },
+      error: (err) => {
+        console.error('Cancel failed', err);
+        this.loadingSyncTaskKey = null;
+      }
+    });
   }
 
   private setSyncTaskRunning(syncTask: SyncTaskRow): void {

@@ -5,6 +5,7 @@ import com.axonivy.market.constants.LoggingConstants;
 import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +32,19 @@ public class TrackSyncTaskExecutionAspect {
     MDC.put(LoggingConstants.TASK_KEY, taskKey);
     try {
       execution = syncTaskExecutionService.start(jobType);
-      syncTaskExecutionService.markStatusRunning(execution, SyncTaskConstants.RUNNING_MESSAGE);
+      syncTaskExecutionService.markStatusRunning(execution.getType(), SyncTaskConstants.RUNNING_MESSAGE);
       Object result = pjp.proceed();
-      syncTaskExecutionService.markStatusSuccess(execution, SyncTaskConstants.SYNC_SUCCESSFULLY_MESSAGE);
+      syncTaskExecutionService.markStatusSuccess(execution.getType(), SyncTaskConstants.SYNC_SUCCESSFULLY_MESSAGE);
       return result;
+    } catch (TaskCancelledException ex) {
+      if (execution != null) {
+        syncTaskExecutionService.markStatusCancelled(execution.getType(), "Sync task was cancelled");
+        log.warn("Sync task {} was cancelled", jobType, ex);
+      }
+      return null;
     } catch (Throwable t) {
       if (execution != null) {
-        syncTaskExecutionService.markStatusFailure(execution, t.getMessage());
+        syncTaskExecutionService.markStatusFailure(execution.getType(), t.getMessage());
       }
       log.error("Sync task {} failed", jobType, t);
       throw t;

@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
@@ -9,6 +10,7 @@ import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ProductDependencyService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -48,6 +50,9 @@ class ProductControllerMockMvcTest {
 
   @MockitoBean
   private ExternalDocumentService externalDocumentService;
+
+  @MockitoBean
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @MockitoBean
   private GitHubService gitHubService;

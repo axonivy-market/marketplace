@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
@@ -40,6 +41,9 @@ class MonitorDashBoardControllerTest extends BaseSetup {
 
   @Mock
   private TestStepsService testStepsService;
+
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @Mock
   private GitHub gitHub;

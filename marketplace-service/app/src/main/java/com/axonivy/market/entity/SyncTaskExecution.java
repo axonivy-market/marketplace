@@ -57,4 +57,6 @@ public class SyncTaskExecution extends AuditableIdEntity {
 
   @Version
   private Integer version;
+
+  private Integer nodeNumber;
 }

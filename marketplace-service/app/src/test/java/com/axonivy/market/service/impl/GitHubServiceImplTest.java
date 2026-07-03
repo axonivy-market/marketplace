@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.OkHttpClientBuilder;
 import com.axonivy.market.config.RestClientBuilder;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
@@ -126,6 +127,9 @@ class GitHubServiceImplTest extends BaseSetup {
   @Mock
   private ThreadPoolTaskScheduler taskScheduler;
 
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
+
   @Spy
   @InjectMocks
   private GitHubServiceImpl gitHubService;
@@ -138,7 +142,7 @@ class GitHubServiceImplTest extends BaseSetup {
     lenient().when(restClientBuilder.build()).thenReturn(restClient);
     lenient().when(okHttpClientBuilder.build()).thenReturn(new OkHttpClient());
     gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository, appSettingService,
-        productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils));
+        productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils, cancellationRegistry));
   }
 
   @AfterEach

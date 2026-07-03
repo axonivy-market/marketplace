@@ -153,27 +153,27 @@
                 </ng-template>
               </td>
               <td class="text-center">
-                <button
-                  type="button"
-                  [lang]="languageService.selectedLanguage()"
-                  class="btn border-0 mb-0 sync-button text-center"
-                  [ngClass]="
-                    themeService.isDarkMode()
-                      ? 'btn-light text-dark'
-                      : 'btn-primary text-light'
-                  "
-                  (click)="trigger(syncTask)"
-                  [disabled]="syncTask.status === 'RUNNING'">
-                  @if (
-                    loadingSyncTaskKey === syncTask.key ||
-                    syncTask.status === 'RUNNING'
-                  ) {
-                    <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
-                    {{ 'common.admin.sync.syncingLabel' | translate }}
-                  } @else {
-                    {{ 'common.admin.sync.syncLabel' | translate }}
-                  }
-                </button>
+                <div class="d-flex justify-content-center gap-2">
+                  <button
+                    type="button"
+                    class="btn sync-button"
+                    [ngClass]="syncTask.status === 'RUNNING' ? 'btn-danger text-light' : (themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light')"
+                    (click)="onAction(syncTask)"
+                    >
+
+                    @if (loadingSyncTaskKey === syncTask.key || syncTask.status === 'RUNNING') {
+                      @if (syncTask.status === 'RUNNING') {
+                        <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
+                        {{ 'common.admin.sync.cancelLabel' | translate }}
+                      } @else {
+                        <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
+                        {{ 'common.admin.sync.syncingLabel' | translate }}
+                      }
+                    } @else {
+                      {{ 'common.admin.sync.syncLabel' | translate }}
+                    }
+                  </button>
+                </div>
               </td>
             </tr>
           }

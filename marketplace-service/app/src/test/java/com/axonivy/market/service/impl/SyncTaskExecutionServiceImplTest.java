@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
@@ -10,6 +11,7 @@ import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
@@ -26,6 +28,8 @@ class SyncTaskExecutionServiceImplTest {
   private static final String LONG_MESSAGE = StringUtils.repeat("a", 2000);
   private SyncTaskExecutionRepository repo;
   private SyncTaskExecutionServiceImpl service;
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @BeforeEach
   void setUp() {
@@ -131,7 +135,7 @@ class SyncTaskExecutionServiceImplTest {
     when(repo.save(any())).thenThrow(new ObjectOptimisticLockingFailureException(SyncTaskExecution.class,
         SyncTaskType.SYNC_PRODUCTS));
 
-    assertDoesNotThrow(() -> service.markStatusSuccess(execution, MESSAGE),
+    assertDoesNotThrow(() -> service.markStatusSuccess(execution.getType(), MESSAGE),
         "Should silently skip status update when optimistic lock conflict is detected");
   }
 
@@ -139,7 +143,7 @@ class SyncTaskExecutionServiceImplTest {
   void testMarkStatusSuccess() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    service.markStatusSuccess(execution, MESSAGE);
+    service.markStatusSuccess(execution.getType(), MESSAGE);
     assertEquals(SyncTaskStatus.SUCCESS, execution.getStatus(), "Status should be SUCCESS after markStatusSuccess");
     assertNotNull(execution.getCompletedDate(), "CompletedDate should not be null after markStatusSuccess");
     assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
@@ -149,7 +153,7 @@ class SyncTaskExecutionServiceImplTest {
   void testMarkStatusFailure() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    service.markStatusFailure(execution, MESSAGE);
+    service.markStatusFailure(execution.getType(), MESSAGE);
     assertEquals(SyncTaskStatus.FAILED, execution.getStatus(), "Status should be FAILED after markStatusFailure");
     assertNotNull(execution.getCompletedDate(), "CompletedDate should not be null after markStatusFailure");
     assertEquals(MESSAGE, execution.getMessage(), "Message should match the input message");
@@ -162,7 +166,7 @@ class SyncTaskExecutionServiceImplTest {
         .completedDate(LocalDateTime.now())
         .build();
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    service.markStatusRunning(execution, MESSAGE);
+    service.markStatusRunning(execution.getType(), MESSAGE);
     assertEquals(SyncTaskStatus.RUNNING, execution.getStatus(), "Status should be RUNNING after markStatusRunning");
     assertNotNull(execution.getLastRunDate(), "LastRunDate should not be null after markStatusRunning");
     assertNull(execution.getCompletedDate(), "CompletedDate should be null after markStatusRunning");
@@ -173,7 +177,7 @@ class SyncTaskExecutionServiceImplTest {
   void testMarkStatusMessageIsAbbreviated() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
     when(repo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    service.markStatusSuccess(execution, LONG_MESSAGE);
+    service.markStatusSuccess(execution.getType(), LONG_MESSAGE);
     assertTrue(execution.getMessage().length() <= 1024, "Message should be abbreviated to 1024 characters");
   }
 

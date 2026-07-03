@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.entity.TestStep;
@@ -22,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataAccessException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +59,8 @@ class GithubReposServiceImplTest {
   private GitHubService gitHubService;
   @Mock
   private ProductRepository productRepository;
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
   @TempDir
   Path tempDir;
   private GHRepository ghRepo;

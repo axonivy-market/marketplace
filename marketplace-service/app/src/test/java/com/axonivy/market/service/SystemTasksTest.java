@@ -1,5 +1,6 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.repository.ProductRepository;
@@ -38,6 +39,9 @@ class SystemTasksTest {
 
   @Mock
   GithubReposService githubReposService;
+
+  @Mock
+  SyncTaskCancellationRegistry cancellationRegistry;
 
   @InjectMocks
   ScheduledTasks tasks;

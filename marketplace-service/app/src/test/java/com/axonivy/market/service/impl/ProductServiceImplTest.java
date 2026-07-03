@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
@@ -133,6 +134,8 @@ class ProductServiceImplTest extends BaseSetup {
   private FileDownloadService fileDownloadService;
   @Mock
   private AppSettingService appSettingService;
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
   @Spy
   @InjectMocks
   private ProductServiceImpl productService;

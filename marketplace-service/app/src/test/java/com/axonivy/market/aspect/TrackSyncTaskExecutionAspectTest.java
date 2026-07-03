@@ -42,7 +42,7 @@ class TrackSyncTaskExecutionAspectTest {
     Object result = aspect.aroundSyncTask(pjp, track);
 
     assertEquals("result", result, "Result should match the value returned by pjp.proceed()");
-    verify(syncTaskExecutionService).markStatusSuccess(execution, SyncTaskConstants.SYNC_SUCCESSFULLY_MESSAGE);
+    verify(syncTaskExecutionService).markStatusSuccess(execution.getType(), SyncTaskConstants.SYNC_SUCCESSFULLY_MESSAGE);
     verify(syncTaskExecutionService, never()).markStatusFailure(any(), any());
   }
 
@@ -57,7 +57,7 @@ class TrackSyncTaskExecutionAspectTest {
     RuntimeException thrown = assertThrows(RuntimeException.class, () -> aspect.aroundSyncTask(pjp, track),
         "Should throw RuntimeException when pjp.proceed() fails");
     assertEquals(fail, thrown.getMessage(), "Exception message should match the thrown message");
-    verify(syncTaskExecutionService).markStatusFailure(execution, fail);
+    verify(syncTaskExecutionService).markStatusFailure(execution.getType(), fail);
     verify(syncTaskExecutionService, never()).markStatusSuccess(any(), any());
   }
 
