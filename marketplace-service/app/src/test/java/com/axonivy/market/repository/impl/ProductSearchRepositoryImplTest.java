@@ -71,26 +71,26 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     Path<String> keyValue = mock(Path.class);
 
     MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(),any())).thenReturn(namesJoin);
+    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
     when(namesJoin.value()).thenReturn(nameValue);
     when(namesJoin.key()).thenReturn(keyValue);
 
-     Predicate predicate = mock(Predicate.class);
-     when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
+    Predicate predicate = mock(Predicate.class);
+    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
 
-     // For query products
-     when(em.getCriteriaBuilder()).thenReturn(cb);
-     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
-     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
-     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
-     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
-     when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
-     when(em.createQuery(criteriaQuery)).thenReturn(query);
-     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
+    // For query products
+    when(em.getCriteriaBuilder()).thenReturn(cb);
+    when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
+    when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
+    when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
+    when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
+    when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
+    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
+    when(em.createQuery(criteriaQuery)).thenReturn(query);
+    when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
-     // For counting
-     when(cb.createQuery(Long.class)).thenReturn(criteriaCountQuery);
+    // For counting
+    when(cb.createQuery(Long.class)).thenReturn(criteriaCountQuery);
     when(criteriaCountQuery.from(Product.class)).thenReturn(countRoot);
     when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, countRoot)).thenReturn(predicate);
     when(criteriaCountQuery.select(any())).thenReturn(criteriaCountQuery);
@@ -107,18 +107,18 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
         "Expected product name not found in the result");
   }
 
-   @Test
-   void testSearchByCriteriaOrderByStandard() {
-     TypedQuery<Product> query = mock(TypedQuery.class);
-     CriteriaBuilder cb = mock(CriteriaBuilder.class);
-     CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
-     Root<Product> productRoot = mock(Root.class);
+  @Test
+  void testSearchByCriteriaOrderByStandard() {
+    TypedQuery<Product> query = mock(TypedQuery.class);
+    CriteriaBuilder cb = mock(CriteriaBuilder.class);
+    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
+    Root<Product> productRoot = mock(Root.class);
 
-     MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-     Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(),any())).thenReturn(namesJoin);
+    MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
+    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
 
-     Predicate predicate = mock(Predicate.class);
-     when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
+    Predicate predicate = mock(Predicate.class);
+    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
 
 
     // For Sort standard
@@ -132,27 +132,27 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     // Mock coalesce expression
     when(cb.coalesce(mockPath, Integer.MIN_VALUE)).thenReturn(mockCoalesce);
 
-     // Mock descending order with coalesce
-     when(cb.desc(mockCoalesce)).thenReturn(mockOrder);
+    // Mock descending order with coalesce
+    when(cb.desc(mockCoalesce)).thenReturn(mockOrder);
 
-     // For query products
-     when(em.getCriteriaBuilder()).thenReturn(cb);
-     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
-     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
-     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
-     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
-     when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
-     when(em.createQuery(criteriaQuery)).thenReturn(query);
-     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
+    // For query products
+    when(em.getCriteriaBuilder()).thenReturn(cb);
+    when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
+    when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
+    when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
+    when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
+    when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
+    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
+    when(em.createQuery(criteriaQuery)).thenReturn(query);
+    when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
-     Page<Product> result = productListedRepository.searchByCriteria(searchCriteria, PAGEABLE_STANDARD);
+    Page<Product> result = productListedRepository.searchByCriteria(searchCriteria, PAGEABLE_STANDARD);
 
     assertFalse(result.isEmpty(), "Result is empty");
     assertTrue(result.isFirst(), "Result is not on the first page");
     assertEquals(2, result.getContent().size(), "Unexpected number of products");
     assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
-            "Expected product name not found in the result");
+        "Expected product name not found in the result");
 
   }
 
