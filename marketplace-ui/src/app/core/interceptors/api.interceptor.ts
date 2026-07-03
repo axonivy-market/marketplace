@@ -1,13 +1,18 @@
-import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpStatusCode } from '@angular/common/http';
+import {
+  HttpHeaders,
+  HttpContextToken,
+  HttpInterceptorFn,
+  HttpResponse,
+  HttpStatusCode
+} from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
-import { finalize, of, switchMap, tap } from 'rxjs';
+import { finalize, of, tap } from 'rxjs';
 import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
-import { AdminAuthService } from '../../modules/admin-dashboard/admin-auth.service';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -46,7 +51,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const injector = inject(Injector);
   const runtimeConfig = inject(RuntimeConfigService);
-  const adminAuthService = inject(AdminAuthService);
   let apiURL = runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
 
   if (isPlatformServer(platformId)) {
@@ -58,28 +62,14 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     requestURL = `${apiURL}/${req.url}`;
   }
 
-  const csrfToken = adminAuthService.csrfToken();
-  const needsCsrf = requiresCsrfProtection(req.method);
-  console.log(`API Interceptor: ${req.method} ${requestURL} | CSRF Token: ${csrfToken} | Needs CSRF: ${needsCsrf}`);
-  if (needsCsrf && !csrfToken) {
-    return adminAuthService.fetchCsrfToken().pipe(
-      switchMap(() => {
-        const refreshedToken = adminAuthService.csrfToken();
-        return next(buildApiRequest(req, requestURL, refreshedToken));
-      }),
-      finalize(() => {
-        if (req.context.get(LoadingComponent)) {
-          loadingService.hideLoading(req.context.get(LoadingComponent));
-        }
-      })
-    );
-  }
-
-  return next(buildApiRequest(req, requestURL, csrfToken)).pipe(
+  return next(buildApiRequest(req, requestURL)).pipe(
     tap(event => {
-      if (req.method === 'GET'
-        && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
-        && req.context.get(CachingEnabled) !== false) {
+      if (
+        req.method === 'GET' &&
+        event instanceof HttpResponse &&
+        event.status === HttpStatusCode.Ok &&
+        req.context.get(CachingEnabled) !== false
+      ) {
         transferState.set(key, event.body);
       }
     }),
@@ -91,21 +81,14 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string, csrfToken: string | null = null) {
+function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string) {
   let headers = addIvyHeaders(req.headers);
-  if (csrfToken) {
-    headers = headers.set('X-XSRF-TOKEN', csrfToken);
-  }
 
   return req.clone({
     url: requestURL,
     headers,
     withCredentials: true
   });
-}
-
-function requiresCsrfProtection(method: string): boolean {
-  return method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
 }
 
 function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
@@ -115,4 +98,3 @@ function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
   }
   return updatedHeaders;
 }
-
