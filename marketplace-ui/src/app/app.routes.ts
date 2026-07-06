@@ -27,9 +27,14 @@ export const routes: Routes = [
   // OAuth callback
   {
     path: 'auth/github/callback',
-    component: GithubCallbackComponent
+    component: GithubCallbackComponent,
+    children: [
+      {
+        path: 'admin',
+        component: GithubCallbackComponent
+      }
+    ]
   },
-
   // Error handling more specific first
   {
     path: 'error-page/:id',

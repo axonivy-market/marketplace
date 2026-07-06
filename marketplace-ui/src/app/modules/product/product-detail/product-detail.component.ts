@@ -594,7 +594,7 @@ export class ProductDetailComponent implements AfterViewInit {
     if (this.authService.getFeedbackUserId()) {
       this.appModalService.openAddFeedbackDialog();
     } else {
-      this.authService.redirectToGitHub(productId, { useOriginalState: true });
+      this.authService.redirectToGitHub(productId, { useAdminState: false });
     }
   }
 

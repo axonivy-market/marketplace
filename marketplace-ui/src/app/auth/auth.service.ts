@@ -41,6 +41,7 @@ export interface UserInfo extends GitHubUser {
 export class AuthService {
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
   private readonly githubOAuthCallbackUrl: string;
+  private readonly githubAdminOAuthCallbackUrl: string;
 
   constructor(
     private readonly http: HttpClient,
@@ -51,26 +52,30 @@ export class AuthService {
   ) {
     const win = this.windowRef.nativeWindow;
     const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_CALLBACK);
+    const adminCallbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_ADMIN_OAUTH_CALLBACK);
     this.githubOAuthCallbackUrl = `${win?.location?.origin ?? ''}${callbackPath}`;
+    this.githubAdminOAuthCallbackUrl = `${win?.location?.origin ?? ''}${adminCallbackPath}`;
   }
 
-  redirectToGitHub(originalUrl: string, options?: { useOriginalState?: boolean }): void {
-    void this.redirectToGitHubInternal(originalUrl, options?.useOriginalState ?? false);
+  redirectToGitHub(originalUrl: string, options?: { useAdminState?: boolean }): void {
+    void this.redirectToGitHubInternal(originalUrl, options?.useAdminState ?? false);
   }
 
   handleGitHubCallback(code: string, state: string): void {
-    void this.handleGitHubCallbackInternal(code, state);
+    void this.handleGitHubCallbackInternal(code, state, API_URI.ADMIN_GITHUB_CALLBACK);
   }
 
-  private async redirectToGitHubInternal(originalUrl: string, useOriginalState: boolean): Promise<void> {
-    const state = useOriginalState
-      ? originalUrl
-      : await this.fetchGitHubAuthorizationState();
+  handleGitHubAdminCallback(code: string, state: string): void {
+    void this.handleGitHubCallbackInternal(code, state, this.githubAdminOAuthCallbackUrl);
+  }
+
+  private async redirectToGitHubInternal(originalUrl: string, useAdminState: boolean): Promise<void> {
+    const state = useAdminState ? await this.fetchGitHubAdminAuthorizationState() : originalUrl;
     this.redirectWindowToGitHub(this.buildGitHubAuthorizationUrl(state));
   }
 
-  private async handleGitHubCallbackInternal(code: string, state: string): Promise<void> {
-    const userInfo = await firstValueFrom(this.http.post<UserInfo>(API_URI.ADMIN_GITHUB_CALLBACK, { code, state }));
+  private async handleGitHubCallbackInternal(code: string, state: string, callBackUrl: string): Promise<void> {
+    const userInfo = await firstValueFrom(this.http.post<UserInfo>(callBackUrl, { code, state }));
     await this.handleAuthenticatedUser(userInfo);
   }
 
@@ -85,9 +90,9 @@ export class AuthService {
     return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
   }
 
-  private async fetchGitHubAuthorizationState(): Promise<string> {
+  private async fetchGitHubAdminAuthorizationState(): Promise<string> {
     await this.ensureCsrfToken();
-    const { state } = await firstValueFrom(this.http.get<GitHubAuthorizationState>(API_URI.ADMIN_GITHUB_AUTHORIZATION));
+    const { state } = await firstValueFrom(this.http.get<GitHubAuthorizationState>(this.githubAdminOAuthCallbackUrl));
     return state;
   }
 
