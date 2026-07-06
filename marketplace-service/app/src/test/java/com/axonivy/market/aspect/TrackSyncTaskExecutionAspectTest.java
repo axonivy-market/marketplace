@@ -14,8 +14,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TrackSyncTaskExecutionAspectTest {
@@ -92,7 +91,7 @@ class TrackSyncTaskExecutionAspectTest {
 
     Object result = aspect.aroundSyncTask(pjp, track);
 
-    assertEquals(null, result, "Aspect should return null when task is cancelled");
+    assertNull(result, "Aspect should return null when task is cancelled");
     verify(syncTaskExecutionService).markStatusRunning(execution.getType(), SyncTaskConstants.RUNNING_MESSAGE);
     verify(syncTaskExecutionService).markStatusCancelled(execution.getType(), "Sync task was cancelled");
     verify(syncTaskExecutionService, never()).markStatusSuccess(any(), any());

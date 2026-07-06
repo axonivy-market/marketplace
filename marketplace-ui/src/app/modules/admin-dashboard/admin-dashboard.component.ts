@@ -168,7 +168,7 @@ export class AdminDashboardComponent implements OnInit {
 
         this.loadingSyncTaskKey = null;
       },
-      error: err => {
+      error: () => {
         this.loadingSyncTaskKey = null;
       }
     });

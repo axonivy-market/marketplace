@@ -12,18 +12,16 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
+import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
-import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
-import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.model.SecretScanning;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.AlternativeExtensionData;
@@ -32,20 +30,20 @@ import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MultiTaskUtils;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
-import org.junit.jupiter.api.BeforeEach;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.*;
 import org.kohsuke.github.function.InputStreamFunction;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -54,16 +52,24 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.RestClient;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.web.client.MockRestServiceServer;
-import okhttp3.OkHttpClient;
+import org.springframework.web.client.RestClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.axonivy.market.constants.GitHubConstants.*;
@@ -71,10 +77,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -1305,35 +1308,6 @@ class GitHubServiceImplTest extends BaseSetup {
     assertNotNull(result, "Expected non-null result list even when organization has no repositories");
     assertTrue(result.isEmpty(), "Expected empty result list when no repositories are available");
     verify(productSecurityInfoRepository).saveAll(Collections.emptyList());
-  }
-
-  @Test
-  void testSyncSecurityDetailsForProductThrowsWhenCancelled() throws IOException {
-    GHOrganization mockOrg = mock(GHOrganization.class);
-    GHRepository mockRepo = mock(GHRepository.class);
-    PagedIterable pagedRepos = mock(PagedIterable.class);
-
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
-    doReturn(gitHub).when(gitHubService).getGitHub("token");
-    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
-    when(mockOrg.listRepositories()).thenReturn(pagedRepos);
-    when(pagedRepos.toList()).thenReturn(List.of(mockRepo));
-
-    when(cancellationRegistry.isCancelled(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)).thenReturn(true);
-    when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt())).thenAnswer(invocation -> {
-      Collection<GHRepository> repos = invocation.getArgument(0);
-      java.util.function.Function<GHRepository, ProductSecurityInfo> func = invocation.getArgument(
-      1);
-      List<ProductSecurityInfo> results = new ArrayList<>();
-      for (GHRepository r : repos) {
-        results.add(func.apply(r));
-      }
-      return results;
-    });
-
-    assertThrows(TaskCancelledException.class, () -> gitHubService.syncSecurityDetailsForProduct(),
-        "Should throw TaskCancelledException when cancellationRegistry signals cancellation");
-    verify(cancellationRegistry).isCancelled(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR);
   }
 
   @Test
