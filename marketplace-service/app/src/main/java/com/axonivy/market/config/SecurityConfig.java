@@ -3,7 +3,6 @@ package com.axonivy.market.config;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -57,8 +56,7 @@ public class SecurityConfig {
       AUTH + GITHUB_VALIDATE_TOKEN
   };
   private final WriteAuditLoggingFilter writeAuditLoggingFilter;
-  @Value("${server.servlet.session.cookie.name:ADMIN_SESSION}")
-  private String sessionCookieName;
+  private final SessionCookieProperties sessionCookieProperties;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -93,7 +91,7 @@ public class SecurityConfig {
         .logout(logout -> logout
             .logoutUrl(ADMIN_AUTH_V2 + LOGOUT)
             .invalidateHttpSession(true)
-            .deleteCookies(sessionCookieName)
+            .deleteCookies(sessionCookieProperties.getName())
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
         .exceptionHandling(exceptionHandling -> exceptionHandling
             .authenticationEntryPoint(authenticationEntryPoint())
