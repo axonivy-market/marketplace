@@ -35,12 +35,7 @@ public class RequestMappingConstants {
   public static final String GITHUB_AUTHORIZATION = "/github/authorization";
   public static final String GITHUB_CALLBACK = "/github/callback";
   public static final String SESSION = "/session";
-  public static final String REGISTER = "/register";
-  public static final String AUTHENTICATE = "/authenticate";
-  public static final String OPTIONS = "/options";
-  public static final String COMPLETE = "/complete";
   public static final String CSRF = "/csrf";
-  public static final String LOGOUT = "/logout";
   public static final String BY_ID = "/{id}";
   public static final String SAVE_AS_DRAFT = "/save-as-draft";
   public static final String DRAFT_BY_ID = "/{id}/draft";
