@@ -7,12 +7,6 @@ import { RuntimeConfigService } from '../core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../core/models/runtime-config';
 import { API_URI } from '../shared/constants/api.constant';
 import { AdminAuthService } from '../modules/admin-dashboard/admin-auth.service';
-import {
-  serializePublicKeyCredential,
-  supportsPasskeys,
-  toAuthenticationOptions,
-  toRegistrationOptions
-} from './webauthn.util';
 
 export interface GitHubAuthorizationState {
   state: string;
@@ -31,7 +25,6 @@ export interface UserInfo extends GitHubUser {
   gitHubId?: string;
   provider?: string;
   token: string | null;
-  hasPasskey?: boolean;
 }
 
 @Injectable({
@@ -61,38 +54,6 @@ export class AuthService {
     void this.handleGitHubCallbackInternal(code, state);
   }
 
-  isPasskeySupported(): boolean {
-    return supportsPasskeys(this.windowRef.nativeWindow);
-  }
-
-  async loginWithPasskey(username?: string | null): Promise<void> {
-    this.ensurePasskeySupport();
-    await this.completePasskeyFlow(
-      API_URI.ADMIN_PASSKEY_AUTHENTICATE_OPTIONS,
-      { username: username?.trim() || null },
-      API_URI.ADMIN_PASSKEY_AUTHENTICATE_COMPLETE,
-      async options =>
-        this.windowRef.nativeWindow?.navigator.credentials.get(
-          toAuthenticationOptions(options)
-        ) as Promise<PublicKeyCredential | null>,
-      'Passkey authentication was cancelled'
-    );
-  }
-
-  async registerPasskey(): Promise<void> {
-    this.ensurePasskeySupport();
-    await this.completePasskeyFlow(
-      API_URI.ADMIN_PASSKEY_REGISTER_OPTIONS,
-      {},
-      API_URI.ADMIN_PASSKEY_REGISTER_COMPLETE,
-      async options =>
-        this.windowRef.nativeWindow?.navigator.credentials.create(
-          toRegistrationOptions(options)
-        ) as Promise<PublicKeyCredential | null>,
-      'Passkey registration was cancelled'
-    );
-  }
-
   private async redirectToGitHubInternal(): Promise<void> {
     await this.ensureCsrfToken();
     const { state } = await firstValueFrom(
@@ -117,30 +78,6 @@ export class AuthService {
     this.router.navigate(['/internal-dashboard']);
   }
 
-  private async completePasskeyFlow(
-    optionsUrl: string,
-    optionsBody: Record<string, unknown>,
-    completionUrl: string,
-    credentialFactory: (options: Record<string, unknown>) => Promise<PublicKeyCredential | null>,
-    cancellationMessage: string
-  ): Promise<void> {
-    await this.ensureCsrfToken();
-    const options = await firstValueFrom(
-      this.http.post<Record<string, unknown>>(optionsUrl, optionsBody)
-    );
-    const credential = await credentialFactory(options);
-    if (!credential) {
-      throw new Error(cancellationMessage);
-    }
-
-    const userInfo = await firstValueFrom(
-      this.http.post<UserInfo>(completionUrl, {
-        credential: serializePublicKeyCredential(credential)
-      })
-    );
-    await this.handleAuthenticatedUser(userInfo);
-  }
-
   private buildGitHubAuthorizationUrl(state: string): string {
     const githubClientId = this.runtimeConfig.get(
       RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID
@@ -150,12 +87,6 @@ export class AuthService {
 
   private async ensureCsrfToken(): Promise<void> {
     await firstValueFrom(this.adminAuthService.fetchCsrfToken());
-  }
-
-  private ensurePasskeySupport(): void {
-    if (!this.isPasskeySupported()) {
-      throw new Error('Passkeys are not available in this browser');
-    }
   }
 
   getToken(): string | null {

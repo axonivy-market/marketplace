@@ -255,9 +255,9 @@ describe('AuthInterceptor', () => {
     const http = TestBed.inject(HttpClient);
     const httpMock = TestBed.inject(HttpTestingController);
 
-    http.post('auth/admin/v2/passkey/register/options', {}).subscribe();
+    http.post('auth/admin/v2/github/callback', {}).subscribe();
 
-    const req = httpMock.expectOne('/app/auth/admin/v2/passkey/register/options');
+    const req = httpMock.expectOne('/app/auth/admin/v2/github/callback');
     expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token');
     req.flush({});
     httpMock.verify();

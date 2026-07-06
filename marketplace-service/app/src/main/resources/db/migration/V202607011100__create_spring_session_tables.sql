@@ -21,26 +21,3 @@ CREATE TABLE IF NOT EXISTS SPRING_SESSION_ATTRIBUTES (
   CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID)
     REFERENCES SPRING_SESSION (PRIMARY_ID) ON DELETE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS public.user_entities (
-    id            VARCHAR(1024) NOT NULL PRIMARY KEY,
-    name          VARCHAR(255) NOT NULL,
-    display_name  VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS public.user_credentials (
-    credential_id                VARCHAR(1024) NOT NULL PRIMARY KEY,
-    user_entity_user_id          VARCHAR(1024) NOT NULL REFERENCES public.user_entities (id) ON DELETE CASCADE,
-    public_key                   BYTEA NOT NULL,
-    signature_count              BIGINT NOT NULL,
-    uv_initialized               BOOLEAN NOT NULL,
-    backup_eligible              BOOLEAN NOT NULL,
-    authenticator_transports      TEXT NOT NULL,
-    public_key_credential_type    VARCHAR(64) NOT NULL,
-    backup_state                 BOOLEAN NOT NULL,
-    attestation_object           BYTEA,
-    attestation_client_data_json  BYTEA,
-    created                      TIMESTAMP WITH TIME ZONE NOT NULL,
-    last_used                    TIMESTAMP WITH TIME ZONE,
-    label                        VARCHAR(255)
-);

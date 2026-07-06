@@ -120,8 +120,7 @@ describe('AdminAuthService', () => {
       login: 'octopus',
       name: 'Octopus',
       avatarUrl: '',
-      url: '',
-      hasPasskey: true
+      url: ''
     });
 
     await expect(resultPromise).resolves.toBe(true);

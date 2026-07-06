@@ -19,7 +19,6 @@ public class UserInfo extends GithubUser implements AuthenticatedPrincipal {
 
   private String token;
   private String url;
-  private boolean hasPasskey;
 
   @Override
   public String getName() {

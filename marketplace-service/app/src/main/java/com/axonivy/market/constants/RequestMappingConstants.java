@@ -35,7 +35,6 @@ public class RequestMappingConstants {
   public static final String GITHUB_AUTHORIZATION = "/github/authorization";
   public static final String GITHUB_CALLBACK = "/github/callback";
   public static final String SESSION = "/session";
-  public static final String PASSKEY = "/passkey";
   public static final String REGISTER = "/register";
   public static final String AUTHENTICATE = "/authenticate";
   public static final String OPTIONS = "/options";

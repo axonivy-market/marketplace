@@ -1,10 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { HeaderComponent } from './header.component';
 import { NavigationEnd, Router, provideRouter } from '@angular/router';
 import { vi, describe, beforeEach, expect, it } from 'vitest';
-import { AuthService } from '../../../auth/auth.service';
 import { AdminAuthService } from '../../../modules/admin-dashboard/admin-auth.service';
 import { signal } from '@angular/core';
 
@@ -14,10 +12,6 @@ describe('HeaderComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    const authService = {
-      isPasskeySupported: vi.fn().mockReturnValue(true),
-      registerPasskey: vi.fn().mockResolvedValue(undefined)
-    };
     const adminAuthService = {
       userInfo: signal(null)
     };
@@ -26,7 +20,6 @@ describe('HeaderComponent', () => {
       imports: [HeaderComponent, TranslateModule.forRoot()],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: authService },
         { provide: AdminAuthService, useValue: adminAuthService }
       ]
     }).compileComponents();

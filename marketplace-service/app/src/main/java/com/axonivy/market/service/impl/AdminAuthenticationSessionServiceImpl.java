@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
-import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
-import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
@@ -29,8 +27,6 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
   private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
   private final SecurityContextRepository securityContextRepository;
   private final FindByIndexNameSessionRepository<? extends Session> sessionRepository;
-  private final PublicKeyCredentialUserEntityRepository publicKeyCredentialUserEntityRepository;
-  private final UserCredentialRepository userCredentialRepository;
 
   @Override
   public UserInfo createSession(GithubUser githubUser, String profileUrl, HttpServletRequest request,
@@ -80,7 +76,6 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
     sessionUser.setAvatarUrl(githubUser.getAvatarUrl());
     sessionUser.setUrl(resolveProfileUrl(githubUser, profileUrl));
     sessionUser.setToken(null);
-    sessionUser.setHasPasskey(hasRegisteredPasskey(githubUser.getUsername()));
     return sessionUser;
   }
 
@@ -92,10 +87,5 @@ public class AdminAuthenticationSessionServiceImpl implements AdminAuthenticatio
       return null;
     }
     return GITHUB_PROFILE_URL_PREFIX + githubUser.getUsername();
-  }
-
-  private boolean hasRegisteredPasskey(String username) {
-    var userEntity = publicKeyCredentialUserEntityRepository.findByUsername(username);
-    return userEntity != null && !userCredentialRepository.findByUserId(userEntity.getId()).isEmpty();
   }
 }
