@@ -88,6 +88,27 @@ class ProductDetailsControllerTest extends BaseSetup {
         "Product ID in response body should match expected ID");
   }
 
+  @Test
+  void testProductDetailsWithShowDevVersionTrue() {
+    when(productService.fetchProductDetail(DOCKER_CONNECTOR_ID, true)).thenReturn(mockProduct());
+    when(detailModelAssembler.toModel(mockProduct())).thenReturn(createProductMockWithDetails());
+    ResponseEntity<ProductDetailModel> mockExpectedResult = new ResponseEntity<>(createProductMockWithDetails(),
+        HttpStatus.OK);
+
+    ResponseEntity<ProductDetailModel> result = productDetailsController.findProductDetails(DOCKER_CONNECTOR_ID, true);
+
+    assertEquals(HttpStatus.OK, result.getStatusCode(),
+        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 200 OK");
+    assertEquals(mockExpectedResult, result,
+        "ResponseEntity should match the expected result");
+
+    verify(productService, times(1)).fetchProductDetail(DOCKER_CONNECTOR_ID, true);
+    verify(detailModelAssembler).toModel(mockProduct());
+    assertTrue(result.hasBody(), "Response should have body");
+    assertEquals(DOCKER_CONNECTOR_ID, Objects.requireNonNull(result.getBody()).getId(),
+        "Product ID in response body should match expected ID");
+  }
+
 
   @Test
   void testFindBestMatchProductDetailsByVersion() {

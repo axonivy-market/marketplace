@@ -8,6 +8,7 @@ import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MarketException;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +78,23 @@ class TrackSyncTaskExecutionAspectTest {
         "Exception message should match the thrown message");
 
     verify(syncTaskExecutionService, never()).markStatusRunning(any(), any());
+    verify(syncTaskExecutionService, never()).markStatusSuccess(any(), any());
+    verify(syncTaskExecutionService, never()).markStatusFailure(any(), any());
+  }
+
+  @Test
+  void testAroundSyncTaskCancelled() throws Throwable {
+    SyncTaskExecution execution = new SyncTaskExecution();
+    execution.setType(SyncTaskType.SYNC_PRODUCTS);
+    when(track.value()).thenReturn(SyncTaskType.SYNC_PRODUCTS);
+    when(syncTaskExecutionService.start(SyncTaskType.SYNC_PRODUCTS)).thenReturn(execution);
+    when(pjp.proceed()).thenThrow(new TaskCancelledException());
+
+    Object result = aspect.aroundSyncTask(pjp, track);
+
+    assertEquals(null, result, "Aspect should return null when task is cancelled");
+    verify(syncTaskExecutionService).markStatusRunning(execution.getType(), SyncTaskConstants.RUNNING_MESSAGE);
+    verify(syncTaskExecutionService).markStatusCancelled(execution.getType(), "Sync task was cancelled");
     verify(syncTaskExecutionService, never()).markStatusSuccess(any(), any());
     verify(syncTaskExecutionService, never()).markStatusFailure(any(), any());
   }

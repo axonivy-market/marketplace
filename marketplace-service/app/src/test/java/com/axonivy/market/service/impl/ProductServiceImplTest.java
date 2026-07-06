@@ -9,6 +9,8 @@ import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.GithubRepo;
@@ -58,6 +60,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1046,6 +1049,30 @@ class ProductServiceImplTest extends BaseSetup {
     productService.syncLatestDataFromMarketRepo(true);
 
     verify(productRepo, times(mockProducts.size())).save(any(Product.class));
+  }
+
+  @Test
+  void testUpdateLatestReleaseVersionContentsThrowsWhenCancelled() throws Exception {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of(mockProduct));
+    when(cancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)).thenReturn(true);
+
+    Method method = ProductServiceImpl.class
+        .getDeclaredMethod("updateLatestReleaseVersionContentsFromProductRepo");
+    method.setAccessible(true);
+
+    assertThrows(TaskCancelledException.class, () -> {
+      try {
+        method.invoke(productService);
+      } catch (java.lang.reflect.InvocationTargetException e) {
+        throw e.getCause();
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }, "Should throw TaskCancelledException when cancellation registry signals cancellation");
+
+    verify(cancellationRegistry).isCancelled(SyncTaskType.SYNC_PRODUCTS);
   }
 
   private void prepareMockDataForSync(GitHubRepoMeta repoMeta) throws IOException {

@@ -15,9 +15,11 @@ import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.AccessLevel;
 import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.github.model.CodeScanning;
 import com.axonivy.market.github.model.Dependabot;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
@@ -1303,6 +1305,35 @@ class GitHubServiceImplTest extends BaseSetup {
     assertNotNull(result, "Expected non-null result list even when organization has no repositories");
     assertTrue(result.isEmpty(), "Expected empty result list when no repositories are available");
     verify(productSecurityInfoRepository).saveAll(Collections.emptyList());
+  }
+
+  @Test
+  void testSyncSecurityDetailsForProductThrowsWhenCancelled() throws IOException {
+    GHOrganization mockOrg = mock(GHOrganization.class);
+    GHRepository mockRepo = mock(GHRepository.class);
+    PagedIterable pagedRepos = mock(PagedIterable.class);
+
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
+    doReturn(gitHub).when(gitHubService).getGitHub("token");
+    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
+    when(mockOrg.listRepositories()).thenReturn(pagedRepos);
+    when(pagedRepos.toList()).thenReturn(List.of(mockRepo));
+
+    when(cancellationRegistry.isCancelled(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)).thenReturn(true);
+    when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt())).thenAnswer(invocation -> {
+      Collection<GHRepository> repos = invocation.getArgument(0);
+      java.util.function.Function<GHRepository, ProductSecurityInfo> func = invocation.getArgument(
+      1);
+      List<ProductSecurityInfo> results = new ArrayList<>();
+      for (GHRepository r : repos) {
+        results.add(func.apply(r));
+      }
+      return results;
+    });
+
+    assertThrows(TaskCancelledException.class, () -> gitHubService.syncSecurityDetailsForProduct(),
+        "Should throw TaskCancelledException when cancellationRegistry signals cancellation");
+    verify(cancellationRegistry).isCancelled(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR);
   }
 
   @Test
