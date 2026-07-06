@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.SchedulingConfig;
-import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
@@ -18,6 +17,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,7 +99,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   AppSettingService appSettingService;
 
   @MockitoBean
-  private SyncTaskCancellationRegistry cancellationRegistry;
+  SyncTaskExecutionService syncTaskExecutionService;
 
   @MockitoSpyBean
   ExternalDocumentServiceImpl service;

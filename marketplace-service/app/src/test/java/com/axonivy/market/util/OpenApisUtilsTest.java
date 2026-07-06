@@ -1,8 +1,11 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -12,6 +15,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,10 +35,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class OpenApisUtilsTest {
     @LocalServerPort
     private int port;
-    
+
     @Value("${server.servlet.context-path:}")
     private String contextPath;
-    
+
+    @MockitoBean
+    private SyncTaskExecutionService syncTaskExecutionService;
+    @MockitoBean
+    private SyncTaskCancellationRegistry cancellationRegistry;
+
     private static final String VALIDATOR_URL = "https://validator.swagger.io/validator/debug";
     private static final RestTemplate restTemplate = new RestTemplate();
 

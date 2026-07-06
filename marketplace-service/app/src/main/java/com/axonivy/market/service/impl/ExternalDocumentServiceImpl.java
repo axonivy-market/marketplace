@@ -1,16 +1,16 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.bo.DownloadOption;
-import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.config.MarketplaceConfig;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.RegexConstants;
+import com.axonivy.market.core.comparator.MavenVersionComparator;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
-import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.DevelopmentVersion;
+import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.model.DocumentInfoResponse;
