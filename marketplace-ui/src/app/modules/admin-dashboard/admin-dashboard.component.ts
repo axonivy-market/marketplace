@@ -168,8 +168,7 @@ export class AdminDashboardComponent implements OnInit {
 
         this.loadingSyncTaskKey = null;
       },
-      error: (err) => {
-        console.error('Cancel failed', err);
+      error: err => {
         this.loadingSyncTaskKey = null;
       }
     });

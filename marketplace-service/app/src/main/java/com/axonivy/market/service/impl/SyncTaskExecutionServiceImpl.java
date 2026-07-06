@@ -101,7 +101,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     return type.map(syncTaskType -> syncTaskExecutionRepo.findByTypeAndNodeNumber(syncTaskType, nodeNumber)
         .filter(execution -> execution.getStatus() == SyncTaskStatus.RUNNING
             || execution.getStatus() == SyncTaskStatus.STARTED)
-        .map(task -> {
+        .map((SyncTaskExecution task) -> {
           cancellationRegistry.cancel(syncTaskType);
           return true;
         })
