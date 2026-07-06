@@ -2,6 +2,7 @@ server:
   port: '8080'
   forward-headers-strategy: framework
   servlet:
+    context-path: /app
     session:
       timeout: '${SESSION_TIMEOUT:2h}'
       cookie:
@@ -93,10 +94,6 @@ market:
       clientSecret: '${MARKET_GITHUB_OAUTH_APP_CLIENT_SECRET}'
     token: '${MARKET_GITHUB_TOKEN}'
     connect-timeout: '${MARKET_GITHUB_CONNECT_TIMEOUT:10000}'
-    market:
-      branch: '${MARKET_GITHUB_MARKET_BRANCH}'
-  allowed:
-    click-capacity: '${MARKET_CLICK_LIMIT}'
   encryption:
     key: '${MARKET_ENCRYPTION_SECRET_KEY}'
     salt: '${MARKET_ENCRYPTION_SALT}'

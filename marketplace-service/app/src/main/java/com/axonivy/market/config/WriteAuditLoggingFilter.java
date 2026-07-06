@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,7 +22,7 @@ public class WriteAuditLoggingFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String method = request.getMethod();
-    return "GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method);
+    return  HttpMethod.GET.matches(method) ||  HttpMethod.OPTIONS.matches(method);
   }
 
   @Override

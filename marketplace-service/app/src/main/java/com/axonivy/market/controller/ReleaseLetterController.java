@@ -54,8 +54,7 @@ public class ReleaseLetterController {
   @GetMapping("/management")
   @Operation(summary = "Retrieve a list of all release letter for management")
   public ResponseEntity<PagedModel<ReleaseLetterModel>> findAllReleaseLettersForManagement(
-      @ParameterObject Pageable pageable,
-      @AuthenticationPrincipal UserInfo currentUser) {
+      @ParameterObject Pageable pageable, @AuthenticationPrincipal UserInfo currentUser) {
     return buildReleaseLetterResponse(pageable, false, currentUser == null ? null : currentUser.getId());
   }
 
@@ -102,8 +101,7 @@ public class ReleaseLetterController {
   public ResponseEntity<ReleaseLetterModel> updateReleaseLetter(
       @PathVariable(ID) @Parameter(description = "The sprint id", example = "66e7efc8a24f36158df06fc7",
           in = ParameterIn.PATH) String id,
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest,
-      @AuthenticationPrincipal UserInfo currentUser
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, @AuthenticationPrincipal UserInfo currentUser
   ) {
     var updatedReleaseLetter = releaseLetterService.updateReleaseLetter(id, releaseLetterModelRequest, currentUser.getId());
     var releaseLetterResource = releaseLetterModelAssembler.toModel(updatedReleaseLetter);
@@ -115,16 +113,14 @@ public class ReleaseLetterController {
   @PutMapping(SAVE_AS_DRAFT)
   @Operation(hidden = true)
   public ResponseEntity<ReleaseLetterDraftModel> saveAsDraft(
-      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest,
-      @AuthenticationPrincipal UserInfo currentUser) {
+      @RequestBody ReleaseLetterModelRequest releaseLetterModelRequest, @AuthenticationPrincipal UserInfo currentUser) {
     var releaseLetterDraftModel = releaseLetterService.saveAsDraft(releaseLetterModelRequest, currentUser.getId());
     return ResponseEntity.ok(releaseLetterDraftModel);
   }
 
   @GetMapping(DRAFT_BY_ID)
   @Operation(hidden = true)
-  public ResponseEntity<ReleaseLetterDraftModel> getDraft(@PathVariable String id,
-      @AuthenticationPrincipal UserInfo currentUser) {
+  public ResponseEntity<ReleaseLetterDraftModel> getDraft(@PathVariable String id, @AuthenticationPrincipal UserInfo currentUser) {
     if (currentUser == null) {
       return ResponseEntity.ok(null);
     }

@@ -222,7 +222,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       this.productService
         .findProductsByCriteria(this.criteria)
         .subscribe((response: ProductApiResponse) => {
-          const newProducts = response.content;
+          const newProducts = response._embedded.products;
           if (shouldCleanData) {
             this.products.set(newProducts);
           } else {
@@ -230,7 +230,7 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
               existingProducts.concat(newProducts)
             );
           }
-          this.responseLink = response.links;
+          this.responseLink = response._links;
           this.responsePage = response.page;
         })
     );
