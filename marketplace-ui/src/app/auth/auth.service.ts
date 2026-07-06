@@ -1,13 +1,15 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpBackend, HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, Observable, throwError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { WindowRef } from '../core/services/browser/window-ref.service';
 import { RuntimeConfigService } from '../core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../core/models/runtime-config';
 import { API_URI } from '../shared/constants/api.constant';
 import { AdminAuthService } from '../modules/admin-dashboard/admin-auth.service';
+import { FEEDBACK_APPROVAL_STATE, TOKEN_KEY } from '../shared/constants/common.constant';
+import { CookieService } from 'ngx-cookie-service';
 
 export interface TokenPayload {
   username: string;
@@ -15,6 +17,14 @@ export interface TokenPayload {
   sub: string;
   exp: number;
   accessToken?: string;
+}
+
+export interface RequestBody {
+  [key: string]: string;
+}
+
+export interface TokenResponse {
+  token: string;
 }
 export interface GitHubAuthorizationState {
   state: string;
@@ -40,6 +50,9 @@ export interface UserInfo extends GitHubUser {
 })
 export class AuthService {
   private readonly githubAuthUrl = 'https://github.com/login/oauth/authorize';
+  private readonly httpClientWithoutInterceptor: HttpClient;
+  private readonly BASE_URL: string;
+  private readonly userApiUrl: string;
   private readonly githubOAuthCallbackUrl: string;
   private readonly githubAdminOAuthCallbackUrl: string;
 
@@ -47,9 +60,14 @@ export class AuthService {
     private readonly http: HttpClient,
     private readonly router: Router,
     private readonly windowRef: WindowRef,
+    private readonly cookieService: CookieService,
+    private readonly httpBackend: HttpBackend,
     private readonly runtimeConfig: RuntimeConfigService,
     private readonly adminAuthService: AdminAuthService
   ) {
+    this.httpClientWithoutInterceptor = new HttpClient(httpBackend);
+    this.BASE_URL = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_API_URL);
+    this.userApiUrl = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_API_URL) + '/user';
     const win = this.windowRef.nativeWindow;
     const callbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_CALLBACK);
     const adminCallbackPath = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_ADMIN_OAUTH_CALLBACK);
@@ -62,11 +80,39 @@ export class AuthService {
   }
 
   handleGitHubCallback(code: string, state: string): void {
-    void this.handleGitHubCallbackInternal(code, state, API_URI.ADMIN_GITHUB_CALLBACK);
+    const body = { code };
+
+    this.exchangeCodeForToken(body).subscribe({
+      next: response => this.handleTokenResponse(response.token, state),
+      error: error => throwError(() => error)
+    });
+  }
+
+  private exchangeCodeForToken(body: RequestBody): Observable<TokenResponse> {
+    const url = `${this.BASE_URL}/auth/github/login`;
+    return this.http.post<TokenResponse>(url, body).pipe(catchError(error => throwError(() => error)));
+  }
+
+  handleTokenResponse(token: string, state: string): void {
+    this.setTokenAsCookie(token);
+    if (FEEDBACK_APPROVAL_STATE === state) {
+      this.router.navigate([`${state}`]);
+    } else {
+      this.router.navigate([`${state}`], {
+        queryParams: { showPopup: 'true' }
+      });
+    }
+  }
+
+  private setTokenAsCookie(token: string): void {
+    this.cookieService.set(TOKEN_KEY, token, {
+      expires: this.extractNumberOfExpiredDay(token),
+      path: '/'
+    });
   }
 
   handleGitHubAdminCallback(code: string, state: string): void {
-    void this.handleGitHubCallbackInternal(code, state, this.githubAdminOAuthCallbackUrl);
+    void this.handleGitHubCallbackInternal(code, state, API_URI.ADMIN_GITHUB_CALLBACK);
   }
 
   private async redirectToGitHubInternal(originalUrl: string, useAdminState: boolean): Promise<void> {
@@ -88,6 +134,11 @@ export class AuthService {
   private buildGitHubAuthorizationUrl(state: string): string {
     const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID);
     return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
+  }
+
+  private buildGitHubAdminAuthorizationUrl(state: string): string {
+    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID);
+    return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubAdminOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
   }
 
   private async fetchGitHubAdminAuthorizationState(): Promise<string> {
@@ -143,5 +194,16 @@ export class AuthService {
 
   private currentUser(): UserInfo | null {
     return this.adminAuthService.userInfo() ?? this.adminAuthService.loadFromSessionStorage();
+  }
+
+  private extractNumberOfExpiredDay(token: string): number {
+    const exp = this.decodeToken(token)?.exp ?? 0;
+
+    const expDate = new Date(exp * 1000);
+    const currentDate = new Date();
+
+    const diffTime = Math.abs(expDate.getTime() - currentDate.getTime());
+    const dayInMilliseconds = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_DAY_IN_MILLISECONDS);
+    return Math.ceil(diffTime / dayInMilliseconds);
   }
 }

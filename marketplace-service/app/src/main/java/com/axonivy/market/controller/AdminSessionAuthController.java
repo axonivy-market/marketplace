@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import static com.axonivy.market.constants.RequestMappingConstants.ADMIN_AUTH_V2;
+import static com.axonivy.market.constants.RequestMappingConstants.ADMIN_AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.CSRF;
 import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_AUTHORIZATION;
 import static com.axonivy.market.constants.RequestMappingConstants.GITHUB_CALLBACK;
@@ -27,7 +27,7 @@ import static com.axonivy.market.constants.RequestMappingConstants.SESSION;
 @Hidden
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(ADMIN_AUTH_V2)
+@RequestMapping(ADMIN_AUTH)
 public class AdminSessionAuthController {
   private final AdminSessionAuthService adminSessionAuthService;
 

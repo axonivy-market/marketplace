@@ -44,8 +44,11 @@ public class SecurityConfig {
         PRODUCT_MARKETPLACE_DATA+"/**",
         RELEASE_LETTER + "/**",
   };
+  private static final String[] PUBLIC_GET_ENDPOINTS = {
+      PRODUCT_MARKETPLACE_DATA + "/installation-count/**"
+  };
   private static final String[] PUBLIC_POST_ENDPOINTS = {
-      ADMIN_AUTH_V2 + GITHUB_CALLBACK
+      ADMIN_AUTH + GITHUB_CALLBACK
   };
   private static final String[] PUBLIC_PUT_ENDPOINTS = {
       AUTH + GITHUB_VALIDATE_TOKEN
@@ -77,12 +80,13 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
+            .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.POST, "/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/**").authenticated()
             .requestMatchers(HttpMethod.DELETE, "/**").authenticated()
             .anyRequest().permitAll())
         .logout(logout -> logout
-            .logoutUrl(ADMIN_AUTH_V2 + "/logout")
+            .logoutUrl(ADMIN_AUTH + "/logout")
             .invalidateHttpSession(true)
             .deleteCookies(sessionCookieProperties.getName())
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))

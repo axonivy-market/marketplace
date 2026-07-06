@@ -22,6 +22,7 @@ import {
 } from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
 import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminSettingsComponent } from './modules/admin-dashboard/settings/settings.component';
+import { GithubCallbackAdminComponent } from './auth/github-callback/admin/github-callback-admin.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -31,7 +32,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'admin',
-        component: GithubCallbackComponent
+        component: GithubCallbackAdminComponent
       }
     ]
   },
