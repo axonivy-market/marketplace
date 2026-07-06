@@ -48,7 +48,8 @@ public class SecurityConfig {
       PRODUCT_MARKETPLACE_DATA + "/installation-count/**"
   };
   private static final String[] PUBLIC_POST_ENDPOINTS = {
-      ADMIN_AUTH + GITHUB_CALLBACK
+      ADMIN_AUTH + GITHUB_CALLBACK,
+      AUTH + GITHUB_LOGIN
   };
   private static final String[] PUBLIC_PUT_ENDPOINTS = {
       AUTH + GITHUB_VALIDATE_TOKEN
@@ -79,8 +80,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
-            .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
             .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+            .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
             .requestMatchers(HttpMethod.POST, "/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/**").authenticated()
             .requestMatchers(HttpMethod.DELETE, "/**").authenticated()

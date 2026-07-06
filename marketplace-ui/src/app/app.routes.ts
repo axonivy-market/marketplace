@@ -62,12 +62,8 @@ export const routes: Routes = [
     component: MonitoringDashboardComponent
   },
   {
-    path: 'admin-login-v2',
-    component: AdminTokenComponent
-  },
-  {
     path: 'request-access',
-    redirectTo: 'admin-login-v2'
+    component: AdminTokenComponent
   },
   {
     path: 'internal-dashboard',
@@ -118,10 +114,7 @@ export const routes: Routes = [
   },
   {
     path: 'monitoring/:repo/:workflow',
-    loadComponent: () =>
-      import('./modules/monitor/repo-report/repo-report.component').then(
-        m => m.RepoReportComponent
-      )
+    loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
   },
   {
     path: ':id/:version/lib/:artifact',
@@ -135,8 +128,7 @@ export const routes: Routes = [
   // Product route (dynamic)
   {
     path: ':id',
-    loadChildren: () =>
-      import('./modules/product/product.routes').then(m => m.routes),
+    loadChildren: () => import('./modules/product/product.routes').then(m => m.routes),
     resolve: {
       productDetail: ProductDetailResolver
     }
