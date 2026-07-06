@@ -10,7 +10,6 @@ server:
         http-only: true
         secure: '${SESSION_COOKIE_SECURE:true}'
         same-site: '${SESSION_COOKIE_SAME_SITE:Strict}'
-    context-path: /app
   tomcat:
     connection-timeout: 240000ms
     threads:
