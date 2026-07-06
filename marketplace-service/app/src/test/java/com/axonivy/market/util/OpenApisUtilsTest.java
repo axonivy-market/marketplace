@@ -5,7 +5,6 @@ import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;

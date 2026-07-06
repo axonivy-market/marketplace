@@ -261,7 +261,7 @@ public class GitHubServiceImpl implements GitHubService {
 
     String token = getConfiguredToken();
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
-        repo -> {
+        (GHRepository repo) -> {
           if (cancellationRegistry.isCancelled(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)) {
             throw new TaskCancelledException();
           }

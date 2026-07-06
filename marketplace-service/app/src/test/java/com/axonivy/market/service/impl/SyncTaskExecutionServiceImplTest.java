@@ -11,9 +11,9 @@ import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +28,7 @@ class SyncTaskExecutionServiceImplTest {
   private static final String LONG_MESSAGE = StringUtils.repeat("a", 2000);
   private SyncTaskExecutionRepository repo;
   private SyncTaskExecutionServiceImpl service;
-  @Mock
+  @MockitoBean
   private SyncTaskCancellationRegistry cancellationRegistry;
 
   @BeforeEach

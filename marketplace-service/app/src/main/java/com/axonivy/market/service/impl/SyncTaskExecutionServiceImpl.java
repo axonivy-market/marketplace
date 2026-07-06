@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -81,7 +80,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Override
   public List<SyncTaskExecutionModel> getAllSyncTaskExecutions() {
     return Arrays.stream(SyncTaskType.values())
-        .map((type) -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber))
+        .map(type -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber))
         .flatMap(Optional::stream)
         .map(SyncTaskExecutionModel::from)
         .toList();
@@ -91,7 +90,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Override
   public SyncTaskExecutionModel getSyncTaskExecutionByKey(String key) {
     return SyncTaskType.fromKey(key)
-        .flatMap((type) -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber))
+        .flatMap(type -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber))
         .map(SyncTaskExecutionModel::from)
         .orElse(null);
   }
@@ -102,7 +101,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     return type.map(syncTaskType -> syncTaskExecutionRepo.findByTypeAndNodeNumber(syncTaskType, nodeNumber)
         .filter(execution -> execution.getStatus() == SyncTaskStatus.RUNNING
             || execution.getStatus() == SyncTaskStatus.STARTED)
-        .map(_ -> {
+        .map(task -> {
           cancellationRegistry.cancel(syncTaskType);
           return true;
         })
@@ -149,7 +148,6 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   private void updateSyncTask(SyncTaskType syncTaskType, SyncTaskStatus status, String message) {
     Optional<SyncTaskExecution> execution = syncTaskExecutionRepo.findByTypeAndNodeNumber(syncTaskType, nodeNumber);
     if (execution.isEmpty()) {
