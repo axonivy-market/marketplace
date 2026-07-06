@@ -109,6 +109,17 @@ describe('AuthService', () => {
     expect(location.href).toContain('state=server-state');
   });
 
+  it('redirects to GitHub using the provided state for feedback', async () => {
+    service.redirectToGitHub('feedback-product-id', { useOriginalState: true });
+    await flushMicrotasks();
+
+    expect(httpMock.match(API_URI.ADMIN_GITHUB_AUTHORIZATION)).toHaveLength(0);
+    expect(adminAuthService.fetchCsrfToken).not.toHaveBeenCalled();
+    expect(location.href).toContain('client_id=github-client-id');
+    expect(location.href).toContain('redirect_uri=http://localhost/auth/github/callback');
+    expect(location.href).toContain('state=feedback-product-id');
+  });
+
   it('exchanges callback code for a session and navigates to the dashboard', async () => {
     const userInfo: UserInfo = {
       id: 'user-1',

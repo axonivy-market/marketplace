@@ -2,12 +2,20 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 import { WindowRef } from '../core/services/browser/window-ref.service';
 import { RuntimeConfigService } from '../core/configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../core/models/runtime-config';
 import { API_URI } from '../shared/constants/api.constant';
 import { AdminAuthService } from '../modules/admin-dashboard/admin-auth.service';
 
+export interface TokenPayload {
+  username: string;
+  name: string;
+  sub: string;
+  exp: number;
+  accessToken?: string;
+}
 export interface GitHubAuthorizationState {
   state: string;
 }
@@ -46,29 +54,23 @@ export class AuthService {
     this.githubOAuthCallbackUrl = `${win?.location?.origin ?? ''}${callbackPath}`;
   }
 
-  redirectToGitHub(_originalUrl: string): void {
-    void this.redirectToGitHubInternal();
+  redirectToGitHub(originalUrl: string, options?: { useOriginalState?: boolean }): void {
+    void this.redirectToGitHubInternal(originalUrl, options?.useOriginalState ?? false);
   }
 
   handleGitHubCallback(code: string, state: string): void {
     void this.handleGitHubCallbackInternal(code, state);
   }
 
-  private async redirectToGitHubInternal(): Promise<void> {
-    await this.ensureCsrfToken();
-    const { state } = await firstValueFrom(
-      this.http.get<GitHubAuthorizationState>(API_URI.ADMIN_GITHUB_AUTHORIZATION)
-    );
-    const win = this.windowRef.nativeWindow;
-    if (win) {
-      win.location.href = this.buildGitHubAuthorizationUrl(state);
-    }
+  private async redirectToGitHubInternal(originalUrl: string, useOriginalState: boolean): Promise<void> {
+    const state = useOriginalState
+      ? originalUrl
+      : await this.fetchGitHubAuthorizationState();
+    this.redirectWindowToGitHub(this.buildGitHubAuthorizationUrl(state));
   }
 
   private async handleGitHubCallbackInternal(code: string, state: string): Promise<void> {
-    const userInfo = await firstValueFrom(
-      this.http.post<UserInfo>(API_URI.ADMIN_GITHUB_CALLBACK, { code, state })
-    );
+    const userInfo = await firstValueFrom(this.http.post<UserInfo>(API_URI.ADMIN_GITHUB_CALLBACK, { code, state }));
     await this.handleAuthenticatedUser(userInfo);
   }
 
@@ -79,10 +81,21 @@ export class AuthService {
   }
 
   private buildGitHubAuthorizationUrl(state: string): string {
-    const githubClientId = this.runtimeConfig.get(
-      RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID
-    );
+    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID);
     return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
+  }
+
+  private async fetchGitHubAuthorizationState(): Promise<string> {
+    await this.ensureCsrfToken();
+    const { state } = await firstValueFrom(this.http.get<GitHubAuthorizationState>(API_URI.ADMIN_GITHUB_AUTHORIZATION));
+    return state;
+  }
+
+  private redirectWindowToGitHub(authUrl: string): void {
+    const win = this.windowRef.nativeWindow;
+    if (win) {
+      win.location.href = authUrl;
+    }
   }
 
   private async ensureCsrfToken(): Promise<void> {
@@ -101,6 +114,26 @@ export class AuthService {
   getUserId(): string | null {
     const userInfo = this.currentUser();
     return userInfo?.id ?? null;
+  }
+
+  decodeToken(token: string): TokenPayload | null {
+    try {
+      return jwtDecode(token);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  getFeedbackUserId(): string | null {
+    const token = this.getToken();
+    if (token) {
+      const decoded = this.decodeToken(token);
+      if (decoded) {
+        return decoded.sub;
+      }
+      return null;
+    }
+    return null;
   }
 
   private currentUser(): UserInfo | null {

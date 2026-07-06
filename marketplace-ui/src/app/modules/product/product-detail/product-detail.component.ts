@@ -591,10 +591,10 @@ export class ProductDetailComponent implements AfterViewInit {
 
   onClickRateBtn(): void {
     const productId = this.productDetailService.productId();
-    if (this.authService.getUserId()) {
+    if (this.authService.getFeedbackUserId()) {
       this.appModalService.openAddFeedbackDialog();
     } else {
-      this.authService.redirectToGitHub(productId);
+      this.authService.redirectToGitHub(productId, { useOriginalState: true });
     }
   }
 
