@@ -60,6 +60,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1055,24 +1056,30 @@ class ProductServiceImplTest extends BaseSetup {
   void testUpdateLatestReleaseVersionContentsThrowsWhenCancelled() throws Exception {
     Product mockProduct = new Product();
     mockProduct.setId(SAMPLE_PRODUCT_ID);
-    when(productRepo.findProductsWithEnglishNameAndArtifacts()).thenReturn(List.of(mockProduct));
-    when(cancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)).thenReturn(true);
+
+    when(productRepo.findProductsWithEnglishNameAndArtifacts())
+        .thenReturn(List.of(mockProduct));
+    when(cancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS))
+        .thenReturn(true);
 
     Method method = ProductServiceImpl.class
         .getDeclaredMethod("updateLatestReleaseVersionContentsFromProductRepo");
     method.setAccessible(true);
 
-    assertThrows(TaskCancelledException.class, () -> {
-      try {
-        method.invoke(productService);
-      } catch (java.lang.reflect.InvocationTargetException e) {
-        throw e.getCause();
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-    }, "Should throw TaskCancelledException when cancellation registry signals cancellation");
+    assertThrows(
+        TaskCancelledException.class,
+        () -> invokeUpdateLatestReleaseVersionContents(method),
+        "Should throw TaskCancelledException when cancellation registry signals cancellation");
 
     verify(cancellationRegistry).isCancelled(SyncTaskType.SYNC_PRODUCTS);
+  }
+
+  private void invokeUpdateLatestReleaseVersionContents(Method method) throws Throwable {
+    try {
+      method.invoke(productService);
+    } catch (InvocationTargetException e) {
+      throw e.getCause();
+    }
   }
 
   private void prepareMockDataForSync(GitHubRepoMeta repoMeta) throws IOException {

@@ -2,13 +2,12 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.repository.ProductSecurityInfoRepository;
-import com.axonivy.market.service.NotificationService;
-import com.axonivy.market.enums.SyncTaskType;
-import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -132,7 +131,7 @@ class SystemTasksTest {
   }
 
   @Test
-  void testSendNotificationForSecurityMonitor() throws IOException {
+  void testSendNotificationForSecurityMonitor() {
     when(productSecurityInfoRepository.findAll()).thenReturn(List.of());
     tasks.sendNotificationForSecurityMonitor();
     verify(notificationService, times(1)).notify(anyList());
