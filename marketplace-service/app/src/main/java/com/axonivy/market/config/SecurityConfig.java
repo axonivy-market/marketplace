@@ -38,19 +38,14 @@ import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
 public class SecurityConfig {
   private static final String CSRF_COOKIE_NAME = "XSRF-TOKEN";
   private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
-  private static final String RELEASE_LETTER_MANAGEMENT = RELEASE_LETTER + "/management";
   private static final String[] AUTHENTICATED_GET_ENDPOINTS = {
         API + INTERNAL +"/**",
         FEEDBACK + FEEDBACK_APPROVAL,
-//        AUTH + "/**",
         PRODUCT_MARKETPLACE_DATA+"/**",
         RELEASE_LETTER + "/**",
   };
   private static final String[] PUBLIC_POST_ENDPOINTS = {
-//      AUTH + GITHUB_LOGIN,
-//      AUTH + GITHUB_REQUEST_ACCESS,
-//      RELEASE_PREVIEW,
-      ADMIN_AUTH_V2 + GITHUB_CALLBACK,
+      ADMIN_AUTH_V2 + GITHUB_CALLBACK
   };
   private static final String[] PUBLIC_PUT_ENDPOINTS = {
       AUTH + GITHUB_VALIDATE_TOKEN
@@ -82,14 +77,12 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
-//            .requestMatchers(HttpMethod.GET, "/auth/admin/v2/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/**").authenticated()
             .requestMatchers(HttpMethod.DELETE, "/**").authenticated()
-            // Allow all GET, HEAD, OPTION method
             .anyRequest().permitAll())
         .logout(logout -> logout
-            .logoutUrl(ADMIN_AUTH_V2 + LOGOUT)
+            .logoutUrl(ADMIN_AUTH_V2 + "/logout")
             .invalidateHttpSession(true)
             .deleteCookies(sessionCookieProperties.getName())
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
