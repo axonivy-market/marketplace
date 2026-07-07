@@ -11,9 +11,13 @@ import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,24 +27,21 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class SyncTaskExecutionServiceImplTest {
+
   private static final String MESSAGE = "Test message";
   private static final String LONG_MESSAGE = StringUtils.repeat("a", 2000);
+  @Mock
   private SyncTaskExecutionRepository repo;
-  private SyncTaskExecutionServiceImpl service;
-  @MockitoBean
+  @Mock
   private SyncTaskCancellationRegistry cancellationRegistry;
+  @InjectMocks
+  private SyncTaskExecutionServiceImpl service;
 
   @BeforeEach
   void setUp() {
-    repo = mock(SyncTaskExecutionRepository.class);
-    cancellationRegistry = mock(SyncTaskCancellationRegistry.class);
-    // explicitly set nodeNumber to 1 so repository calls use the expected node
-    service = SyncTaskExecutionServiceImpl.builder()
-        .syncTaskExecutionRepo(repo)
-        .cancellationRegistry(cancellationRegistry)
-        .nodeNumber(1)
-        .build();
+    ReflectionTestUtils.setField(service, "nodeNumber", 1);
   }
 
   @Test

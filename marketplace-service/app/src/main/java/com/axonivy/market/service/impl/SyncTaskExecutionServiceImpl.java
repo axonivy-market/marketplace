@@ -29,8 +29,6 @@ import java.util.Optional;
 
 @Log4j2
 @Service
-@Builder
-@AllArgsConstructor
 @RequiredArgsConstructor
 public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   private static final int MESSAGE_MAX_LENGTH = 1024;
