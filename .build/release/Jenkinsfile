@@ -192,7 +192,7 @@ pipeline {
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old UI image versions
           export IMAGE_NAME=$UI_IMAGE_NAME
-          bash ./.build/scripts/ghcr-cleanup.sh
+          bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
       }
     }
@@ -206,7 +206,7 @@ pipeline {
           docker push $APP_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old App image versions
           export IMAGE_NAME=$APP_IMAGE_NAME
-          bash ./.build/scripts/ghcr-cleanup.sh
+          bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
       }
     }
@@ -220,7 +220,7 @@ pipeline {
           docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
           # Cleanup old Stable image versions
           export IMAGE_NAME=$STABLE_IMAGE_NAME
-          bash ./.build/scripts/ghcr-cleanup.sh
+          bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
       }
     }
