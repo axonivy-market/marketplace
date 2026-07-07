@@ -87,6 +87,7 @@ market:
       origin:
         patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
         maxAge: '3600'
+      credentials: '${MARKET_CORS_ALLOW_CREDENTIALS:false}'
   github:
     oauth2:
       clientId: '${MARKET_GITHUB_OAUTH_APP_CLIENT_ID}'

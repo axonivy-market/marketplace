@@ -27,7 +27,6 @@ import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
-import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MultiTaskUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
@@ -127,9 +126,6 @@ class GitHubServiceImplTest extends BaseSetup {
   private RestClient restClient;
 
   @Mock
-  private AppSettingService appSettingService;
-
-  @Mock
   private MultiTaskUtils multiTaskUtils;
 
   @Mock
@@ -146,7 +142,7 @@ class GitHubServiceImplTest extends BaseSetup {
     restClient = builder.build();
     lenient().when(restClientBuilder.build()).thenReturn(restClient);
     lenient().when(okHttpClientBuilder.build()).thenReturn(new OkHttpClient());
-    gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository, appSettingService,
+    gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository,
         productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils));
     gitHubBuilderMock = Mockito.mockConstruction(GitHubBuilder.class,
         Mockito.withSettings().defaultAnswer(Answers.RETURNS_SELF),
