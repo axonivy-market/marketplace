@@ -28,7 +28,7 @@ import {
 import { FaviconService } from '../../shared/services/favicon.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
-const products = MOCK_PRODUCTS.content;
+const products = MOCK_PRODUCTS._embedded.products;
 
 describe('ProductDetailResolver', () => {
   let resolver: ProductDetailResolver;

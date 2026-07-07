@@ -71,7 +71,7 @@ describe('AuthService', () => {
                 case RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_CALLBACK:
                   return '/auth/github/callback';
                 case RUNTIME_CONFIG_KEYS.MARKET_GITHUB_ADMIN_OAUTH_CALLBACK:
-                  return 'auth/admin/github/callback';
+                  return '/auth/admin/github/callback';
                 default:
                   return '';
               }

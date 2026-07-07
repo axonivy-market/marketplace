@@ -12,6 +12,7 @@ import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import { AdminAuthService } from '../../../../admin-dashboard/admin-auth.service';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
+import type { Mock } from 'vitest';
 
 describe('ProductFeedbackService', () => {
   let service: ProductFeedbackService;
@@ -97,9 +98,9 @@ describe('ProductFeedbackService', () => {
   });
 
   it('skips user feedback lookup when token is missing', () => {
-    const authService = TestBed.inject(AuthService) as {
-      getToken: ReturnType<typeof vi.fn>;
-      getUserId: ReturnType<typeof vi.fn>;
+    const authService = TestBed.inject(AuthService) as unknown as {
+      getToken: Mock;
+      getUserId: Mock;
     };
     authService.getToken.mockReturnValue(null);
 
