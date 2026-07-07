@@ -15,7 +15,7 @@ import { environment } from '../../../../environments/environment.development';
 import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../../configs/runtime-config.service';
 import { RUNTIME_CONFIG_KEYS } from '../../models/runtime-config';
-import { HttpParams } from '@angular/common/http';
+import { HttpParams, HttpStatusCode } from '@angular/common/http';
 import { RequestParam } from '../../../shared/enums/request-param';
 import {
   EventSourceMessage,
@@ -69,7 +69,7 @@ export class LogStreamService {
       signal: this.ctrl.signal,
       credentials: 'include',
       onopen: async (response: Response) => {
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === HttpStatusCode.Unauthorized || response.status === HttpStatusCode.Forbidden) {
           throw new Error(`Log stream unauthorized: ${response.status}`);
         }
       },

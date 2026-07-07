@@ -82,11 +82,11 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string) {
-  let headers = addIvyHeaders(req.headers);
+  const headers = addIvyHeaders(req.headers);
 
   return req.clone({
-    url: requestURL,
     headers,
+    url: requestURL,
     withCredentials: true
   });
 }
