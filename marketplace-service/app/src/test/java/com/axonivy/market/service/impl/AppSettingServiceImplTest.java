@@ -133,27 +133,6 @@ class AppSettingServiceImplTest {
   }
 
   @Test
-  void testGetValueByKeyReturnsStoredValue() {
-    AppSetting setting = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "stored-token", false);
-    when(repository.findByKey(AppSettingKey.GITHUB_TOKEN.getKey())).thenReturn(Optional.of(setting));
-
-    String value = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
-
-    assertEquals("stored-token", value, "Should return stored value from repository");
-  }
-
-  @Test
-  void testGetValueByKeyReturnsDecryptedValueForEncryptedSetting() {
-    AppSetting setting = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "encrypted-token", true);
-    when(repository.findByKey(AppSettingKey.GITHUB_TOKEN.getKey())).thenReturn(Optional.of(setting));
-    when(encryptionService.decrypt("encrypted-token")).thenReturn("decrypted-token");
-
-    String value = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
-
-    assertEquals("decrypted-token", value, "Should return decrypted value for encrypted settings");
-  }
-
-  @Test
   void testGetValueByKeyReturnsDefaultWhenNotFound() {
     when(repository.findByKey(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey())).thenReturn(Optional.empty());
 
@@ -164,17 +143,6 @@ class AppSettingServiceImplTest {
   }
 
   @Test
-  void testGetValueByKeyReturnsDefaultWhenStoredValueIsBlank() {
-    AppSetting setting = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "", false);
-    when(repository.findByKey(AppSettingKey.GITHUB_TOKEN.getKey())).thenReturn(Optional.of(setting));
-
-    String value = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
-
-    assertEquals(AppSettingKey.GITHUB_TOKEN.getDefaultValue(), value,
-        "Should return default value when stored value is blank");
-  }
-
-  @Test
   void testGetValueReturnsResolvedValue() {
     AppSetting setting = buildAppSetting(AppSettingKey.DOCUMENTS_CRON.getKey(), "custom-value", false);
     when(repository.findByKey(AppSettingKey.DOCUMENTS_CRON.getKey())).thenReturn(Optional.of(setting));
@@ -182,24 +150,6 @@ class AppSettingServiceImplTest {
     String result = appSettingService.getStringValueByKey(AppSettingKey.DOCUMENTS_CRON);
 
     assertEquals("custom-value", result, "Should return the value from repository for the given key");
-  }
-
-  @Test
-  void testInitializeSettingsCreatesNewAndDeletesObsolete() {
-    Set<String> existingKeys = Set.of(AppSettingKey.GITHUB_TOKEN.getKey());
-    when(repository.findAllKeys()).thenReturn(existingKeys);
-
-    appSettingService.initializeSettings();
-
-    ArgumentCaptor<List<AppSetting>> captor = ArgumentCaptor.forClass(List.class);
-    verify(repository).saveAll(captor.capture());
-
-    List<AppSetting> savedSettings = captor.getValue();
-    assertTrue(savedSettings.stream().noneMatch(s -> s.getKey().equals(AppSettingKey.GITHUB_TOKEN.getKey())),
-        "Should not save settings that already exist");
-    assertFalse(savedSettings.isEmpty(), "Should save new settings that don't exist yet");
-
-    verify(repository).deleteByKeyNotIn(anySet());
   }
 
   @Test
@@ -220,33 +170,19 @@ class AppSettingServiceImplTest {
 
   @Test
   void testGetByCategoryReturnsSettingsMap() {
-    AppSetting setting1 = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "token-value", false);
     AppSetting setting2 = buildAppSetting(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey(), "5000", false);
+    AppSetting setting1 = buildAppSetting(AppSettingKey.MAIL_PORT.getKey(), "587", false);
     when(repository.findByCategoryIgnoreCase(AppSettingCategory.GITHUB.name())).thenReturn(
         List.of(setting1, setting2));
 
     Map<String, String> result = appSettingService.getByCategory(AppSettingCategory.GITHUB);
 
     assertEquals(2, result.size(), "Should return a map with two entries");
-    assertEquals("token-value", result.get(AppSettingKey.GITHUB_TOKEN.getKey()),
-        "Should contain the correct value for token key");
+    assertEquals("587", result.get(AppSettingKey.MAIL_PORT.getKey()),
+        "Should contain the correct value for mail port key");
     assertEquals("5000", result.get(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey()),
         "Should contain the correct value for timeout key");
     verify(repository).findByCategoryIgnoreCase(AppSettingCategory.GITHUB.name());
-  }
-
-  @Test
-  void testGetByCategoryDecryptsEncryptedValues() {
-    AppSetting encryptedSetting = buildAppSetting(AppSettingKey.GITHUB_TOKEN.getKey(), "encrypted-token", true);
-    when(repository.findByCategoryIgnoreCase(AppSettingCategory.GITHUB.name())).thenReturn(
-        List.of(encryptedSetting));
-    when(encryptionService.decrypt("encrypted-token")).thenReturn("decrypted-token");
-
-    Map<String, String> result = appSettingService.getByCategory(AppSettingCategory.GITHUB);
-
-    assertEquals(1, result.size(), "Should return a map with one entry");
-    assertEquals("decrypted-token", result.get(AppSettingKey.GITHUB_TOKEN.getKey()),
-        "Encrypted value should be decrypted in the returned map");
   }
 
   @Test

@@ -10,5 +10,4 @@ public class CookieConfig {
   public CookieSameSiteSupplier applicationCookieSameSiteSupplier(SessionCookieProperties cookieProperties) {
     return CookieSameSiteSupplier.of(cookieProperties.getSameSiteEnum());
   }
-
 }

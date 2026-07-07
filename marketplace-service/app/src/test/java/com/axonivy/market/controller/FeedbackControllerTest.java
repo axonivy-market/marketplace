@@ -8,11 +8,8 @@ import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
-import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.model.UserInfo;
-import io.jsonwebtoken.Claims;
-import com.axonivy.market.service.JwtService;
-
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.GithubUserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -59,9 +55,6 @@ class FeedbackControllerTest extends BaseSetup {
 
   @Mock
   private PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
-
-  @Mock
-  private JwtService jwtService;
 
   private FeedbackController feedbackController;
 
@@ -197,12 +190,9 @@ class FeedbackControllerTest extends BaseSetup {
     mockFeedbackModel.setId(FEEDBACK_ID_SAMPLE);
     mockFeedbackModel.setUsername(USER_NAME_SAMPLE);
 
-    var request = MockServletRequestUtils.createAndBindMockRequest();
-    request.setAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE, MODERATOR_NAME);
-
     when(service.updateFeedbackWithNewStatus(feedbackApproval, MODERATOR_NAME)).thenReturn(updatedFeedback);
     when(githubUserService.findUser(any())).thenReturn(mockGithubUser);
-    var currentUser = createCurrentUser(USER_ID_SAMPLE, USER_NAME_SAMPLE);
+    var currentUser = createCurrentUser(USER_ID_SAMPLE, MODERATOR_NAME);
 
     var result = feedbackController.updateFeedbackWithNewStatus(feedbackApproval, currentUser);
 
@@ -223,10 +213,8 @@ class FeedbackControllerTest extends BaseSetup {
   void testCreateFeedback() {
     FeedbackModelRequest mockFeedbackModel = createFeedbackModelRequestMock();
     Feedback mockFeedback = createFeedbackMock();
-    Claims mockClaims = createMockClaims();
-    var request = MockServletRequestUtils.createAndBindMockRequest();
-    when(jwtService.getClaimsFromToken(any())).thenReturn(mockClaims);
     when(service.upsertFeedback(any(), any())).thenReturn(mockFeedback);
+    MockServletRequestUtils.createAndBindMockRequest();
     var currentUser = createCurrentUser(USER_ID_SAMPLE, USER_NAME_SAMPLE);
     var result = feedbackController.createFeedback(mockFeedbackModel, currentUser);
 
@@ -264,9 +252,4 @@ class FeedbackControllerTest extends BaseSetup {
     return mockFeedback;
   }
 
-  private Claims createMockClaims() {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn(USER_ID_SAMPLE);
-    return claims;
-  }
 }
