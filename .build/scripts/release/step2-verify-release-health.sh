@@ -44,7 +44,7 @@ else
     echo NO_HTTP_CLIENT
     exit 0
 fi
-printf '%s' \"\${RESPONSE}\" | grep -o '\"status\"[[:space:]]*:[[:space:]]*\"[A-Z]*\"' | cut -d'\"' -f4
+printf '%s' "\${RESPONSE}" | grep -o '\"status\"[[:space:]]*:[[:space:]]*\"[A-Z]*\"' | head -n1 | cut -d'\"' -f4
 " 2>/dev/null || true
 }
 

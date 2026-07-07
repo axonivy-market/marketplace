@@ -46,8 +46,16 @@ scp "${SSH_OPTS[@]}" \
     exit 1
 }
 
+release_version_q="$(printf '%q' "${RELEASE_VERSION}")"
+health_targets_q="$(printf '%q' "${HEALTH_CHECK_TARGETS_ARG}")"
+creds_temp_file_q="$(printf '%q' "${CREDS_TEMP_FILE}")"
+health_check_timeout_q="$(printf '%q' "${HEALTH_CHECK_TIMEOUT}")"
+health_check_interval_q="$(printf '%q' "${HEALTH_CHECK_INTERVAL}")"
+skip_deploy_release_q="$(printf '%q' "${SKIP_DEPLOY_RELEASE:-false}")"
+remote_script_dir_q="$(printf '%q' "${REMOTE_SCRIPT_DIR}")"
+
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
-    "RELEASE_VERSION='${RELEASE_VERSION}' HEALTH_CHECK_TARGETS='${HEALTH_CHECK_TARGETS_ARG}' CREDS_TEMP_FILE='${CREDS_TEMP_FILE}' HEALTH_CHECK_TIMEOUT='${HEALTH_CHECK_TIMEOUT}' HEALTH_CHECK_INTERVAL='${HEALTH_CHECK_INTERVAL}' SKIP_DEPLOY_RELEASE='${SKIP_DEPLOY_RELEASE:-false}' REMOTE_SCRIPT_DIR='${REMOTE_SCRIPT_DIR}' bash -se" <<'REMOTE_EOF'
+    "RELEASE_VERSION=${release_version_q} HEALTH_CHECK_TARGETS=${health_targets_q} CREDS_TEMP_FILE=${creds_temp_file_q} HEALTH_CHECK_TIMEOUT=${health_check_timeout_q} HEALTH_CHECK_INTERVAL=${health_check_interval_q} SKIP_DEPLOY_RELEASE=${skip_deploy_release_q} REMOTE_SCRIPT_DIR=${remote_script_dir_q} bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
 cleanup_remote_assets() {
