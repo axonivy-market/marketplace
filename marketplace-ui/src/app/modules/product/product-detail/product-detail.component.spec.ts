@@ -119,6 +119,8 @@ describe('ProductDetailComponent', () => {
 
     mockAuthService = {
       getToken: vi.fn().mockName('AuthService.getToken'),
+      getUserId: vi.fn().mockName('AuthService.getUserId'),
+      getFeedbackUserId: vi.fn().mockName('AuthService.getFeedbackUserId'),
       redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub')
     } as unknown as MockedObject<AuthService>;
     mockAppModalService = {
@@ -275,7 +277,8 @@ describe('ProductDetailComponent', () => {
 
   it('should open add feedback dialog if token is present', () => {
     languageService.selectedLanguage.mockReturnValue(Language.DE);
-    mockAuthService.getToken.mockReturnValue('token');
+    mockAuthService.getUserId.mockReturnValue('user-id');
+    mockAuthService.getFeedbackUserId.mockReturnValue('feedback-user-id');
 
     component.onClickRateBtn();
     fixture.detectChanges();
@@ -285,7 +288,8 @@ describe('ProductDetailComponent', () => {
 
   it('should redirect to Gitub if token is null', () => {
     languageService.selectedLanguage.mockReturnValue(Language.DE);
-    mockAuthService.getToken.mockReturnValue(null);
+    mockAuthService.getUserId.mockReturnValue(null);
+    mockAuthService.getFeedbackUserId.mockReturnValue(null);
 
     component.onClickRateBtn();
     fixture.detectChanges();
