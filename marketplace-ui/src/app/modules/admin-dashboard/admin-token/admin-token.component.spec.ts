@@ -32,6 +32,8 @@ describe('AdminTokenComponent', () => {
     component.onSubmit();
 
     expect(component.isGitHubProcessing).toBe(true);
-    expect(authService.redirectToGitHub).toHaveBeenCalledWith('/internal-dashboard');
+    expect(authService.redirectToGitHub).toHaveBeenCalledWith('/internal-dashboard', {
+      useAdminState: true
+    });
   });
 });

@@ -70,6 +70,8 @@ describe('AuthService', () => {
                   return 'github-client-id';
                 case RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_CALLBACK:
                   return '/auth/github/callback';
+                case RUNTIME_CONFIG_KEYS.MARKET_GITHUB_ADMIN_OAUTH_CALLBACK:
+                  return 'auth/admin/github/callback';
                 default:
                   return '';
               }
@@ -98,52 +100,42 @@ describe('AuthService', () => {
     service.redirectToGitHub('/ignored');
     await flushMicrotasks();
 
+    expect(location.href).toContain('client_id=github-client-id');
+    expect(location.href).toContain('redirect_uri=http://localhost/auth/github/callback');
+    expect(location.href).toContain('state=%2Fignored');
+    expect(httpMock.match(() => true)).toHaveLength(0);
+  });
+
+  it('redirects to admin GitHub using a server-issued state', async () => {
+    service.redirectToGitHub('/internal-dashboard', { useAdminState: true });
+    await flushMicrotasks();
+
     const request = httpMock.expectOne(API_URI.ADMIN_GITHUB_AUTHORIZATION);
     expect(request.request.method).toBe('GET');
-    request.flush({ state: 'server-state' });
+    request.flush({ state: 'admin-state' });
     await flushMicrotasks();
 
     expect(adminAuthService.fetchCsrfToken).toHaveBeenCalled();
     expect(location.href).toContain('client_id=github-client-id');
-    expect(location.href).toContain('redirect_uri=http://localhost/auth/github/callback');
-    expect(location.href).toContain('state=server-state');
-  });
-
-  it('redirects to GitHub using the provided state for feedback', async () => {
-    service.redirectToGitHub('feedback-product-id', { useOriginalState: true });
-    await flushMicrotasks();
-
-    expect(httpMock.match(API_URI.ADMIN_GITHUB_AUTHORIZATION)).toHaveLength(0);
-    expect(adminAuthService.fetchCsrfToken).not.toHaveBeenCalled();
-    expect(location.href).toContain('client_id=github-client-id');
-    expect(location.href).toContain('redirect_uri=http://localhost/auth/github/callback');
-    expect(location.href).toContain('state=feedback-product-id');
+    expect(location.href).toContain('redirect_uri=http://localhost/auth/admin/github/callback');
+    expect(location.href).toContain('state=admin-state');
   });
 
   it('exchanges callback code for a session and navigates to the dashboard', async () => {
-    const userInfo: UserInfo = {
-      id: 'user-1',
-      token: null,
-      login: 'octopus',
-      name: 'Octopus',
-      avatarUrl: 'https://avatar',
-      url: 'https://github.com/octopus'
-    };
-
     service.handleGitHubCallback('code-1', 'state-1');
     await flushMicrotasks();
 
-    const request = httpMock.expectOne(API_URI.ADMIN_GITHUB_CALLBACK);
+    const request = httpMock.expectOne('/auth/github/login');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ code: 'code-1', state: 'state-1' });
-    request.flush(userInfo);
+    expect(request.request.body).toEqual({ code: 'code-1' });
+    request.flush({ token: 'token-1' });
 
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(adminAuthService.fetchCsrfToken).toHaveBeenCalled();
-    expect(adminAuthService.setUserInfo).toHaveBeenCalledWith(userInfo);
-    expect(router.navigate).toHaveBeenCalledWith(['/internal-dashboard']);
+    expect(router.navigate).toHaveBeenCalledWith(['state-1'], {
+      queryParams: { showPopup: 'true' }
+    });
   });
 
   it('reads display name and user id from the stored session user', () => {

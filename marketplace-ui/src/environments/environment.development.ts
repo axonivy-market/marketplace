@@ -8,7 +8,7 @@ export const environment = {
   apiInternalUrl: 'http://localhost:8080/app',
   githubOAuthAppClientId: 'Iv23livu9HbsC4Q24eSC',
   githubOAuthCallback: '/auth/github/callback',
-  githubAdminOAuthCallback: '/auth/github/callback/admin',
+  githubAdminOAuthCallback: '/auth/admin/github/callback',
   githubApiUrl: 'https://api.github.com',
   dayInMiliseconds: 86400000,
   matomoSiteId: 0,

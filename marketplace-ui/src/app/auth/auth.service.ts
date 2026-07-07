@@ -81,7 +81,6 @@ export class AuthService {
 
   handleGitHubCallback(code: string, state: string): void {
     const body = { code };
-
     this.exchangeCodeForToken(body).subscribe({
       next: response => this.handleTokenResponse(response.token, state),
       error: error => throwError(() => error)

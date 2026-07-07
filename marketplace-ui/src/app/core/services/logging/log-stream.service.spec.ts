@@ -22,7 +22,7 @@ describe('LogStreamService', () => {
             apiUrl: '/app',
             githubOAuthAppClientId: '',
             githubOAuthCallback: '/auth/github/callback',
-            githubAdminOAuthCallback: '/auth/github/callback/admin',
+            githubAdminOAuthCallback: '/auth/admin/github/callback',
             githubApiUrl: '',
             dayInMiliseconds: 86400000,
             matomoSiteId: 0,

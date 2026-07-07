@@ -13,7 +13,7 @@ describe('GithubCallbackAdminComponent', () => {
 
   beforeEach(async () => {
     mockAuthService = {
-      handleGitHubCallback: vi.fn().mockName('AuthService.handleGitHubCallback')
+      handleGitHubAdminCallback: vi.fn().mockName('AuthService.handleGitHubAdminCallback')
     } as MockedObject<AuthService>;
     activatedRouteStub = {
       queryParams: of({ code: 'testCode', state: 'testState' })
@@ -38,7 +38,7 @@ describe('GithubCallbackAdminComponent', () => {
   });
 
   it('should call handleGitHubCallback with correct parameters', () => {
-    expect(mockAuthService.handleGitHubCallback).toHaveBeenCalledWith(
+    expect(mockAuthService.handleGitHubAdminCallback).toHaveBeenCalledWith(
       'testCode',
       'testState'
     );
@@ -50,7 +50,7 @@ describe('GithubCallbackAdminComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(mockAuthService.handleGitHubCallback).not.toHaveBeenCalledWith(
+    expect(mockAuthService.handleGitHubAdminCallback).not.toHaveBeenCalledWith(
       'testCode',
       undefined!
     );
@@ -60,7 +60,7 @@ describe('GithubCallbackAdminComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(mockAuthService.handleGitHubCallback).not.toHaveBeenCalledWith(
+    expect(mockAuthService.handleGitHubAdminCallback).not.toHaveBeenCalledWith(
       undefined!,
       'testState'
     );

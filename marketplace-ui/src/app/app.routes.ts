@@ -29,12 +29,10 @@ export const routes: Routes = [
   {
     path: 'auth/github/callback',
     component: GithubCallbackComponent,
-    children: [
-      {
-        path: 'admin',
-        component: GithubCallbackAdminComponent
-      }
-    ]
+  },
+  {
+    path: 'auth/admin/github/callback',
+    component: GithubCallbackAdminComponent
   },
   // Error handling more specific first
   {

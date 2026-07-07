@@ -12,6 +12,7 @@ describe('RuntimeConfigService', () => {
     apiUrl: '/test-api',
     githubOAuthAppClientId: 'test-client-id',
     githubOAuthCallback: '/test/callback',
+    githubAdminOAuthCallback: '/test/admin/callback',
     githubApiUrl: 'https://test.api.github.com',
     dayInMiliseconds: 86400000,
     matomoSiteId: 999,
