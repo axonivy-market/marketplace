@@ -161,7 +161,6 @@
                     [ngClass]="isRunning(syncTask) ? 'btn-danger text-light' : (themeService.isDarkMode() ? 'btn-light text-dark' : 'btn-primary text-light')"
                     (click)="onAction(syncTask)"
                     >
-
                     @if (loadingSyncTaskKey === syncTask.key || isRunning(syncTask)) {
                       @if (isRunning(syncTask)) {
                         <i class="ti ti-rotate-clockwise-2 icon-spin me-2"></i>
