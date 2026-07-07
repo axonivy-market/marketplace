@@ -75,12 +75,27 @@ export class AuthService {
     this.githubAdminOAuthCallbackUrl = `${win?.location?.origin ?? ''}${adminCallbackPath}`;
   }
 
-  redirectToGitHub(originalUrl: string, options?: { useAdminState?: boolean }): void {
-    void this.redirectToGitHubInternal(originalUrl, options?.useAdminState ?? false);
+  async redirectToGitHub(originalUrl: string, options?: { useAdminState?: boolean }): Promise<void> {
+    const state = options?.useAdminState ? await this.fetchGitHubAdminAuthorizationState() : originalUrl;
+    const redirectUrl = options?.useAdminState ? this.githubAdminOAuthCallbackUrl : this.githubOAuthCallbackUrl;
+    this.redirectWindowToGitHub(this.buildGitHubAuthorizationUrl(state, redirectUrl));
+  }
+
+  getToken(): string | null {
+    return this.currentUser()?.token ?? null;
+  }
+
+  decodeToken(token: string): TokenPayload | null {
+    try {
+      return jwtDecode(token);
+    } catch (error) {
+      return null;
+    }
   }
 
   handleGitHubCallback(code: string, state: string): void {
     const body = { code };
+
     this.exchangeCodeForToken(body).subscribe({
       next: response => this.handleTokenResponse(response.token, state),
       error: error => throwError(() => error)
@@ -112,12 +127,6 @@ export class AuthService {
 
   handleGitHubAdminCallback(code: string, state: string): void {
     void this.handleGitHubCallbackInternal(code, state, API_URI.ADMIN_GITHUB_CALLBACK);
-  }
-
-  private async redirectToGitHubInternal(originalUrl: string, useAdminState: boolean): Promise<void> {
-    const state = useAdminState ? await this.fetchGitHubAdminAuthorizationState() : originalUrl;
-    const redirectUrl = useAdminState ? this.githubAdminOAuthCallbackUrl : this.githubOAuthCallbackUrl;
-    this.redirectWindowToGitHub(this.buildGitHubAuthorizationUrl(state, redirectUrl));
   }
 
   private async handleGitHubCallbackInternal(code: string, state: string, callBackUrl: string): Promise<void> {
@@ -153,10 +162,6 @@ export class AuthService {
     await firstValueFrom(this.adminAuthService.fetchCsrfToken());
   }
 
-  getToken(): string | null {
-    return this.currentUser()?.token ?? null;
-  }
-
   getDisplayName(): string | null {
     const userInfo = this.currentUser();
     return userInfo?.name || userInfo?.username || null;
@@ -165,14 +170,6 @@ export class AuthService {
   getUserId(): string | null {
     const userInfo = this.currentUser();
     return userInfo?.id ?? null;
-  }
-
-  decodeToken(token: string): TokenPayload | null {
-    try {
-      return jwtDecode(token);
-    } catch (error) {
-      return null;
-    }
   }
 
   getFeedbackUserId(): string | null {

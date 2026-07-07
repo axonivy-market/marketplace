@@ -1,10 +1,4 @@
-import {
-  HttpHeaders,
-  HttpContextToken,
-  HttpInterceptorFn,
-  HttpResponse,
-  HttpStatusCode
-} from '@angular/common/http';
+import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpStatusCode } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
@@ -64,12 +58,9 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(buildApiRequest(req, requestURL)).pipe(
     tap(event => {
-      if (
-        req.method === 'GET' &&
-        event instanceof HttpResponse &&
-        event.status === HttpStatusCode.Ok &&
-        req.context.get(CachingEnabled) !== false
-      ) {
+      if ( req.method === 'GET'
+        && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
+        && req.context.get(CachingEnabled) !== false) {
         transferState.set(key, event.body);
       }
     }),

@@ -8,6 +8,7 @@ import { catchError, finalize, Observable, throwError } from 'rxjs';
 import { LoadingComponent } from './api.interceptor';
 import { FORBIDDEN, UNAUTHORIZED, UNDEFINED_ERROR_CODE } from '../../shared/constants/common.constant';
 import { AdminAuthService } from '../../modules/admin-dashboard/admin-auth.service';
+import { API_URI } from '../../shared/constants/api.constant';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const loadingService = inject(LoadingService);
@@ -19,10 +20,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(error => {
       if (error instanceof HttpErrorResponse) {
-        return handleHttpError(
-          toastService,
-          error,
-          req.url,
+        return handleHttpError( toastService, error, req.url,
           req.method,
           router,
           adminAuthService,
@@ -43,9 +41,14 @@ export function handleHttpError(toastService: HttpToastService, error: HttpError
   url: string, method: string, router: Router, adminAuthService: AdminAuthService, isBrowser = true): Observable<never> {
   // Keep auth errors for caller to handle (e.g., auth service, guards)
   if (error.status === UNAUTHORIZED || error.status === FORBIDDEN) {
-    if (isBrowser && error.status === UNAUTHORIZED && method !== 'GET' && !url.includes('auth/admin/v2/github/callback')) {
+    if (
+      isBrowser &&
+      error.status === UNAUTHORIZED &&
+      method !== 'GET' &&
+      !url.includes(API_URI.ADMIN_GITHUB_CALLBACK)
+    ) {
       adminAuthService.clearToken();
-      router.navigate(['/admin-login-v2']);
+      router.navigate(['/request-access']);
     }
     return throwError(() => error);
   }

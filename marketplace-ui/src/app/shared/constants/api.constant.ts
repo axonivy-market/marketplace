@@ -22,7 +22,6 @@ export const API_URI = {
   SYNC_TASK_EXECUTION: `${API}/${INTERNAL}/sync-task-execution`,
   SECURITY_MONITOR: `${API}/${INTERNAL}/security-monitor`,
   GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
-  GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
   GITHUB_CALLBACK: 'auth/github/callback',
   ADMIN_GITHUB_AUTHORIZATION: 'auth/admin/github/authorization',
   ADMIN_GITHUB_CALLBACK: 'auth/admin/github/callback',

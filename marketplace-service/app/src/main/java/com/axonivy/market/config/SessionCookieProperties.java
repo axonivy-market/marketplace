@@ -13,7 +13,7 @@ import java.util.Locale;
 public class SessionCookieProperties {
   private String name;
   private boolean secure;
-  private boolean httpOnly = true;
+  private boolean httpOnly;
   private String sameSite;
 
   public SameSite getSameSiteEnum() {

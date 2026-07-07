@@ -50,10 +50,7 @@ public class SecurityConfig {
       ADMIN_AUTH + GITHUB_CALLBACK,
       AUTH + GITHUB_LOGIN
   };
-  private static final String[] PUBLIC_PUT_ENDPOINTS = {
-      AUTH + GITHUB_VALIDATE_TOKEN
-  };
-  private final WriteAuditLoggingFilter writeAuditLoggingFilter;
+
   private final SessionCookieProperties sessionCookieProperties;
 
   @Bean
@@ -78,7 +75,6 @@ public class SecurityConfig {
             .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-            .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
             .requestMatchers(HttpMethod.POST, "/**").authenticated()
@@ -98,9 +94,6 @@ public class SecurityConfig {
               int status = anonymous ? HttpServletResponse.SC_UNAUTHORIZED : HttpServletResponse.SC_FORBIDDEN;
               response.sendError(status);
             }));
-
-    http.addFilterAfter(writeAuditLoggingFilter, SecurityContextHolderFilter.class);
-
     return http.build();
   }
 

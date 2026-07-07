@@ -12,7 +12,6 @@ import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.AccessLevel;
-import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -30,7 +29,6 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
-import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -114,7 +112,6 @@ public class GitHubServiceImpl implements GitHubService {
 
   private final RestClientBuilder restClientBuilder;
   private final GithubUserRepository githubUserRepository;
-  private final AppSettingService appSettingService;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
   private final OkHttpClientBuilder okHttpClientBuilder;
   private final MultiTaskUtils multiTaskUtils;

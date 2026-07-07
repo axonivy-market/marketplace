@@ -29,7 +29,6 @@ public class RequestMappingConstants {
   public static final String SYNC_ONE_PRODUCT_BY_ID = "sync/{id}";
   public static final String GITHUB_LOGIN = "/github/login";
   public static final String GITHUB_REQUEST_ACCESS = "/github/request-access";
-  public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
   public static final String ADMIN_AUTH = AUTH + "/admin";
   public static final String GITHUB_AUTHORIZATION = "/github/authorization";

@@ -70,14 +70,4 @@ class OAuth2ControllerTest extends BaseSetup {
     assertEquals(mockUserInfo.getToken(), Objects.requireNonNull(response.getBody()).getToken(),
         "Response body should contain the generated JWT token");
   }
-
-  @Test
-  void testValidateAuthorizationCode() {
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-    when(mockRequest.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE)).thenReturn(JWT_TOKEN);
-    ResponseEntity<?> response = oAuth2Controller.isAuthenticated(mockRequest);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be 200 OK when authorization code is validated.");
-  }
 }

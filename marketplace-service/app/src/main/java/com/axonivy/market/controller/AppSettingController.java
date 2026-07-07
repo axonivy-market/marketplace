@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.model.AppSettingDto;
 import com.axonivy.market.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
