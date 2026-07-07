@@ -31,6 +31,8 @@ public class RequestMappingConstants {
   public static final String GITHUB_VALIDATE_TOKEN = "/github/validate-token";
   public static final String AUTH = "/auth";
   public static final String BY_ID = "/{id}";
+  public static final String SAVE_AS_DRAFT = "/save-as-draft";
+  public static final String DRAFT_BY_ID = "/{id}/draft";
   public static final String BY_LATEST = "/latest";
   public static final String BY_FILE_NAME = "/preview/{imageName}";
   public static final String BY_ID_AND_VERSION = "/{id}/{version}";
@@ -72,4 +74,6 @@ public class RequestMappingConstants {
   public static final String LOG_STREAM = "/stream";
   public static final String RELEASE_LETTER = API + "/release-letters";
   public static final String LOG_STREAM_BY_TASK_KEY = "/stream/{taskKey}";
+  public static final String ARCHIVE_BY_ID = "{productId}/archive";
+  public static final String APP_SETTING = API + "/settings";
 }

@@ -2,7 +2,7 @@ package com.axonivy.market.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * <p>
@@ -15,13 +15,13 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @AllArgsConstructor
 public enum FileType {
-  META("meta.json"), LOGO("logo.png"), OTHER("other");
+  META("meta.json"), LOGO("logo.png"), LOGO_DARK("logo-dark.png"), OTHER("other");
 
   private final String fileName;
 
   public static FileType of(String name) {
     for (var type : values()) {
-      if (StringUtils.endsWithIgnoreCase(name, type.getFileName())) {
+      if (Strings.CI.endsWith(name, type.getFileName())) {
         return type;
       }
     }

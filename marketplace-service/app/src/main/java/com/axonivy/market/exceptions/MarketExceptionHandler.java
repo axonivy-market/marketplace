@@ -4,13 +4,15 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.InvalidParamException;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.exceptions.model.AlreadyExistedException;
+import com.axonivy.market.exceptions.model.ArchiveNotAllowedException;
+import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.FileProcessingException;
 import com.axonivy.market.exceptions.model.InvalidZipEntryException;
 import com.axonivy.market.exceptions.model.MarketException;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
-import com.axonivy.market.exceptions.model.TaskAlreadyRunningException;
+import com.axonivy.market.exceptions.model.SyncTaskInProgressException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.model.Message;
 import org.springframework.http.HttpStatus;
@@ -127,11 +129,29 @@ public class MarketExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
   }
 
-  @ExceptionHandler(TaskAlreadyRunningException.class)
-  public ResponseEntity<Message> handleTaskAlreadyRunningException(
-      TaskAlreadyRunningException taskAlreadyRunningException) {
-    var message = new Message(ErrorCode.TASK_ALREADY_RUNNING.getCode(), taskAlreadyRunningException.getMessage(),
-        ErrorCode.TASK_ALREADY_RUNNING.getHelpText());
+  @ExceptionHandler(SyncTaskInProgressException.class)
+  public ResponseEntity<Message> handleSyncTaskInProgressException(
+      SyncTaskInProgressException syncTaskInProgressException) {
+    var message = new Message(ErrorCode.TASK_ALREADY_IN_PROGRESS.getCode(), syncTaskInProgressException.getMessage(),
+        ErrorCode.TASK_ALREADY_IN_PROGRESS.getHelpText());
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(message);
+  }
+
+  @ExceptionHandler(ArchiveNotAllowedException.class)
+  public ResponseEntity<Object> handleArchiveNotAllowedException(
+      ArchiveNotAllowedException archiveNotAllowedException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(archiveNotAllowedException.getCode());
+    errorMessage.setMessageDetails(archiveNotAllowedException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(UnarchiveFailedException.class)
+  public ResponseEntity<Object> handleUnarchiveFailedException(
+      UnarchiveFailedException unarchiveFailedException) {
+    var errorMessage = new Message();
+    errorMessage.setHelpCode(unarchiveFailedException.getCode());
+    errorMessage.setMessageDetails(unarchiveFailedException.getMessage());
+    return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

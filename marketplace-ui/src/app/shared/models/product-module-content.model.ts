@@ -5,6 +5,7 @@ export interface ProductModuleContent {
   description: DisplayValue | null;
   demo: DisplayValue | null;
   setup: DisplayValue | null;
+  component: DisplayValue | null;
   isDependency: boolean;
   name: string;
   groupId: string;

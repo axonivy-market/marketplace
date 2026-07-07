@@ -14,12 +14,9 @@ public interface ReleasePreviewService {
    *
    * @param  file
    *              type {@link MultipartFile} - the uploaded ZIP or JAR file containing product artifacts and README
-   * @param  baseUrl
-   *              type {@link String} - the base URL to prepend to relative image URLs found in the README
-   *              (e.g., "https://github.com/repo/master/raw/")
    * @return {@link ReleasePreview} - extracted README content with processed image URLs, title, and summary
    * @author thxhuy
    */
-  ReleasePreview extract(MultipartFile file, String baseUrl);
+  ReleasePreview extract(MultipartFile file);
 
 }

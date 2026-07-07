@@ -19,5 +19,7 @@ public class ReadmeConstants {
       Pattern.UNICODE_CHARACTER_CLASS);
   public static final Pattern SETUP_PATTERN = Pattern.compile("(?m)^\\s*##\\sSetup\\s*$",
       Pattern.UNICODE_CHARACTER_CLASS);
+  public static final Pattern COMPONENT_PATTERN = Pattern.compile("(?m)^\\s*##\\sComponents\\s*$",
+      Pattern.UNICODE_CHARACTER_CLASS);
 
 }

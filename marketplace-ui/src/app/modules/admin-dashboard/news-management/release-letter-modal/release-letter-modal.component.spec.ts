@@ -1,17 +1,18 @@
-import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi, type MockedObject } from 'vitest';
+import { NewsManagementService } from './../news-management.service';
 
-import { ReleaseLetterModalComponent } from './release-letter-modal.component';
-import { MarkdownService } from '../../../../shared/services/markdown.service';
-import { TranslateService } from '@ngx-translate/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { AdminDashboardService } from '../../admin-dashboard.service';
+import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
+import { MarkdownService } from '../../../../shared/services/markdown.service';
+import { ReleaseLetterModalComponent } from './release-letter-modal.component';
 
 const mockResponse = {
   id: '123',
   sprint: 'S43',
   content: 'content',
+  hasDraft: false,
   latest: true,
   createdAt: '2026-02-01',
   updatedAt: '2026-02-02'
@@ -23,7 +24,7 @@ describe('ReleaseLetterModalComponent', () => {
 
   let markdownServiceMock: MockedObject<MarkdownService>;
   let translateServiceMock: MockedObject<TranslateService>;
-  let adminDashboardServiceMock: MockedObject<AdminDashboardService>;
+  let newsManagementServiceMock: MockedObject<NewsManagementService>;
   let activeModalMock: MockedObject<NgbActiveModal>;
 
   beforeEach(async () => {
@@ -37,13 +38,13 @@ describe('ReleaseLetterModalComponent', () => {
       close: vi.fn().mockName('NgbActiveModal.close'),
       dismiss: vi.fn().mockName('NgbActiveModal.dismiss')
     } as any;
-    adminDashboardServiceMock = {
+    newsManagementServiceMock = {
       getReleaseLetterById: vi
         .fn()
-        .mockName('AdminDashboardService.getReleaseLetterById')
+        .mockName('NewsManagementService.getReleaseLetterById')
     } as any;
 
-    adminDashboardServiceMock.getReleaseLetterById.mockReturnValue(
+    newsManagementServiceMock.getReleaseLetterById.mockReturnValue(
       of(mockResponse)
     );
     markdownServiceMock.parseMarkdown.mockReturnValue('<p>Mock</p>');
@@ -55,7 +56,7 @@ describe('ReleaseLetterModalComponent', () => {
         { provide: MarkdownService, useValue: markdownServiceMock },
         { provide: TranslateService, useValue: translateServiceMock },
         { provide: NgbActiveModal, useValue: activeModalMock },
-        { provide: AdminDashboardService, useValue: adminDashboardServiceMock }
+        { provide: NewsManagementService, useValue: newsManagementServiceMock }
       ]
     }).compileComponents();
 
@@ -72,7 +73,7 @@ describe('ReleaseLetterModalComponent', () => {
   });
 
   it('should call getReleaseLetterById on init', () => {
-    expect(adminDashboardServiceMock.getReleaseLetterById).toHaveBeenCalledWith(
+    expect(newsManagementServiceMock.getReleaseLetterById).toHaveBeenCalledWith(
       '123'
     );
   });

@@ -6,6 +6,7 @@ export interface ProductDetail {
   names: DisplayValue;
   shortDescriptions: DisplayValue;
   logoUrl: string;
+  logoDarkUrl?: string;
   type: string;
   tags: string[];
   vendor: string;
@@ -22,6 +23,7 @@ export interface ProductDetail {
   contactUs: boolean;
   deprecated?: boolean;
   successor?: string;
+  alternativeExtension?: string;
   installationCount: number;
   productModuleContent: ProductModuleContent;
   mavenDropins: boolean;

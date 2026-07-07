@@ -1,28 +1,32 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.SchedulingConfig;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.DirectoryConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
-import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.entity.ExternalDocumentMeta;
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
+import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.service.FileDownloadService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,7 +41,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@TestPropertySource("classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest
 class ExternalDocumentServiceImplTest extends BaseSetup {
   private static final String TEST_VERSION_12_5 = "12.5";
@@ -72,30 +76,75 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   private final List<String> majorVersions = List.of(TEN_VERSION, TEST_VERSION_12_5, TEST_VERSION, "13.2", DEV_VERSION);
 
-  @MockBean
+  @MockitoBean
   ProductRepository productRepository;
 
-  @MockBean
+  @MockitoBean
+  private SchedulingConfig schedulingConfig;
+
+  @MockitoBean
   ExternalDocumentMetaRepository externalDocumentMetaRepository;
 
-  @MockBean
+  @MockitoBean
   FileDownloadService fileDownloadService;
 
-  @MockBean
+  @MockitoBean
   AxonIvyClient axonIvyClient;
 
-  @MockBean
+  @MockitoBean
   ArtifactRepository artifactRepository;
 
-  @SpyBean
+  @MockitoBean
+  AppSettingService appSettingService;
+
+  @MockitoSpyBean
   ExternalDocumentServiceImpl service;
 
   @TempDir
   Path tempDir;
+
   @BeforeEach
   void setup() {
+    lenient().when(appSettingService.getStringValueByKey(any(AppSettingKey.class)))
+        .thenAnswer(inv -> {
+          AppSettingKey key = inv.getArgument(0);
+          return key.getDefaultValue();
+        });
     when(axonIvyClient.getDocumentVersions()).thenReturn(majorVersions);
     service.init();
+  }
+
+  @Test
+  void testDetermineProductIdsForSyncWithSpecificProductId() {
+    List<String> result = service.determineProductIdsForSync(PORTAL);
+    assertEquals(List.of(PORTAL), result, "Should return list with only the given product ID");
+    verify(productRepository, never()).findAllProductsHaveDocument();
+  }
+
+  @Test
+  void testDetermineProductIdsForSyncWithNullProductId() {
+    when(productRepository.findAllProductsHaveDocument()).thenReturn(
+        List.of(mockPortalProduct().orElse(new Product())));
+    List<String> result = service.determineProductIdsForSync(null);
+    assertEquals(List.of(PORTAL), result, "Should return IDs from findAllProductsHaveDocument when productId is null");
+    verify(productRepository, times(1)).findAllProductsHaveDocument();
+  }
+
+  @Test
+  void testDetermineProductIdsForSyncWithBlankProductId() {
+    when(productRepository.findAllProductsHaveDocument()).thenReturn(
+        List.of(mockPortalProduct().orElse(new Product())));
+    List<String> result = service.determineProductIdsForSync(StringUtils.EMPTY);
+    assertEquals(List.of(PORTAL), result, "Should return IDs from findAllProductsHaveDocument when productId is blank");
+    verify(productRepository, times(1)).findAllProductsHaveDocument();
+  }
+
+  @Test
+  void testDetermineProductIdsForSyncWithNoProducts() {
+    when(productRepository.findAllProductsHaveDocument()).thenReturn(Collections.emptyList());
+    List<String> result = service.determineProductIdsForSync(null);
+    assertTrue(result.isEmpty(), "Should return empty list when no products have documents");
+    verify(productRepository, times(1)).findAllProductsHaveDocument();
   }
 
   @Test
@@ -124,6 +173,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any())).thenReturn(
         mockPortalProduct().orElse(new Product()).getArtifacts());
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
+    doReturn(false).when(service).doesDocExistInShareFolder(any());
     service.syncDocumentForProduct(PORTAL, false, null);
     verify(externalDocumentMetaRepository, times(1)).findByProductIdAndVersionIn(any(), any());
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(
@@ -143,6 +193,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
     when(fileDownloadService.downloadAndUnzipFile(any(), any())).thenReturn(portalGuideDirectoryPath);
     when(externalDocumentMetaRepository.save(any())).thenReturn(new ExternalDocumentMeta());
+    doReturn(false).when(service).doesDocExistInShareFolder(any());
     service.syncDocumentForProduct(PORTAL, false, TEST_VERSION);
     verify(externalDocumentMetaRepository, times(4)).save(any());
   }
@@ -171,6 +222,33 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
     service.syncDocumentForProduct(PORTAL, true, MOCK_FIRST_RELEASED_VERSION_FOR_TEN);
     verify(productRepository, times(1)).findProductByIdAndRelatedData(any());
     verify(externalDocumentMetaRepository, atLeastOnce()).save(any());
+  }
+
+  @Test
+  void testSyncDocumentForProductAddsLatestSupportedVersions() {
+    when(artifactRepository.findAllByIdInAndFetchArchivedArtifacts(any()))
+        .thenReturn(mockPortalProduct().map(Product::getArtifacts).orElse(List.of()));
+    when(productRepository.findProductByIdAndRelatedData(PORTAL)).thenReturn(mockPortalProduct().orElse(null));
+    when(externalDocumentMetaRepository.findByProductIdAndVersionIn(eq(PORTAL), any()))
+        .thenReturn(List.of(
+            ExternalDocumentMeta.builder().version("10.0.0").build(),
+            ExternalDocumentMeta.builder().version(TEST_VERSION).build(),
+            ExternalDocumentMeta.builder().version("12.5.0").build(),
+            ExternalDocumentMeta.builder().version("13.2.0.1").build(),
+            ExternalDocumentMeta.builder().version("14.0.0").build()));
+    when(fileDownloadService.generateCacheStorageDirectory(any())).thenAnswer(invocation -> {
+      String downloadUrl = invocation.getArgument(0, String.class);
+      return String.join("/", DirectoryConstants.DATA_CACHE_DIR, PORTAL, extractVersionFromUrl(downloadUrl), DOC_DIR);
+    });
+    doReturn(true).when(service).doesDocExistInShareFolder(anyString());
+
+    service.syncDocumentForProduct(PORTAL, false, null);
+
+    ArgumentCaptor<ExternalDocumentMeta> metaCaptor = ArgumentCaptor.forClass(ExternalDocumentMeta.class);
+    verify(externalDocumentMetaRepository, atLeastOnce()).save(metaCaptor.capture());
+    List<String> savedVersions = metaCaptor.getAllValues().stream().map(ExternalDocumentMeta::getVersion).toList();
+    assertTrue(savedVersions.contains("12.5.0"), "Should include latest supported version even if not missing");
+    assertTrue(savedVersions.contains("8.0.0"), "Should still include missing released versions");
   }
 
   @Test
@@ -275,6 +353,17 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
   private static Artifact mockPortalMavenArtifact() {
     return Artifact.builder().artifactId(ARTIFACT_NAME).doc(true).groupId(PORTAL)
         .name("Portal Guide").type("zip").build();
+  }
+
+  private static String extractVersionFromUrl(String downloadUrl) {
+    String prefix = PORTAL + CoreCommonConstants.SLASH + ARTIFACT_NAME + CoreCommonConstants.SLASH;
+    int start = downloadUrl.indexOf(prefix);
+    if (start < 0) {
+      return TEST_VERSION;
+    }
+    start += prefix.length();
+    int end = downloadUrl.indexOf(CoreCommonConstants.SLASH, start);
+    return end < 0 ? downloadUrl.substring(start) : downloadUrl.substring(start, end);
   }
 
   private String preparePortalGuideDirectory() throws IOException {
@@ -765,7 +854,7 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @Test
   void testCreateSymlinkForParentOutsideCacheRoot() throws IOException {
-    Path tempPath = tempDir.resolve(RELATIVE_WORKING_LOCATION);
+    Path tempPath = tempDir.resolve(MARKET_CACHE).resolve(PORTAL).resolve(TEST_VERSION).resolve(DOC_DIR);
     Files.createDirectories(tempPath);
 
     String result = service.createSymlinkForMajorVersion(tempPath, TEST_VERSION);
@@ -796,6 +885,30 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
       assertNotNull(result, "Should return symlink path when symlink exists with correct target");
       assertEquals(symlinkPath.toString(), result, "Result should be the symlink path");
+    }
+  }
+
+  @Test
+  void testCreateSymlinkForParentExistingSymlinkWithDifferentTarget() throws IOException {    
+    Path productDir = CACHE_ROOT_PATH.resolve(PORTAL);
+    Path versionDir = productDir.resolve("12.5.0");
+    Path docDir = versionDir.resolve(DOC_DIR);
+    Files.createDirectories(docDir);
+
+    try (MockedStatic<Files> filesMock = mockStatic(Files.class)) {
+      Path symlinkPath = productDir.resolve(TEST_VERSION_12_5);
+      Path newTargetPath = Path.of("12.5.0");
+      Path oldTargetPath = Path.of("12.0.0");
+
+      filesMock.when(() -> Files.isSymbolicLink(symlinkPath)).thenReturn(true);
+      filesMock.when(() -> Files.readSymbolicLink(symlinkPath)).thenReturn(oldTargetPath);
+      filesMock.when(() -> Files.createSymbolicLink(eq(symlinkPath), eq(newTargetPath))).thenReturn(symlinkPath);
+
+      String result = service.createSymlinkForMajorVersion(docDir, TEST_VERSION_12_5);
+
+      assertEquals(symlinkPath.toString(), result, "Should return new symlink path after recreation");
+      filesMock.verify(() -> Files.delete(symlinkPath), times(1));
+      filesMock.verify(() -> Files.createSymbolicLink(eq(symlinkPath), eq(newTargetPath)), times(1));
     }
   }
 

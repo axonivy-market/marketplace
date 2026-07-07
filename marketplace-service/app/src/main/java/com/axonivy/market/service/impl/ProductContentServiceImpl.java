@@ -99,8 +99,8 @@ public class ProductContentServiceImpl implements ProductContentService {
 
         var readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
 
-        ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, readmeFile.getFileName().toString(),
-            readmeContentsModel);
+        ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(moduleContents,
+            readmeFile.getFileName().toString(), readmeContentsModel);
       }
       ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
     } catch (IOException e) {

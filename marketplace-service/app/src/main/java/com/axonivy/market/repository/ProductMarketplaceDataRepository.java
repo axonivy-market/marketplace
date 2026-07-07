@@ -26,7 +26,8 @@ public interface ProductMarketplaceDataRepository
       SELECT pmd.id AS id,
              pmd.deprecation_date AS deprecationDate,
              pmd.deprecation_requester AS deprecationRequester,
-             p.deprecated AS deprecated
+             p.deprecated AS deprecated,
+             p.is_archived AS isArchived
       FROM product_marketplace_data pmd
       JOIN product p ON p.id = pmd.id
       WHERE p.deprecated IS NOT DISTINCT FROM :deprecated

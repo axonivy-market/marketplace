@@ -7,6 +7,7 @@ import com.axonivy.market.core.entity.ProductModuleContent;
 import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.model.ReadmeContentsModel;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHRelease;
@@ -219,32 +220,34 @@ class ProductContentUtilsTest extends BaseSetup {
     String readmeContents = getMockReadmeContent();
     ReadmeContentsModel readmeContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeContents);
     Map<String, Map<String, String>> moduleContents = new HashMap<>();
-    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, MOCK_README_FILE, readmeContentsModel);
+    ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(moduleContents, MOCK_README_FILE, readmeContentsModel);
     String readmeDEContents = getMockReadmeContent(MOCK_README_DE_FILE);
     ReadmeContentsModel readmeDEContentsModel = ProductContentUtils.getExtractedPartsOfReadme(readmeDEContents);
-    ProductContentUtils.mappingDescriptionSetupAndDemo(moduleContents, MOCK_README_DE_FILE, readmeDEContentsModel);
+    ProductContentUtils.mappingDescriptionSetupAndDemoAndComponent(moduleContents, MOCK_README_DE_FILE, readmeDEContentsModel);
     ProductModuleContent productModuleContent = new ProductModuleContent();
     ProductContentUtils.updateProductModuleTabContents(productModuleContent, moduleContents);
-    assertEquals(3, moduleContents.size(), "Module contents should contain 3 sections (description, demo, setup)");
+    assertEquals(4, moduleContents.size(),
+        "Module contents should contain 4 sections (description, demo, setup, component)");
     assertTrue(productModuleContent.getDescription().get(Language.EN.getValue()).startsWith("Axon Ivy"),
         "English description should start with 'Axon Ivy'");
     assertTrue(productModuleContent.getDescription().get(Language.DE.getValue()).startsWith("Der"),
         "German description should start with 'Der'");
     assertTrue(StringUtils.isNotBlank(productModuleContent.getSetup().get(Language.DE.getValue())),
         "German setup content should not be blank");
-    assertTrue(StringUtils.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
+    assertTrue(Strings.CS.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
             productModuleContent.getSetup().get(Language.EN.getValue())),
         "German and English setup content should be equal");
-    assertTrue(StringUtils.equals(productModuleContent.getSetup().get(Language.DE.getValue()),
-            productModuleContent.getSetup().get(Language.EN.getValue())),
-        "German and English setup content should be equal (duplicate check)");
     assertTrue(StringUtils.isNotBlank(productModuleContent.getDemo().get(Language.DE.getValue())),
         "German demo content should not be blank");
-    assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
-        productModuleContent.getDemo().get(Language.EN.getValue())), "German and English demo content should be equal");
-    assertTrue(StringUtils.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
+    assertTrue(Strings.CS.equals(productModuleContent.getDemo().get(Language.DE.getValue()),
             productModuleContent.getDemo().get(Language.EN.getValue())),
-        "German and English demo content should be equal (duplicate check)");
+        "German and English demo content should be equal");
+    assertNotNull(productModuleContent.getComponent(),
+        "Component map should not be null");
+    assertNotNull(productModuleContent.getComponent().get(Language.EN.getValue()),
+        "English component content should not be null");
+    assertNotNull(productModuleContent.getComponent().get(Language.DE.getValue()),
+        "German component content should not be null");
   }
 
   @Test

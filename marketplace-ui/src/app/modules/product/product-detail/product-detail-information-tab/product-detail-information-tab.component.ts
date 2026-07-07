@@ -1,16 +1,23 @@
 import {
+  AfterViewInit,
   Component,
+  ElementRef,
   inject,
   Input,
   OnChanges,
+  OnDestroy,
   SimpleChange,
   SimpleChanges
 } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductDetail } from '../../../../shared/models/product-detail.model';
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductDetailService } from '../product-detail.service';
-import { SHOW_DEV_VERSION, VERSION, VERSION_PARAM } from '../../../../shared/constants/common.constant';
+import {
+  SHOW_DEV_VERSION,
+  VERSION,
+  VERSION_PARAM
+} from '../../../../shared/constants/common.constant';
 import { LoadingService } from '../../../../core/services/loading/loading.service';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { IsEmptyObjectPipe } from '../../../../shared/pipes/is-empty-object.pipe';
@@ -21,6 +28,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
 import { ACTIVE_TAB } from '../../../../shared/constants/query.params.constant';
+import { startWith, Subscription } from 'rxjs';
 const SELECTED_VERSION = 'selectedVersion';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
 const SHIELDS_WORKFLOW = 'ci.yml';
@@ -31,7 +39,7 @@ const BRANCH = 'master';
   templateUrl: './product-detail-information-tab.component.html',
   styleUrl: './product-detail-information-tab.component.scss'
 })
-export class ProductDetailInformationTabComponent implements OnChanges {
+export class ProductDetailInformationTabComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input()
   productDetail!: ProductDetail;
   @Input()
@@ -49,10 +57,21 @@ export class ProductDetailInformationTabComponent implements OnChanges {
   router = inject(Router);
   shieldsBadgeUrl = '';
   repoName = '';
+  translateService = inject(TranslateService);
+  private readonly hostElement = inject(ElementRef<HTMLElement>);
+  private langChangeSub?: Subscription;
 
   ngOnInit(): void {
     this.displayVersion = this.extractVersionValue(this.selectedVersion);
     this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
+  }
+
+  ngAfterViewInit(): void {
+    this.langChangeSub = this.translateService.onLangChange
+      .pipe(startWith(null))
+      .subscribe(() => {
+        setTimeout(() => this.refreshSuccessorTooltip(), 0);
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -190,24 +209,6 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     return successorUrl ? successorUrl.toString() : null;
   }
 
-  getSuccessorName(): string {
-    const successor = this.productDetail?.successor?.trim();
-    if (!successor) {
-      return '';
-    }
-
-    const successorUrl = this.parseSuccessorUrl(successor);
-    if (!successorUrl) {
-      return successor;
-    }
-
-    const pathnameParts = successorUrl.pathname
-      .split('/')
-      .filter(part => !!part);
-
-    return decodeURIComponent(pathnameParts.at(-1) || successorUrl.hostname);
-  }
-
   private parseSuccessorUrl(successor: string | undefined): URL | null {
     const normalizedSuccessor = successor?.trim();
     if (!normalizedSuccessor) {
@@ -221,5 +222,47 @@ export class ProductDetailInformationTabComponent implements OnChanges {
     } catch {
       return null;
     }
+  }
+
+  getSuccessorTooltipMessage(): string {
+    const message =  this.translateService.instant('common.product.detail.information.value.successorToolTip');
+    return `<p class=text-primary>${message}</p>`;
+  }
+
+  ngOnDestroy(): void {
+    this.langChangeSub?.unsubscribe();
+    this.disposeSuccessorTooltip();
+  }
+
+  private async getTooltipElementAndClass(): Promise<{
+    element: HTMLElement;
+    Tooltip: typeof import('bootstrap/js/dist/tooltip').default;
+  } | null> {
+    const element = this.hostElement.nativeElement.querySelector('.hint-icon') as HTMLElement | null;
+    if (!element) {
+      return null;
+    }
+
+    const { default: Tooltip } = await import('bootstrap/js/dist/tooltip');
+    return { element, Tooltip };
+  }
+
+  private async refreshSuccessorTooltip(): Promise<void> {
+    const tooltipContext = await this.getTooltipElementAndClass();
+    if (!tooltipContext) {
+      return;
+    }
+
+    tooltipContext.Tooltip.getInstance(tooltipContext.element)?.dispose();
+    tooltipContext.Tooltip.getOrCreateInstance(tooltipContext.element);
+  }
+
+  private async disposeSuccessorTooltip(): Promise<void> {
+    const tooltipContext = await this.getTooltipElementAndClass();
+    if (!tooltipContext) {
+      return;
+    }
+
+    tooltipContext.Tooltip.getInstance(tooltipContext.element)?.dispose();
   }
 }

@@ -10,6 +10,10 @@ $ivyApproveButtonColor: #47c46b;
 $ivyRejectButtonColor: #e5151c;
 
 $ivyReleasePreviewErrorColor: #dc3545;
+$ivyDeprecatedBannerBg: #f973161a;
+$ivyDeprecatedBannerBorder: #f9731640;
+$ivyDeprecatedBannerDivider: #B0B0B0;
+$ivyDeprecatedInstallButtonBg: #fe7c22;
 
 // Light
 $ivyPrimaryColorLight: #007095;
@@ -111,6 +115,12 @@ details summary {
   --monitoring-border-color: #e7e7e7;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
+  --deprecated-banner-bg: #{$ivyDeprecatedBannerBg};
+  --deprecated-banner-border: #{$ivyDeprecatedBannerBorder};
+  --deprecated-banner-divider: #{$ivyDeprecatedBannerDivider};
+  --deprecated-banner-text: #d7610f;
+  --deprecated-install-button-bg: #{$ivyDeprecatedInstallButtonBg};
+  --deprecated-install-button-text: #{$white};
 
   .bg-primary {
     background-color: #{$ivyPrimaryColorLight} !important;
@@ -211,6 +221,7 @@ details summary {
   --ivy-active-color: #{$white};
 
   --ivy-text-normal-color: #{$ivyBodyBackgroundDark};
+  --ivy-text-primary-color: #{$white};
   --ivy-text-secondary-color: #{$ivySecondaryTextDark};
 
   --ivy-border-color: #{$ivySecondaryTextLight};
@@ -246,6 +257,12 @@ details summary {
   --monitoring-border-color: #4f4e4e;
 
   --release-preview-error-color: #{$ivyReleasePreviewErrorColor};
+  --deprecated-banner-bg: #{$ivyDeprecatedBannerBg};
+  --deprecated-banner-border: #{$ivyDeprecatedBannerBorder};
+  --deprecated-banner-divider: #{$ivyDeprecatedBannerDivider};
+  --deprecated-banner-text: #{$ivyDeprecatedInstallButtonBg};
+  --deprecated-install-button-bg: #{$ivyDeprecatedInstallButtonBg};
+  --deprecated-install-button-text: #{$white};
 
   a {
     color: #{$white};
@@ -324,7 +341,7 @@ details summary {
   }
 
   /** End Star Rating Summary **/
-  
+
   /** EasyMDE Cursor **/
 
   .EasyMDEContainer .CodeMirror-cursor {

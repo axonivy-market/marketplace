@@ -127,10 +127,10 @@ class MarketExceptionHandlerTest {
   }
 
   @Test
-  void testHandleTaskAlreadyRunningException() {
-    TaskAlreadyRunningException taskAlreadyRunningException = new TaskAlreadyRunningException(
-        "Task is already running!");
-    var responseEntity = exceptionHandler.handleTaskAlreadyRunningException(taskAlreadyRunningException);
+  void testHandleSyncTaskInProgressException() {
+    SyncTaskInProgressException syncTaskInProgressException = new SyncTaskInProgressException(
+      "Task is already in progress!");
+    var responseEntity = exceptionHandler.handleSyncTaskInProgressException(syncTaskInProgressException);
     assertEquals(HttpStatus.ACCEPTED, responseEntity.getStatusCode(),
         "Expected HTTP 202 ACCEPTED");
     assertNotNull(responseEntity.getBody(), "Response body should not be null");
@@ -197,5 +197,26 @@ class MarketExceptionHandlerTest {
         "Help code in response does not match AlreadyExistedException code");
     assertEquals("Release letter already exists", body.getMessageDetails(),
         "Message details in response do not match AlreadyExistedException message");
+  }
+
+  @Test
+  void testHandleArchiveNotAllowedException() {
+    ArchiveNotAllowedException exception = mock(ArchiveNotAllowedException.class);
+
+    when(exception.getCode()).thenReturn("ARCHIVE_NOT_ALLOWED");
+    when(exception.getMessage()).thenReturn("Repository still has open pull requests");
+
+    ResponseEntity<Object> response = exceptionHandler.handleArchiveNotAllowedException(exception);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+        "HTTP status should be 400 BAD_REQUEST for ArchiveNotAllowedException");
+
+    Message body = (Message) response.getBody();
+    assertNotNull(body, "Response body must not be null for ArchiveNotAllowedException");
+
+    assertEquals("ARCHIVE_NOT_ALLOWED", body.getHelpCode(),
+        "Help code in response does not match ArchiveNotAllowedException code");
+    assertEquals("Repository still has open pull requests", body.getMessageDetails(),
+        "Message details in response do not match ArchiveNotAllowedException message");
   }
 }

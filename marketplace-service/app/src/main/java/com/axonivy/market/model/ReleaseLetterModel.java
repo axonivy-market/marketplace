@@ -7,12 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.util.Date;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@Relation(collectionRelation = "releaseLetterModelList", itemRelation = "releaseLetterModel")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> {
@@ -29,6 +31,10 @@ public class ReleaseLetterModel extends RepresentationModel<ReleaseLetterModel> 
 
   @Schema(description = "Decide whether the created release letter should be the latest", example = "false")
   private boolean isLatest;
+
+  @Schema(description = "The draft status of the release letter based on the user id and release letter id", example =
+      "true")
+  private boolean hasDraft;
 
   @Schema(description = "The time the release letter was created", example = "2026-02-10 09:47:32.243")
   private Date createdAt;

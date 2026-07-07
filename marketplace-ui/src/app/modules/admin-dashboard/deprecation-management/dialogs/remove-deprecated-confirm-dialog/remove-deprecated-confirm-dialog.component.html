@@ -3,7 +3,7 @@
     <div class="modal-content custom-modal confirm-modal" [class.modal-closing]="isClosing">
       <div class="modal-header">
         <h5 class="modal-title">
-          {{ 'common.admin.deprecation.confirmRemoveDeprecatedTitle' | translate }}
+          {{ titleKey | translate }}
         </h5>
         <button
           type="button"
@@ -14,12 +14,17 @@
 
       <div class="modal-body">
         <p class="confirm-message">
-          {{ 'common.admin.deprecation.confirmRemoveDeprecatedContent' | translate }}
+          {{ contentKey | translate }}
         </p>
         <p class="text-muted">
           <strong>{{ 'common.admin.deprecation.extensionId' | translate }}</strong>
           {{ removedProductId }}
         </p>
+        @if (errorMessage) {
+          <div class="alert alert-danger mt-2 mb-0">
+            {{ errorMessage }}
+          </div>
+        }
       </div>
 
       <div class="modal-footer">
@@ -29,15 +34,18 @@
           (click)="closeDialog.emit()">
           {{ 'common.admin.sync.cancelLabel' | translate }}
         </button>
-        <button
-          class="btn btn-danger"
-          [disabled]="isRemoving"
-          (click)="confirm.emit()">
-          @if (isRemoving) {
-            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-          }
-          {{ 'common.admin.deprecation.removeDeprecated' | translate }}
-        </button>
+        @if (!errorMessage) {
+          <button
+            class="btn"
+            [ngClass]="confirmButtonClass"
+            [disabled]="isRemoving"
+            (click)="confirm.emit()">
+            @if (isRemoving) {
+              <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            }
+            {{ confirmButtonKey | translate }}
+          </button>
+        }
       </div>
     </div>
   </div>

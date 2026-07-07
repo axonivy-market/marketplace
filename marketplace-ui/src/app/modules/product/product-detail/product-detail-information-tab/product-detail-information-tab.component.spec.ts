@@ -1,4 +1,33 @@
-import { beforeEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi, type Mock, type MockedObject } from 'vitest';
+
+const {
+  mockTooltipDispose,
+  mockTooltipGetInstance,
+  mockTooltipGetOrCreateInstance,
+  MockTooltipConstructor
+} = vi.hoisted(() => {
+  const mockTooltipDispose = vi.fn();
+  const mockTooltipGetInstance = vi.fn();
+  const mockTooltipGetOrCreateInstance = vi.fn();
+  const MockTooltipConstructor = vi.fn().mockImplementation(() => ({
+    dispose: mockTooltipDispose
+  }));
+
+  (MockTooltipConstructor as any).getInstance = mockTooltipGetInstance;
+  (MockTooltipConstructor as any).getOrCreateInstance =
+    mockTooltipGetOrCreateInstance;
+
+  return {
+    mockTooltipDispose,
+    mockTooltipGetInstance,
+    mockTooltipGetOrCreateInstance,
+    MockTooltipConstructor
+  };
+});
+
+vi.mock('bootstrap/js/dist/tooltip', () => ({
+  default: MockTooltipConstructor
+}));
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDetailInformationTabComponent } from './product-detail-information-tab.component';
@@ -315,53 +344,6 @@ describe('ProductDetailInformationTabComponent', () => {
     expect(component.isVersionUnchangedOrFirstChange(change)).toBe(false);
   });
 
-  describe('successor helpers', () => {
-    it('should return successor URL and parsed name when successor is a valid http URL', () => {
-      component.productDetail = {
-        successor: 'https://market.axonivy.com/smart-workflow'
-      } as ProductDetail;
-
-      expect(component.hasSuccessor()).toBe(true);
-      expect(component.getSuccessorUrl()).toBe('https://market.axonivy.com/smart-workflow');
-      expect(component.getSuccessorName()).toBe('smart-workflow');
-    });
-
-    it('should return no successor URL and raw successor name for non-url values', () => {
-      component.productDetail = {
-        successor: 'smart-workflow'
-      } as ProductDetail;
-
-      expect(component.hasSuccessor()).toBe(true);
-      expect(component.getSuccessorUrl()).toBeNull();
-      expect(component.getSuccessorName()).toBe('smart-workflow');
-    });
-
-    it('should return empty values when successor is missing', () => {
-      component.productDetail = {} as ProductDetail;
-
-      expect(component.hasSuccessor()).toBe(false);
-      expect(component.getSuccessorUrl()).toBeNull();
-      expect(component.getSuccessorName()).toBe('');
-    });
-
-    it('should always extract vertexai-google from successor URLs with query or fragment', () => {
-      const successorUrls = [
-        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#description',
-        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#demo',
-        'https://market.axonivy.com/vertexai-google',
-        'https://market.axonivy.com/vertexai-google?version=12.0.1.1#setup',
-        'https://market.axonivy.com/vertexai-google/'
-      ];
-
-      successorUrls.forEach(url => {
-        component.productDetail = { successor: url } as ProductDetail;
-
-        expect(component.getSuccessorName()).toBe('vertexai-google');
-        expect(component.getSuccessorUrl()).toBe(url);
-      });
-    });
-  });
-
   describe('getShieldsBadgeUrl', () => {
     it('should return empty string if productDetail is undefined', () => {
       component.productDetail = undefined as any;
@@ -430,4 +412,171 @@ describe('ProductDetailInformationTabComponent', () => {
       expect(navigateSpy).toHaveBeenCalledWith(['/monitoring']);
     });
   });
+
+  describe('getInstallTooltipMessage', () => {
+    it('should return translated message wrapped in p tag with text-primary class', () => {
+      const translated = 'This product is deprecated and no longer maintained.';
+      vi.spyOn(component.translateService, 'instant').mockReturnValue(translated);
+
+      const result = component.getSuccessorTooltipMessage();
+
+      expect(component.translateService.instant).toHaveBeenCalledWith(
+        'common.product.detail.information.value.successorToolTip'
+      );
+      expect(result).toBe(`<p class=text-primary>${translated}</p>`);
+    });
+  });
+
+  describe('hasSuccessor', () => {
+    it('should return true when successor has a valid value', () => {
+      component.productDetail = { successor: 'https://example.com' } as ProductDetail;
+      expect(component.hasSuccessor()).toBe(true);
+    });
+
+    it('should return false when successor is an empty string', () => {
+      component.productDetail = { successor: '' } as ProductDetail;
+      expect(component.hasSuccessor()).toBe(false);
+    });
+
+    it('should return false when successor is whitespace only', () => {
+      component.productDetail = { successor: '   ' } as ProductDetail;
+      expect(component.hasSuccessor()).toBe(false);
+    });
+
+    it('should return false when successor is undefined', () => {
+      component.productDetail = {} as ProductDetail;
+      expect(component.hasSuccessor()).toBe(false);
+    });
+  });
+
+  describe('getSuccessorUrl', () => {
+    it('should return URL string for a valid https URL', () => {
+      component.productDetail = { successor: 'https://www.example.com/product' } as ProductDetail;
+      expect(component.getSuccessorUrl()).toBe('https://www.example.com/product');
+    });
+
+    it('should return URL string for a valid http URL', () => {
+      component.productDetail = { successor: 'http://www.example.com/product' } as ProductDetail;
+      expect(component.getSuccessorUrl()).toBe('http://www.example.com/product');
+    });
+
+    it('should return null when successor is empty', () => {
+      component.productDetail = { successor: '' } as ProductDetail;
+      expect(component.getSuccessorUrl()).toBeNull();
+    });
+
+    it('should return null when successor is undefined', () => {
+      component.productDetail = {} as ProductDetail;
+      expect(component.getSuccessorUrl()).toBeNull();
+    });
+
+    it('should return null when successor is not a valid URL', () => {
+      component.productDetail = { successor: 'not-a-url' } as ProductDetail;
+      expect(component.getSuccessorUrl()).toBeNull();
+    });
+
+    it('should return null when successor uses a non-http/https protocol', () => {
+      component.productDetail = { successor: 'ftp://example.com' } as ProductDetail;
+      expect(component.getSuccessorUrl()).toBeNull();
+    });
+  });
+
+  describe('ngOnDestroy', () => {
+    it('should unsubscribe from langChangeSub if it exists', () => {
+      const mockSub = { unsubscribe: vi.fn() };
+      (component as any).langChangeSub = mockSub;
+
+      component.ngOnDestroy();
+
+      expect(mockSub.unsubscribe).toHaveBeenCalled();
+    });
+
+    it('should call disposeSuccessorTooltip', () => {
+      const disposeSpy = vi.spyOn(component as any, 'disposeSuccessorTooltip');
+      component.ngOnDestroy();
+      expect(disposeSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('ngAfterViewInit', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should subscribe to onLangChange and call refreshSuccessorTooltip', async () => {
+      vi.useFakeTimers();
+      const refreshSpy = vi.spyOn(component as any, 'refreshSuccessorTooltip').mockResolvedValue(undefined);
+
+      component.ngAfterViewInit();
+
+      // startWith(null) fires immediately
+      vi.runAllTimers();
+
+      expect(refreshSpy).toHaveBeenCalled();
+    });
+
+    it('should call refreshSuccessorTooltip again when language changes', async () => {
+      vi.useFakeTimers();
+      const refreshSpy = vi.spyOn(component as any, 'refreshSuccessorTooltip').mockResolvedValue(undefined);
+      const translateService = TestBed.inject(TranslateService);
+
+      component.ngAfterViewInit();
+      vi.runAllTimers();
+      const callsBefore = refreshSpy.mock.calls.length;
+
+      (translateService.onLangChange as any).emit({ lang: 'de', translations: {} });
+      vi.runAllTimers();
+
+      expect(refreshSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+    });
+  });
+
+  describe('successor tooltip lifecycle', () => {
+    beforeEach(() => {
+      mockTooltipDispose.mockReset();
+      mockTooltipGetInstance.mockReset();
+      mockTooltipGetOrCreateInstance.mockReset();
+      MockTooltipConstructor.mockClear();
+    });
+
+    it('should recreate tooltip instance when refreshing successor tooltip', async () => {
+      const mockElement = document.createElement('i');
+      const existingTooltip = { dispose: mockTooltipDispose };
+      mockTooltipGetInstance.mockReturnValue(existingTooltip);
+      vi.spyOn(component['hostElement'].nativeElement, 'querySelector')
+        .mockReturnValue(mockElement);
+
+      await (component as any).refreshSuccessorTooltip();
+
+      expect(mockTooltipGetInstance).toHaveBeenCalledWith(mockElement);
+      expect(mockTooltipDispose).toHaveBeenCalled();
+      expect(mockTooltipGetOrCreateInstance).toHaveBeenCalledWith(mockElement);
+      expect(MockTooltipConstructor).not.toHaveBeenCalled();
+    });
+
+    it('should dispose tooltip instance when destroying successor tooltip', async () => {
+      const mockElement = document.createElement('i');
+      const existingTooltip = { dispose: mockTooltipDispose };
+      mockTooltipGetInstance.mockReturnValue(existingTooltip);
+      vi.spyOn(component['hostElement'].nativeElement, 'querySelector')
+        .mockReturnValue(mockElement);
+
+      await (component as any).disposeSuccessorTooltip();
+
+      expect(mockTooltipGetInstance).toHaveBeenCalledWith(mockElement);
+      expect(mockTooltipDispose).toHaveBeenCalled();
+      expect(mockTooltipGetOrCreateInstance).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing when refreshing successor tooltip without hint icon', async () => {
+      vi.spyOn(component['hostElement'].nativeElement, 'querySelector')
+        .mockReturnValue(null);
+
+      await (component as any).refreshSuccessorTooltip();
+
+      expect(mockTooltipGetInstance).not.toHaveBeenCalled();
+      expect(mockTooltipGetOrCreateInstance).not.toHaveBeenCalled();
+    });
+  });
+
 });

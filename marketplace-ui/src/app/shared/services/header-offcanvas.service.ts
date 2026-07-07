@@ -40,9 +40,15 @@ export class HeaderOffcanvasService {
       GoogleSearchBarUtils.addCustomClassToSearchBar(renderer, doc);
     });
 
-    this.offcanvasRef.result.finally(() => {
-      this.offcanvasRef = null;
-    });
+    // Clear the active ref for both close and dismiss without creating a rejected promise chain.
+    this.offcanvasRef.result.then(
+      () => {
+        this.offcanvasRef = null;
+      },
+      () => {
+        this.offcanvasRef = null;
+      }
+    );
   }
 
   toggle(content: TemplateRef<any>, renderer: Renderer2) {

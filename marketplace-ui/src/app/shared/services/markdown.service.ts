@@ -4,6 +4,7 @@ import taskLists from 'markdown-it-task-lists';
 import { full } from 'markdown-it-emoji';
 import * as MarkdownItGitHubAlerts from 'markdown-it-github-alerts';
 import LinkifyIt from 'linkify-it';
+import DOMPurify from 'dompurify';
 
 const GITHUB_BASE_URL = 'https://github.com/';
 
@@ -34,7 +35,10 @@ export class MarkdownService {
   }
 
   parseMarkdown(markdownText: string): string {
-    return this.md.render(markdownText);
+    const renderedHtml = this.md.render(markdownText);
+    return DOMPurify.sanitize(renderedHtml, {
+      USE_PROFILES: { html: true }
+    });
   }
 
   linkifyPullRequests(

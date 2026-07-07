@@ -66,9 +66,9 @@ class TrackSyncTaskExecutionAspectTest {
     SyncTaskExecution runningSyncTaskExecution = new SyncTaskExecution();
     runningSyncTaskExecution.setStatus(SyncTaskStatus.RUNNING);
     when(track.value()).thenReturn(SyncTaskType.SYNC_PRODUCTS);
-    String errorMessage = SyncTaskConstants.TASK_ALREADY_RUNNING_MESSAGE_PATTERN.formatted(track.value());
+    String errorMessage = SyncTaskConstants.SYNC_TASK_IN_PROGRESS_MESSAGE_PATTERN.formatted(track.value());
     when(syncTaskExecutionService.start(SyncTaskType.SYNC_PRODUCTS))
-        .thenThrow(new MarketException(ErrorCode.TASK_ALREADY_RUNNING.getCode(), errorMessage));
+        .thenThrow(new MarketException(ErrorCode.TASK_ALREADY_IN_PROGRESS.getCode(), errorMessage));
 
     MarketException marketException = assertThrows(MarketException.class,
         () -> aspect.aroundSyncTask(pjp, track), "Should throw MarketException when execution status is " +

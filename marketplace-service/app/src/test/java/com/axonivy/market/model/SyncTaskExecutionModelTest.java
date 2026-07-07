@@ -42,7 +42,7 @@ class SyncTaskExecutionModelTest {
         assertNull(noArgs.getMessage(), "Message should be null for no-args constructor");
 
         SyncTaskExecutionModel allArgs = new SyncTaskExecutionModel(
-                KEY, SyncTaskStatus.FAILED, MOCK_LOCAL_DATE, MOCK_LOCAL_DATE, MESSAGE);
+                KEY, SyncTaskStatus.FAILED, MOCK_LOCAL_DATE, MOCK_LOCAL_DATE, MESSAGE, 1);
         assertEquals(KEY, allArgs.getKey(), "Key should match the input key");
         assertEquals(SyncTaskStatus.FAILED, allArgs.getStatus(), "Status should be FAILED");
         assertEquals(MOCK_LOCAL_DATE, allArgs.getLastRunDate(), "LastRunDate should match the input date");

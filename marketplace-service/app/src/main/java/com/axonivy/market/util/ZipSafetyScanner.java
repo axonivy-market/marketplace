@@ -21,8 +21,8 @@ public class ZipSafetyScanner {
   public static final long MAX_SINGLE_UNCOMPRESSED_BYTES = 30L * 1024 * 1024; // 30MB
   public static final int MAX_ENTRIES = 100;
   public static final double MAX_COMPRESSION_RATIO_PER_ENTRY = 200.0;
-  private static final Set<String> WHITELIST_EXTENSIONS = Set.of(".xml", ".svg", "png", "jpg",
-      "jpeg", ".gif", ".json", ".md", ".zip");
+  private static final Set<String> WHITELIST_EXTENSIONS = Set.of(".xml", ".svg", ".png", ".jpg",
+      ".jpeg", ".gif", ".json", ".md", ".zip");
 
   /**
    * Analyze a ZIP file without unzipping

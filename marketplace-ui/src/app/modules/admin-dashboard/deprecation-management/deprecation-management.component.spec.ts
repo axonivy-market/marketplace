@@ -12,7 +12,8 @@ import {
   TestBed
 } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
 
 import { DeprecationManagementComponent } from './deprecation-management.component';
 import { ProductService } from '../../product/product.service';
@@ -21,6 +22,7 @@ import { ThemeService } from '../../../core/services/theme/theme.service';
 import { AdminAuthService } from '../admin-auth.service';
 import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecationMode } from '../../../shared/enums/deprecation-mode.enum';
+import { ArchiveAction } from '../../../shared/enums/archive-action.enum';
 
 describe('DeprecationManagementComponent', () => {
   let component: DeprecationManagementComponent;
@@ -55,7 +57,8 @@ describe('DeprecationManagementComponent', () => {
   beforeEach(async () => {
     const productServiceSpy = {
       fetchAllProductIdsByDeprecated: vi.fn(),
-      updateDeprecatedProduct: vi.fn()
+      updateDeprecatedProduct: vi.fn(),
+      updateArchiveStatus: vi.fn()
     };
     const languageServiceSpy = {
       selectedLanguage: vi.fn().mockReturnValue('en')
@@ -69,6 +72,7 @@ describe('DeprecationManagementComponent', () => {
       of(mockDeprecatedRows)
     );
     productServiceSpy.updateDeprecatedProduct.mockReturnValue(of(''));
+    productServiceSpy.updateArchiveStatus.mockReturnValue(of('OK'));
     adminAuthServiceSpy.loadFromSessionStorage.mockReturnValue(baseUserInfo as any);
 
     await TestBed.configureTestingModule({
@@ -130,6 +134,8 @@ describe('DeprecationManagementComponent', () => {
     component.isDeprecating = true;
     component.isCopySuccessVisible = true;
     component.deprecationRequest = {
+      hasAlternativeExtension: true,
+      alternativeExtension: 'Portal',
       successorUrl: 'https://market.axonivy.com/portal',
       isAddReadme: true,
       isDeprecated: true,
@@ -151,6 +157,8 @@ describe('DeprecationManagementComponent', () => {
     expect(component.isDeprecating).toBe(false);
     expect(component.isCopySuccessVisible).toBe(false);
     expect(component.deprecationRequest).toEqual({
+      hasAlternativeExtension: false,
+      alternativeExtension: '',
       successorUrl: '',
       isAddReadme: false,
       isDeprecated: false,
@@ -168,12 +176,27 @@ describe('DeprecationManagementComponent', () => {
     expect(component.validationErrors.productId).toContain('extensionIdRequired');
 
     component.productId = 'cms-live-editor';
+    component.deprecationRequest.hasAlternativeExtension = true;
+    component.deprecationRequest.alternativeExtension = '';
+    component.deprecationRequest.successorUrl = '';
+    expect(component.validateForm()).toBe(false);
+    expect(component.validationErrors.alternativeExtension).toContain('alternativeExtensionRequired');
+    expect(component.validationErrors.successorUrl).toContain('successorRequired');
+
+    component.deprecationRequest.alternativeExtension = 'Portal';
     component.deprecationRequest.successorUrl = 'invalid-url';
     expect(component.validateForm()).toBe(false);
     expect(component.validationErrors.successorUrl).toContain('invalidSuccessorUrl');
 
     component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
     expect(component.validateForm()).toBe(true);
+
+    component.deprecationRequest.hasAlternativeExtension = false;
+    component.deprecationRequest.alternativeExtension = 'Stale value';
+    component.deprecationRequest.successorUrl = 'https://market.axonivy.com/portal';
+    expect(component.validateForm()).toBe(true);
+    expect(component.deprecationRequest.alternativeExtension).toBe('');
+    expect(component.deprecationRequest.successorUrl).toBe('');
   });
 
   it('should filter deprecated table by product id', () => {
@@ -289,11 +312,8 @@ describe('DeprecationManagementComponent', () => {
     expect(component.showSuccessDialog).toBe(true);
   });
 
-  it('should close success dialog and reset deprecate form in deprecate mode', async () => {
+  it('should close success dialog and reset deprecate form in deprecate mode', () => {
     vi.useFakeTimers();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
     component.successMode = DeprecationMode.DEPRECATE;
     component.showSuccessDialog = true;
     component.productId = 'cms-live-editor';
@@ -344,5 +364,190 @@ describe('DeprecationManagementComponent', () => {
     await component.copyPullRequestUrl();
     expect(writeTextSpy).not.toHaveBeenCalled();
     expect(component.isCopySuccessVisible).toBe(false);
+  });
+
+  describe('confirmRemovedDeprecation', () => {
+    it('should set productId and show remove deprecation confirm dialog', async () => {
+      component.productId = '';
+      component.showRemoveDeprecationConfirmDialog = false;
+
+      await component.confirmRemovedDeprecation('cms-live-editor');
+
+      expect(component.productId).toBe('cms-live-editor');
+      expect(component.showRemoveDeprecationConfirmDialog).toBe(true);
+    });
+  });
+
+  describe('toggleArchiveStatus', () => {
+    it('should set archiveTargetRow, clear error message, and show archive confirm dialog', async () => {
+      const row = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+      component.archiveErrorMessage = 'previous error';
+      component.showArchiveConfirmDialog = false;
+
+      await component.toggleArchiveStatus(row);
+
+      expect(component.archiveTargetRow).toBe(row);
+      expect(component.archiveErrorMessage).toBe('');
+      expect(component.showArchiveConfirmDialog).toBe(true);
+    });
+  });
+
+  describe('closeArchiveConfirmDialog', () => {
+    it('should not close when isArchiving is true', () => {
+      vi.useFakeTimers();
+      component.isArchiving = true;
+      component.showArchiveConfirmDialog = true;
+      component.archiveTargetRow = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+
+      component.closeArchiveConfirmDialog();
+
+      expect(component.isClosingArchiveDialog).toBe(false);
+      vi.advanceTimersByTime(250);
+      expect(component.showArchiveConfirmDialog).toBe(true);
+      expect(component.archiveTargetRow).not.toBeNull();
+      vi.useRealTimers();
+    });
+
+    it('should set isClosingArchiveDialog immediately and reset state after delay', () => {
+      vi.useFakeTimers();
+      component.isArchiving = false;
+      component.showArchiveConfirmDialog = true;
+      component.archiveTargetRow = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+
+      component.closeArchiveConfirmDialog();
+
+      expect(component.isClosingArchiveDialog).toBe(true);
+      expect(component.showArchiveConfirmDialog).toBe(true);
+      expect(component.archiveTargetRow).not.toBeNull();
+
+      vi.advanceTimersByTime(250);
+
+      expect(component.showArchiveConfirmDialog).toBe(false);
+      expect(component.isClosingArchiveDialog).toBe(false);
+      expect(component.archiveTargetRow).toBeNull();
+      vi.useRealTimers();
+    });
+  });
+
+  describe('closeRemoveDeprecationDialog', () => {
+    it('should not close when isRemoving is true', () => {
+      vi.useFakeTimers();
+      component.isRemoving = true;
+      component.showRemoveDeprecationConfirmDialog = true;
+      component.productId = 'cms-live-editor';
+
+      component.closeRemoveDeprecationDialog();
+
+      expect(component.isClosingRemoveDeprecationDialog).toBe(false);
+      vi.advanceTimersByTime(250);
+      expect(component.showRemoveDeprecationConfirmDialog).toBe(true);
+      expect(component.productId).toBe('cms-live-editor');
+      vi.useRealTimers();
+    });
+
+    it('should set isClosingRemoveDeprecationDialog immediately and reset state after delay', () => {
+      vi.useFakeTimers();
+      component.isRemoving = false;
+      component.showRemoveDeprecationConfirmDialog = true;
+      component.productId = 'cms-live-editor';
+
+      component.closeRemoveDeprecationDialog();
+
+      expect(component.isClosingRemoveDeprecationDialog).toBe(true);
+      expect(component.showRemoveDeprecationConfirmDialog).toBe(true);
+      expect(component.productId).toBe('cms-live-editor');
+
+      vi.advanceTimersByTime(250);
+
+      expect(component.showRemoveDeprecationConfirmDialog).toBe(false);
+      expect(component.isClosingRemoveDeprecationDialog).toBe(false);
+      expect(component.productId).toBe('');
+      vi.useRealTimers();
+    });
+  });
+
+  describe('executeToggleArchive', () => {
+    it('should return early when isArchiving is true', async () => {
+      component.isArchiving = true;
+      component.archiveTargetRow = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+
+      await component.executeToggleArchive();
+
+      expect(productService.updateArchiveStatus).not.toHaveBeenCalled();
+    });
+
+    it('should return early when archiveTargetRow is null', async () => {
+      component.isArchiving = false;
+      component.archiveTargetRow = null;
+
+      await component.executeToggleArchive();
+
+      expect(productService.updateArchiveStatus).not.toHaveBeenCalled();
+    });
+
+    it('should call updateArchiveStatus with ARCHIVE action when row is not archived', async () => {
+      const row = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+      component.archiveTargetRow = row;
+      component.showArchiveConfirmDialog = true;
+
+      await component.executeToggleArchive();
+
+      expect(productService.updateArchiveStatus).toHaveBeenCalledWith('cms-live-editor', ArchiveAction.ARCHIVE);
+      expect(component.showArchiveConfirmDialog).toBe(false);
+      expect(component.isClosingArchiveDialog).toBe(false);
+      expect(component.archiveTargetRow).toBeNull();
+      expect(row.isArchived).toBe(true);
+      expect(component.isArchiving).toBe(false);
+    });
+
+    it('should call updateArchiveStatus with UNARCHIVE action when row is archived', async () => {
+      const row = { id: 'rtf-factory', deprecationDate: null, deprecationRequester: null, isArchived: true };
+      component.archiveTargetRow = row;
+      component.showArchiveConfirmDialog = true;
+
+      await component.executeToggleArchive();
+
+      expect(productService.updateArchiveStatus).toHaveBeenCalledWith('rtf-factory', ArchiveAction.UNARCHIVE);
+      expect(component.showArchiveConfirmDialog).toBe(false);
+      expect(component.archiveTargetRow).toBeNull();
+      expect(row.isArchived).toBe(false);
+      expect(component.isArchiving).toBe(false);
+    });
+
+    it('should set archiveErrorMessage on failure', async () => {
+      const row = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+      component.archiveTargetRow = row;
+
+      const errorResponse = new HttpErrorResponse({
+        error: JSON.stringify({ messageDetails: 'common.error.archive.failed' }),
+        status: 500,
+        statusText: 'Internal Server Error'
+      });
+      productService.updateArchiveStatus.mockReturnValue(throwError(() => errorResponse));
+
+      await component.executeToggleArchive();
+
+      expect(component.archiveErrorMessage).toBe('common.error.archive.failed');
+      expect(component.isArchiving).toBe(false);
+      expect(row.isArchived).toBe(false);
+      expect(component.archiveTargetRow).not.toBeNull();
+    });
+
+    it('should use default error key when error body has no messageDetails', async () => {
+      const row = { id: 'cms-live-editor', deprecationDate: null, deprecationRequester: null, isArchived: false };
+      component.archiveTargetRow = row;
+
+      const errorResponse = new HttpErrorResponse({
+        error: 'some-raw-error',
+        status: 400,
+        statusText: 'Bad Request'
+      });
+      productService.updateArchiveStatus.mockReturnValue(throwError(() => errorResponse));
+
+      await component.executeToggleArchive();
+
+      expect(component.archiveErrorMessage).toBe('some-raw-error');
+      expect(component.isArchiving).toBe(false);
+    });
   });
 });

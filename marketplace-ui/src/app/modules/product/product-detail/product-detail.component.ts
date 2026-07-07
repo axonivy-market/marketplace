@@ -79,13 +79,6 @@ import { Page } from '../../../shared/models/apis/page.model';
 import { RouteUtils } from '../../../shared/utils/route.utils';
 import { Language } from '../../../shared/enums/language.enum';
 
-export interface DetailTab {
-  activeClass: string;
-  tabId: string;
-  value: string;
-  label: string;
-}
-
 const DEFAULT_ACTIVE_TAB = 'description';
 const GITHUB_BASE_URL = 'https://github.com/';
 
@@ -162,6 +155,7 @@ export class ProductDetailComponent implements AfterViewInit {
   isMobileMode = signal<boolean>(false);
   refreshInstallationCount = signal<number>(0);
   logoUrl = DEFAULT_IMAGE_URL;
+  logoDarkUrl = DEFAULT_IMAGE_URL;
   md: MarkdownIt = new MarkdownIt();
   productReleaseSafeHtmls: WritableSignal<ProductReleaseSafeHtml[]> = signal(
     []
@@ -310,6 +304,7 @@ export class ProductDetailComponent implements AfterViewInit {
     this.handleProductContentVersion();
     this.updateProductDetailActionType(productDetail);
     this.logoUrl = productDetail.logoUrl;
+    this.logoDarkUrl = productDetail.logoDarkUrl?.trim() ? productDetail.logoDarkUrl : productDetail.logoUrl;
     const ratingLabels = RATING_LABELS_BY_TYPE.find(
       button => button.type === productDetail.type
     );
@@ -319,6 +314,10 @@ export class ProductDetailComponent implements AfterViewInit {
         ratingLabels.noFeedbackLabel
       );
     }
+  }
+
+  getDeprecationSuccessorName(): string {
+    return this.productDetail().successor?.trim() ?? '';
   }
 
   hasMoreChangelogs() {
@@ -415,6 +414,7 @@ export class ProductDetailComponent implements AfterViewInit {
   }
 
   onLogoError(): void {
+    this.logoDarkUrl = DEFAULT_IMAGE_URL;
     this.logoUrl = DEFAULT_IMAGE_URL;
   }
 
@@ -437,40 +437,26 @@ export class ProductDetailComponent implements AfterViewInit {
     }
   }
 
-  scrollToTop(): void {
-    globalThis.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-  }
-
   getContent(value: string): boolean {
     const content = this.productModuleContent();
 
     if (!content || Object.keys(content).length === 0) {
       return false;
     }
+    const currentLanguage = this.languageService.selectedLanguage();
+    const hasComponentContent = content.component !== null &&
+      CommonUtils.isContentDisplayedBasedOnLanguage(content.component,currentLanguage);
 
     const conditions: { [key: string]: boolean } = {
       description:
         content.description !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.description,
-          this.languageService.selectedLanguage()
-        ),
-      demo:
-        content.demo !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.demo,
-          this.languageService.selectedLanguage()
-        ),
-      setup:
-        content.setup !== null &&
-        CommonUtils.isContentDisplayedBasedOnLanguage(
-          content.setup,
-          this.languageService.selectedLanguage()
-        ),
-      dependency: content.isDependency,
+        CommonUtils.isContentDisplayedBasedOnLanguage(content.description, currentLanguage),
+      demo: content.demo !== null && CommonUtils.isContentDisplayedBasedOnLanguage(content.demo, currentLanguage),
+      setup: content.setup !== null && CommonUtils.isContentDisplayedBasedOnLanguage(content.setup, currentLanguage),
+      component: hasComponentContent,
+      dependency: !hasComponentContent && content.isDependency,
       changelog: this.productReleaseSafeHtmls().length !== 0
     };
-
     return conditions[value] ?? false;
   }
 

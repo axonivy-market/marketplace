@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -13,6 +14,7 @@ import { PullRequestAction } from '../../../shared/enums/pullrequest-action';
 import { DeprecatedProductInfo } from '../../../shared/models/deprecated-product-info';
 import { AdminAuthService } from '../admin-auth.service';
 import { DeprecationMode } from '../../../shared/enums/deprecation-mode.enum';
+import { ArchiveAction } from '../../../shared/enums/archive-action.enum';
 
 import { DeprecationFormDialogComponent } from './dialogs/deprecation-form-dialog/deprecation-form-dialog.component';
 import { DeprecationResultDialogComponent } from './dialogs/deprecation-result-dialog/deprecation-result-dialog.component';
@@ -60,15 +62,15 @@ export class DeprecationManagementComponent implements OnInit {
   isRemoving = false;
   productId = '';
 
+  // Archive confirm dialog state
+  showArchiveConfirmDialog = false;
+  isClosingArchiveDialog = false;
+  isArchiving = false;
+  archiveTargetRow: DeprecatedProductInfo | null = null;
+  archiveErrorMessage = '';
+
   dropdownOpen = false;
-  deprecationRequest: DeprecationRequest = {
-    successorUrl: '',
-    isAddReadme: false,
-    isDeprecated: false,
-    pullRequestAction: PullRequestAction.ADD,
-    deprecationRequester: '',
-    deprecationDate: new Date()
-  };
+  deprecationRequest: DeprecationRequest = this.createEmptyDeprecationRequest();
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
   deprecatedItems: DeprecatedProductInfo[] = [];
@@ -76,13 +78,31 @@ export class DeprecationManagementComponent implements OnInit {
   tableSearchTerm = '';
   moderatorName = '';
   // Validation state
-  validationErrors: { productId?: string; successorUrl?: string } = {};
+  validationErrors: {
+    productId?: string;
+    alternativeExtension?: string;
+    successorUrl?: string;
+  } = {};
 
   ngOnInit(): void {
     const userInfo = this.adminAuthService.loadFromSessionStorage();
     this.moderatorName = userInfo?.username?.trim() || '';
     this.deprecationRequest.deprecationRequester = this.moderatorName;
     this.initializeDeprecatedRows();
+  }
+
+  private createEmptyDeprecationRequest(deprecationDate: Date | null = new Date(), deprecationRequester = ''):
+    DeprecationRequest {
+    return {
+      hasAlternativeExtension: false,
+      alternativeExtension: '',
+      successorUrl: '',
+      isAddReadme: false,
+      isDeprecated: false,
+      pullRequestAction: PullRequestAction.ADD,
+      deprecationRequester,
+      deprecationDate
+    };
   }
 
   private initializeDeprecatedRows(): void {
@@ -103,14 +123,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.isDeprecating = false;
       this.isCopySuccessVisible = false;
       this.productId = '';
-      this.deprecationRequest = {
-        successorUrl: '',
-        isAddReadme: false,
-        isDeprecated: false,
-        deprecationDate: null,
-        pullRequestAction: PullRequestAction.ADD,
-        deprecationRequester: this.moderatorName
-      };
+      this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
       this.validationErrors = {};
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
@@ -183,13 +196,7 @@ export class DeprecationManagementComponent implements OnInit {
       if (shouldResetDeprecateForm) {
         // Reset deprecate form after closing deprecate success dialog
         this.productId = '';
-        this.deprecationRequest = {
-          successorUrl: '',
-          isAddReadme: false,
-          isDeprecated: false,
-          pullRequestAction: PullRequestAction.ADD,
-          deprecationRequester: this.moderatorName
-        };
+        this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
       }
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
@@ -232,15 +239,31 @@ export class DeprecationManagementComponent implements OnInit {
       isValid = false;
     }
 
-    // Validate successorUrl (optional but must match pattern if provided)
-    if (this.deprecationRequest.successorUrl && this.deprecationRequest.successorUrl.trim() !== '') {
-      const urlPattern = /^(http|https):\/\/.*$/;
-      if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
-        this.validationErrors['successorUrl'] = this.translateService.instant(
-          'common.admin.deprecation.validation.invalidSuccessorUrl'
+    if (this.deprecationRequest.hasAlternativeExtension) {
+      if (!this.deprecationRequest.alternativeExtension?.trim()) {
+        this.validationErrors.alternativeExtension = this.translateService.instant(
+          'common.admin.deprecation.validation.alternativeExtensionRequired'
         );
         isValid = false;
       }
+
+      if (this.deprecationRequest.successorUrl?.trim()) {
+        const urlPattern = /^(http|https):\/\/.*$/;
+        if (!urlPattern.test(this.deprecationRequest.successorUrl)) {
+          this.validationErrors.successorUrl = this.translateService.instant(
+            'common.admin.deprecation.validation.invalidSuccessorUrl'
+          );
+          isValid = false;
+        }
+      } else {
+        this.validationErrors.successorUrl = this.translateService.instant(
+          'common.admin.deprecation.validation.successorRequired'
+        );
+        isValid = false;
+      }
+    } else {
+      this.deprecationRequest.alternativeExtension = '';
+      this.deprecationRequest.successorUrl = '';
     }
 
     return isValid;
@@ -256,6 +279,68 @@ export class DeprecationManagementComponent implements OnInit {
   async confirmRemovedDeprecation(productId: string): Promise<void> {
     this.productId = productId;
     this.showRemoveDeprecationConfirmDialog = true;
+  }
+
+  async toggleArchiveStatus(row: DeprecatedProductInfo): Promise<void> {
+    this.archiveTargetRow = row;
+    this.archiveErrorMessage = '';
+    this.showArchiveConfirmDialog = true;
+  }
+
+  closeArchiveConfirmDialog(): void {
+    if (this.isArchiving) {
+      return;
+    }
+    this.isClosingArchiveDialog = true;
+    setTimeout(() => {
+      this.showArchiveConfirmDialog = false;
+      this.isClosingArchiveDialog = false;
+      this.archiveTargetRow = null;
+    }, this.DIALOG_CLOSE_DELAY_MS);
+  }
+
+  async executeToggleArchive(): Promise<void> {
+    if (this.isArchiving || !this.archiveTargetRow) {
+      return;
+    }
+    this.isArchiving = true;
+    this.archiveErrorMessage = '';
+
+    const row = this.archiveTargetRow;
+    const action = row.isArchived ? ArchiveAction.UNARCHIVE : ArchiveAction.ARCHIVE;
+
+    try {
+      await firstValueFrom(
+        this.productService.updateArchiveStatus(row.id, action)
+      );
+      this.showArchiveConfirmDialog = false;
+      this.isClosingArchiveDialog = false;
+      this.archiveTargetRow = null;
+      row.isArchived = !row.isArchived;
+
+      // Show success dialog
+      this.successMode = action === ArchiveAction.ARCHIVE ? DeprecationMode.ARCHIVE : DeprecationMode.UNARCHIVE;
+      this.successPullRequestUrl = null;
+      this.isCopySuccessVisible = false;
+      this.showSuccessDialog = true;
+    } catch (error) {
+      this.archiveErrorMessage = this.extractErrorMessage(error);
+    } finally {
+      this.isArchiving = false;
+    }
+  }
+
+  private extractErrorMessage(error: unknown): string {
+    let messageKey = 'common.error.description.default';
+    if (error instanceof HttpErrorResponse) {
+      try {
+        const errorBody = typeof error.error === 'string' ? JSON.parse(error.error) : error.error;
+        messageKey = errorBody?.messageDetails || messageKey;
+      } catch {
+        messageKey = error.error || messageKey;
+      }
+    }
+    return this.translateService.instant(messageKey);
   }
 
   closeRemoveDeprecationDialog(): void {

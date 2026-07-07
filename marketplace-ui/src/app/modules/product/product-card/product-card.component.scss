@@ -20,6 +20,12 @@ img {
   font-size: 14px;
 }
 
+.card__tag--deprecated {
+  background-color: var(--deprecated-banner-bg);
+  color: var(--deprecated-banner-text);
+  box-shadow: inset 0 0 0 1px var(--deprecated-banner-border);
+}
+
 .card__description {
   font-weight: 400;
   font-size: 16px;

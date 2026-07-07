@@ -217,6 +217,7 @@ export const MOCK_PRODUCT_MODULE_CONTENT: ProductModuleContent = {
   description: null,
   demo: null,
   setup: null,
+  component: null,
   isDependency: false,
   name: 'Jira Connector',
   groupId: 'com.axonivy.connector.jira',
@@ -260,6 +261,11 @@ export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
     },
     demo: {
       en: 'In this demo, the CronByGlobalVariableTriggerStartEventBean is defined as the Java class to be executed in the Ivy Program Start element.\n\n![Program Start Element screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/ProgramStartElement.png)\n\nThis bean gets a cron expression via the variable defined as Cron expression and it will schedule by using the expression.\n\n![custom editor UI screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/customEditorUI.png)\n\nFor this demo, the Cron expression is defining the time to start the cron that simply fires every 5 seconds.\n\n```\n\n  demoStartCronPattern: 0/5 * * * * ?\n\n```'
+    },
+    component: {
+      en: '- Signature: getSubPdf\n' +
+        '   Input: processingId: java.util.UUID, index: Integer, fileName: String\n' +
+        '   Result: file: java.io.File, error: ch.ivyteam.ivy.bpm.error.BpmError'
     },
     isDependency: true,
     name: 'cron job',
@@ -317,6 +323,7 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     demo: {
       en: '![jira-connector Demo 1](https://raw.githubusercontent.com/axonivy-market/jira-connector/v10.0.0/jira-connector-product/images/create-issue.png "Create Jira issue")\n![jira-connector Demo 2](https://raw.githubusercontent.com/axonivy-market/jira-connector/v10.0.0/jira-connector-product/images/create-comment.png "Craete Jira comment")'
     },
+    component: null,
     isDependency: true,
     name: 'Jira Connector',
     groupId: 'com.axonivy.connector.jira',
@@ -366,6 +373,11 @@ export const MOCK_RELEASE_PREVIEW_DATA: ReleasePreviewData = {
     English: 'To demo the app, use the following commands...',
     Spanish: 'Para mostrar la aplicación, use los siguientes comandos...',
     French: "Pour démontrer l'application, utilisez les commandes suivantes..."
+  },
+  component: {
+    English: 'Included components: DataDeletionExecutor, DataDeletionSummary.',
+    Spanish: 'Componentes incluidos: DataDeletionExecutor, DataDeletionSummary.',
+    French: 'Composants inclus: DataDeletionExecutor, DataDeletionSummary.'
   }
 };
 

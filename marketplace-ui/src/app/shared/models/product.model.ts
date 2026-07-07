@@ -8,6 +8,7 @@ export interface Product {
   shortDescriptions: DisplayValue;
   type: string;
   logoUrl: string;
+  logoDarkUrl?: string;
   cost: string;
   platformReview: string;
   vendor: string;
@@ -25,6 +26,7 @@ export interface Product {
   marketDirectory: string;
   mavenArtifacts: MavenArtifact[];
   contactUs: boolean;
+  deprecated?: boolean;
   _links?: {
     self: {
       href: string;
