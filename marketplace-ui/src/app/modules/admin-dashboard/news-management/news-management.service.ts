@@ -7,6 +7,7 @@ import { ReleaseLetterListApiResponse } from '../../../shared/models/apis/releas
 import { API_URI } from '../../../shared/constants/api.constant';
 import { RequestParam } from '../../../shared/enums/request-param';
 import { CachingEnabled, LoadingComponent } from '../../../core/interceptors/api.interceptor';
+import { AdminAuthService } from '../admin-auth.service';
 import { ReleaseLetter } from '../../../shared/models/release-letter-request.model';
 import { ReleaseLetterApiResponse } from '../../../shared/models/apis/release-letter-response.model';
 import { ReleaseLetterDraftApiResponse } from '../../../shared/models/apis/release-letter-draft-response.model';
@@ -16,6 +17,7 @@ import { ReleaseLetterDraftApiResponse } from '../../../shared/models/apis/relea
 })
 export class NewsManagementService {
   private readonly http = inject(HttpClient);
+  private readonly adminAuth = inject(AdminAuthService);
 
   getReleaseLetters(
     releaseLetterCriteria: ReleaseLetterCriteria,
@@ -42,6 +44,7 @@ export class NewsManagementService {
     return this.http
       .get<ReleaseLetterListApiResponse>(url, {
         context: new HttpContext().set(LoadingComponent, pageId).set(CachingEnabled, false),
+        headers: this.adminAuth.getAuthHeaders(),
         params
       })
       .pipe(
@@ -59,16 +62,21 @@ export class NewsManagementService {
 
     return this.http.get<ReleaseLetterListApiResponse>(`${API_URI.LATEST_RELEASE_LETTERS}`, {
       context: new HttpContext().set(CachingEnabled, false),
+      headers: this.adminAuth.getAuthHeaders(),
       params
     });
   }
 
   createReleaseLetter(releaseLetterRequest: ReleaseLetter): Observable<void> {
-    return this.http.post<void>(`${API_URI.RELEASE_LETTERS}`, releaseLetterRequest);
+    return this.http.post<void>(`${API_URI.RELEASE_LETTERS}`, releaseLetterRequest, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   updateReleaseLetter(id: string, releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterApiResponse> {
-    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}`, releaseLetterRequest);
+    return this.http.put<ReleaseLetterApiResponse>(`${API_URI.RELEASE_LETTERS}/${id}`, releaseLetterRequest, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   getReleaseLetterById(id: string): Observable<ReleaseLetterApiResponse> {
@@ -80,18 +88,24 @@ export class NewsManagementService {
       context: new HttpContext()
         .set(LoadingComponent, LoadingComponentId.RELEASE_LETTER_EDIT)
         .set(CachingEnabled, false),
+      headers: this.adminAuth.getAuthHeaders(),
       params
     });
   }
 
   deleteReleaseLetterById(id: string): Observable<void> {
-    return this.http.delete<void>(`${API_URI.RELEASE_LETTERS}/${id}`);
+    return this.http.delete<void>(`${API_URI.RELEASE_LETTERS}/${id}`, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   saveAsDraft(releaseLetterRequest: ReleaseLetter): Observable<ReleaseLetterDraftApiResponse> {
     return this.http.put<ReleaseLetterDraftApiResponse>(
       `${API_URI.RELEASE_LETTERS}/save-as-draft`,
-      releaseLetterRequest
+      releaseLetterRequest,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
     );
   }
 
@@ -101,6 +115,7 @@ export class NewsManagementService {
     params = params.set(RequestParam.TIMESTAMP, currentTimeStamp);
     return this.http.get<ReleaseLetterDraftApiResponse | null>(`${API_URI.RELEASE_LETTERS}/${id}/draft`, {
       context: new HttpContext().set(CachingEnabled, false),
+      headers: this.adminAuth.getAuthHeaders(),
       params
     });
   }

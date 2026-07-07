@@ -10,6 +10,7 @@ import { SyncTaskStatus } from '../../shared/enums/sync-task-status.enum';
 import { SecurityMonitorApiResponse } from '../../shared/models/apis/security-monitor-response.model';
 import { SecurityMonitorCriteria } from '../../shared/models/criteria.model';
 import { ProductSecurityInfo } from '../../shared/models/product-security-info-model';
+import { AdminAuthService } from './admin-auth.service';
 
 export interface SyncTaskExecution {
   key: SyncTaskKey;
@@ -26,14 +27,20 @@ export interface CustomSortConfig {
 
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly adminAuth: AdminAuthService
+  ) {}
 
   syncProducts(resetSync = false): Observable<SyncTaskExecution> {
     const params = new HttpParams().set(RequestParam.RESET_SYNC, resetSync);
     return this.http.put<SyncTaskExecution>(
       `${API_URI.PRODUCT}/sync`,
       {},
-      { params }
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders()
+      }
     );
   }
 
@@ -48,14 +55,20 @@ export class AdminDashboardService {
     return this.http.put<SyncTaskExecution>(
       `${API_URI.PRODUCT}/sync/${id}`,
       {},
-      { params }
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders()
+      }
     );
   }
 
   syncLatestReleasesForProducts(): Observable<void> {
     return this.http.put<void>(
       `${API_URI.PRODUCT_DETAILS}/sync-release-notes`,
-      null
+      null,
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
     );
   }
 
@@ -68,7 +81,10 @@ export class AdminDashboardService {
     return this.http.put<SyncTaskExecution>(
       `${API_URI.PRODUCT}/zip-sync`,
       {},
-      { params }
+      {
+        params,
+        headers: this.adminAuth.getAuthHeaders()
+      }
     );
   }
 
@@ -76,19 +92,27 @@ export class AdminDashboardService {
     return this.http.put(
       `${API_URI.SYNC_GITHUB_MONITOR}`,
       {},
-      { responseType: 'text' as const }
+      {
+        responseType: 'text' as const,
+        headers: this.adminAuth.getAuthHeaders()
+      }
     );
   }
 
   syncGithubSecurityMonitor(): Observable<ProductSecurityInfo[]> {
     return this.http.post<ProductSecurityInfo[]>(
       `${API_URI.SYNC_SECURITY_MONITOR}`,
-      {}
+      {},
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
     );
   }
 
   fetchSyncTaskExecutions(): Observable<SyncTaskExecution[]> {
-    return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION);
+    return this.http.get<SyncTaskExecution[]>(API_URI.SYNC_TASK_EXECUTION, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   sortMarketExtensions(
@@ -100,7 +124,9 @@ export class AdminDashboardService {
       ruleForRemainder: remainderRule
     };
 
-    return this.http.post<void>(`${API_URI.CUSTOM_SORT}`, body);
+    return this.http.post<void>(`${API_URI.CUSTOM_SORT}`, body, {
+      headers: this.adminAuth.getAuthHeaders()
+    });
   }
 
   getCustomSort(): Observable<CustomSortConfig> {
@@ -109,6 +135,7 @@ export class AdminDashboardService {
 
   getSecurityDetails(): Observable<ProductSecurityInfo[]> {
     return this.http.get<ProductSecurityInfo[]>(`${API_URI.SECURITY_MONITOR}`, {
+      headers: this.adminAuth.getAuthHeaders(),
       context: new HttpContext().set(
         LoadingComponent,
         LoadingComponentId.SECURITY_MONITOR
@@ -131,6 +158,7 @@ export class AdminDashboardService {
     return this.http.get<SecurityMonitorApiResponse>(`${API_URI.SECURITY_MONITOR}`,
       {
         params,
+        headers: this.adminAuth.getAuthHeaders(),
         context: new HttpContext().set(LoadingComponent, LoadingComponentId.SECURITY_MONITOR)
       }
     );

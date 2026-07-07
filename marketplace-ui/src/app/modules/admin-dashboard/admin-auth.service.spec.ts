@@ -1,159 +1,214 @@
-import { PLATFORM_ID } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting
 } from '@angular/common/http/testing';
-import { AdminAuthService } from './admin-auth.service';
+import { PLATFORM_ID } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { UserInfo } from '../../auth/auth.service';
 import { SessionStorageRef } from '../../core/services/browser/session-storage-ref.service';
 import { API_URI } from '../../shared/constants/api.constant';
-import { UserInfo } from '../../auth/auth.service';
-import { firstValueFrom } from 'rxjs';
+import {
+  ADMIN_SESSION_TOKEN,
+  AUTHORIZATION_HEADER,
+  BEARER
+} from '../../shared/constants/common.constant';
+import { AdminAuthService } from './admin-auth.service';
+
+const mockUser: UserInfo = {
+  login: 'octocat',
+  name: 'The Octocat',
+  avatarUrl: 'https://avatar.url',
+  url: 'https://github.com/octocat',
+  token: 'test-token'
+};
 
 describe('AdminAuthService', () => {
   let service: AdminAuthService;
-  let httpMock: HttpTestingController;
-  const session = {
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    removeItem: vi.fn()
+  let httpTestingController: HttpTestingController;
+  let sessionStorageMock: {
+    getItem: Mock;
+    setItem: Mock;
+    removeItem: Mock;
   };
+  let sessionStorageRef: SessionStorageRef;
 
   beforeEach(() => {
-    session.getItem.mockReset();
-    session.setItem.mockReset();
-    session.removeItem.mockReset();
-    session.getItem.mockReturnValue(null);
+    sessionStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn()
+    };
+
+    sessionStorageRef = {
+      session: sessionStorageMock,
+      platformId: 'browser'
+    } as any;
 
     TestBed.configureTestingModule({
       providers: [
-        AdminAuthService,
         provideHttpClient(),
         provideHttpClientTesting(),
-        {
-          provide: SessionStorageRef,
-          useValue: { session }
-        },
-        {
-          provide: PLATFORM_ID,
-          useValue: 'browser'
-        }
+        AdminAuthService,
+        { provide: SessionStorageRef, useValue: sessionStorageRef }
       ]
     });
 
     service = TestBed.inject(AdminAuthService);
-    httpMock = TestBed.inject(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
-    httpMock.verify();
+    httpTestingController.verify();
   });
 
-  it('fetches a csrf token from backend', async () => {
-    const fetchPromise = firstValueFrom(service.fetchCsrfToken());
-
-    const request = httpMock.expectOne(API_URI.ADMIN_CSRF);
-    expect(request.request.method).toBe('GET');
-    request.flush(null);
-
-    await fetchPromise;
+  it('should be created', () => {
+    expect(service).toBeTruthy();
   });
 
-  it('stores and clears the session user locally', () => {
-    const userInfo: UserInfo = {
-      id: 'user-1',
-      token: null,
-      login: 'octopus',
-      name: 'Octopus',
-      avatarUrl: '',
-      url: ''
-    };
+  describe('AdminAuthService', () => {
+    it('should set userInfo from sessionStorage in constructor when user exists', () => {
+      sessionStorageMock.getItem.mockImplementation((key: string) => {
+        if (key === ADMIN_SESSION_TOKEN) {
+          return JSON.stringify(mockUser);
+        }
+        return null;
+      });
 
-    service.setUserInfo(userInfo);
-    expect(session.setItem).toHaveBeenCalled();
-    expect(service.userInfo()).toEqual(userInfo);
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          AdminAuthService,
+          { provide: SessionStorageRef, useValue: sessionStorageRef },
+          { provide: PLATFORM_ID, useValue: 'browser' }
+        ]
+      });
 
-    service.clearToken();
-    expect(session.removeItem).toHaveBeenCalled();
-    expect(service.userInfo()).toBeNull();
-  });
+      const recreatedService = TestBed.inject(AdminAuthService);
 
-  it('posts to logout and clears the local user state', () => {
-    service.setUserInfo({
-      id: 'user-1',
-      token: null,
-      login: 'octopus',
-      name: 'Octopus',
-      avatarUrl: '',
-      url: ''
+      expect(recreatedService.userInfo()).toEqual(mockUser);
+      expect(sessionStorageMock.getItem).toHaveBeenCalledWith(
+        ADMIN_SESSION_TOKEN
+      );
     });
 
-    service.logout();
+    it('should store user via SessionStorageRef and update userInfo signal', () => {
+      service.setUserInfo(mockUser);
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
+        ADMIN_SESSION_TOKEN,
+        JSON.stringify(mockUser)
+      );
 
-    const request = httpMock.expectOne(API_URI.ADMIN_LOGOUT);
-    expect(request.request.method).toBe('POST');
-    request.flush({});
-
-    expect(service.userInfo()).toBeNull();
-  });
-
-  it('validates the session against the backend before allowing access', async () => {
-    session.getItem.mockReturnValue(
-      JSON.stringify({
-        id: 'fake-user',
-        token: null,
-        login: 'fake',
-        name: 'Fake',
-        avatarUrl: '',
-        url: ''
-      })
-    );
-
-    const resultPromise = firstValueFrom(service.isAuthenticated());
-
-    const request = httpMock.expectOne(API_URI.ADMIN_SESSION);
-    expect(request.request.method).toBe('GET');
-    request.flush({
-      id: 'user-1',
-      token: null,
-      login: 'octopus',
-      name: 'Octopus',
-      avatarUrl: '',
-      url: ''
+      expect(service.userInfo()).toEqual(mockUser);
     });
 
-    await expect(resultPromise).resolves.toBe(true);
-    expect(service.userInfo()).toEqual(
-      expect.objectContaining({
-        id: 'user-1',
-        login: 'octopus'
-      })
-    );
-    expect(session.setItem).toHaveBeenCalledWith(
-      'admin-session-token',
-      expect.stringContaining('"user-1"')
-    );
+    it('should remove token via SessionStorageRef and clear userInfo', () => {
+      service.setUserInfo(mockUser);
+      service.logout();
+
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
+        ADMIN_SESSION_TOKEN
+      );
+      expect(service.userInfo()).toBeNull();
+    });
   });
 
-  it('clears local state when the backend session probe fails', async () => {
-    service.setUserInfo({
-      id: 'user-1',
-      token: null,
-      login: 'octopus',
-      name: 'Octopus',
-      avatarUrl: '',
-      url: ''
+  describe('requestAccessToken', () => {
+    it('should clear token and call POST with correct payload and context', () => {
+      const testToken = 'github-oauth-token';
+      const clearTokenSpy = vi.spyOn(service, 'clearToken');
+
+      service.requestAccessToken(testToken).subscribe(response => {
+        expect(response).toEqual(mockUser);
+      });
+
+      expect(clearTokenSpy).toHaveBeenCalled();
+
+      const req = httpTestingController.expectOne(
+        API_URI.GITHUB_REQUEST_ACCESS
+      );
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ token: testToken });
+
+      req.flush(mockUser);
+    });
+  });
+
+  describe('token', () => {
+    it('should return token from sessionStorage', () => {
+      sessionStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
+
+      const token = service.token;
+
+      expect(token).toBe(mockUser.token);
+      expect(sessionStorageMock.getItem).toHaveBeenCalledWith(
+        ADMIN_SESSION_TOKEN
+      );
     });
 
-    const resultPromise = firstValueFrom(service.isAuthenticated());
+    it('should return null when no token exists', () => {
+      sessionStorageMock.getItem.mockReturnValue(null);
 
-    const request = httpMock.expectOne(API_URI.ADMIN_SESSION);
-    expect(request.request.method).toBe('GET');
-    request.flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+      const token = service.token;
 
-    await expect(resultPromise).resolves.toBe(false);
-    expect(service.userInfo()).toBeNull();
-    expect(session.removeItem).toHaveBeenCalledWith('admin-session-token');
+      expect(token).toBeNull();
+    });
+
+    it('should return null when sessionStorage is not available', () => {
+      const nullStorageRef = { session: null };
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          AdminAuthService,
+          { provide: SessionStorageRef, useValue: nullStorageRef }
+        ]
+      });
+      const nullService = TestBed.inject(AdminAuthService);
+      const nullHttpTestingController = TestBed.inject(HttpTestingController);
+
+      const token = nullService.token;
+
+      expect(token).toBeNull();
+      nullHttpTestingController.verify();
+    });
+  });
+
+  describe('isAuthenticated', () => {
+    it('should return true when token exists', async () => {
+      sessionStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
+
+      service.isAuthenticated().subscribe(result => {
+        expect(result).toBe(true);
+      });
+
+      const req = httpTestingController.expectOne(request =>
+        request.url.includes('/github/validate-token')
+      );
+      expect(req.request.method).toBe('PUT');
+      req.flush(true);
+    });
+
+    it('should return headers with Authorization when token exists', () => {
+      sessionStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
+      let token = mockUser.token;
+      const headers = service.getAuthHeaders();
+
+      expect(headers.get(AUTHORIZATION_HEADER)).toBe(`${BEARER} ${token}`);
+    });
+
+    it('should return empty headers when token is null', () => {
+      sessionStorageMock.getItem.mockReturnValue(null);
+
+      const headers = service.getAuthHeaders();
+
+      expect(headers.get(AUTHORIZATION_HEADER)).toBeNull();
+      expect(headers.keys().length).toBe(0);
+    });
   });
 });

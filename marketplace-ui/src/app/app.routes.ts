@@ -11,6 +11,7 @@ import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboa
 import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
 import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
+import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminTokenComponent } from './modules/admin-dashboard/admin-token/admin-token.component';
 import { TeamIntroductionComponent } from './modules/home/team-introduction/team-introduction.component';
 import { LogViewerComponent } from './modules/admin-dashboard/logs-viewer/logs-viewer.component';
@@ -20,20 +21,15 @@ import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-manag
 import {
   DeprecationManagementComponent
 } from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
-import { AdminAuthGuard } from './modules/admin-dashboard/admin-auth.guard';
 import { AdminSettingsComponent } from './modules/admin-dashboard/settings/settings.component';
-import { GithubCallbackAdminComponent } from './auth/github-callback/admin/github-callback-admin.component';
 
 export const routes: Routes = [
   // OAuth callback
   {
     path: 'auth/github/callback',
-    component: GithubCallbackComponent,
+    component: GithubCallbackComponent
   },
-  {
-    path: 'auth/admin/github/callback',
-    component: GithubCallbackAdminComponent
-  },
+
   // Error handling more specific first
   {
     path: 'error-page/:id',
@@ -112,7 +108,10 @@ export const routes: Routes = [
   },
   {
     path: 'monitoring/:repo/:workflow',
-    loadComponent: () => import('./modules/monitor/repo-report/repo-report.component').then(m => m.RepoReportComponent)
+    loadComponent: () =>
+      import('./modules/monitor/repo-report/repo-report.component').then(
+        m => m.RepoReportComponent
+      )
   },
   {
     path: ':id/:version/lib/:artifact',
@@ -126,7 +125,8 @@ export const routes: Routes = [
   // Product route (dynamic)
   {
     path: ':id',
-    loadChildren: () => import('./modules/product/product.routes').then(m => m.routes),
+    loadChildren: () =>
+      import('./modules/product/product.routes').then(m => m.routes),
     resolve: {
       productDetail: ProductDetailResolver
     }

@@ -28,7 +28,7 @@ export class ProductStarRatingNumberComponent {
 
   onClickRateLink() {
     const productId = this.productDetailService.productId();
-    if (this.authService.getUserId()) {
+    if (this.authService.getToken()) {
       this.openAddFeedbackDialog.emit();
     } else {
       this.authService.redirectToGitHub(productId);

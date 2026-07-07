@@ -138,7 +138,8 @@ export const MOCK_PRODUCTS_FILTER_CONNECTOR = {
           en: 'Clearly authenticate your Austrian customers with a mobile phone signature.',
           de: 'Clearly authenticate your Austrian customers with a mobile phone signature.'
         },
-        logoUrl: 'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/a-trust/logo.png',
+        logoUrl:
+          'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/a-trust/logo.png',
         type: 'connector',
         tags: ['e-signature'],
         _links: {
@@ -244,7 +245,8 @@ export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
   newestReleaseVersion: 'v10.0.4',
   cost: 'Free',
   sourceUrl: 'https://github.com/axonivy-market/cronjob',
-  statusBadgeUrl: 'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
+  statusBadgeUrl:
+    'https://github.com/axonivy-market/cronjob/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
   contactUs: false,
@@ -261,8 +263,7 @@ export const MOCK_CRON_JOB_PRODUCT_DETAIL: ProductDetail = {
       en: 'In this demo, the CronByGlobalVariableTriggerStartEventBean is defined as the Java class to be executed in the Ivy Program Start element.\n\n![Program Start Element screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/ProgramStartElement.png)\n\nThis bean gets a cron expression via the variable defined as Cron expression and it will schedule by using the expression.\n\n![custom editor UI screenshot](https://raw.githubusercontent.com/axonivy-market/cronjob/v10.0.4/cronjob-product/customEditorUI.png)\n\nFor this demo, the Cron expression is defining the time to start the cron that simply fires every 5 seconds.\n\n```\n\n  demoStartCronPattern: 0/5 * * * * ?\n\n```'
     },
     component: {
-      en:
-        '- Signature: getSubPdf\n' +
+      en: '- Signature: getSubPdf\n' +
         '   Input: processingId: java.util.UUID, index: Integer, fileName: String\n' +
         '   Result: file: java.io.File, error: ch.ivyteam.ivy.bpm.error.BpmError'
     },
@@ -296,7 +297,8 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
     de: "TODO Atlassian's Jira connector lets you track issues directly from the Axon Ivy platform."
   },
   installationCount: 1,
-  logoUrl: 'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/jira/logo.png',
+  logoUrl:
+    'https://raw.githubusercontent.com/axonivy-market/market/master/market/connector/jira/logo.png',
   type: 'connector',
   tags: ['helper'],
   vendor: 'FROX AG',
@@ -305,7 +307,8 @@ export const MOCK_PRODUCT_DETAIL: ProductDetail = {
   newestReleaseVersion: 'v10.0.0',
   cost: 'Free',
   sourceUrl: 'https://github.com/axonivy-market/jira-connector',
-  statusBadgeUrl: 'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
+  statusBadgeUrl:
+    'https://github.com/axonivy-market/jira-connector/actions/workflows/ci.yml/badge.svg',
   language: 'English',
   industry: 'Cross-Industry',
   contactUs: false,
@@ -434,11 +437,11 @@ export const MOCK_PRODUCT_RELEASES: ProductReleasesApiResponse = {
   _embedded: {
     gitHubReleaseModelList: [
       {
-        name: '12.0.3',
-        body: '## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n',
-        publishedAt: '2025-01-20T10:19:19.000+00:00',
-        htmlUrl: 'https://github.com/axonivy-market/portal/releases/tag/12.0.3',
-        latestRelease: true
+        "name": "12.0.3",
+        "body": "## Changes\r\n\r\n## 🚀 Features\r\n\r\n- [IVYPORTAL-18158](https://1ivy.atlassian.net/browse/IVYPORTAL-18158) Implement File Preview to Portal Components https://github.com/nhthinh-axonivy (https://github.com/axonivy-market/portal/pull/1443)\r\n",
+        "publishedAt": "2025-01-20T10:19:19.000+00:00",
+        "htmlUrl": "https://github.com/axonivy-market/portal/releases/tag/12.0.3",
+        "latestRelease": true
       }
     ]
   },
@@ -453,4 +456,4 @@ export const MOCK_PRODUCT_RELEASES: ProductReleasesApiResponse = {
     totalPages: 1,
     number: 0
   }
-};
+}

@@ -24,7 +24,6 @@ describe('ProductStarRatingNumberComponent', () => {
       productId: vi.fn().mockName('ProductDetailService.productId')
     } as any;
     mockAuthService = {
-      getUserId: vi.fn().mockName('AuthService.getUserId'),
       getToken: vi.fn().mockName('AuthService.getToken'),
       redirectToGitHub: vi.fn().mockName('AuthService.redirectToGitHub')
     } as any;
@@ -63,7 +62,7 @@ describe('ProductStarRatingNumberComponent', () => {
   });
 
   it('should emit openAddFeedbackDialog event if user is authenticated', () => {
-    mockAuthService.getUserId.mockReturnValue('user-1');
+    mockAuthService.getToken.mockReturnValue('mockToken');
     vi.spyOn(component.openAddFeedbackDialog, 'emit');
     const link = fixture.debugElement.query(By.css('.rate-link')).nativeElement;
     link.click();
@@ -71,7 +70,7 @@ describe('ProductStarRatingNumberComponent', () => {
   });
 
   it('should redirect to GitHub if user is not authenticated', () => {
-    mockAuthService.getUserId.mockReturnValue(null);
+    mockAuthService.getToken.mockReturnValue(null);
     mockProductDetailService.productId.mockReturnValue('123');
     const link = fixture.debugElement.query(By.css('.rate-link')).nativeElement;
     link.click();

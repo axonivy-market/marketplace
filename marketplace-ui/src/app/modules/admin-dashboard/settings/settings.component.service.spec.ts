@@ -1,14 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, type MockedObject, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpHeaders } from '@angular/common/http';
 import { AppSetting, AppSettingsService } from './settings.component.service';
 import { AdminAuthService } from '../admin-auth.service';
 import { API_URI } from '../../../shared/constants/api.constant';
+import { AUTHORIZATION_HEADER } from '../../../shared/constants/common.constant';
 
 describe('AppSettingsService', () => {
   let service: AppSettingsService;
   let httpMock: HttpTestingController;
   let adminAuthServiceMock: MockedObject<AdminAuthService>;
+
+  const mockAuthHeaders = new HttpHeaders({
+    [AUTHORIZATION_HEADER]: 'Bearer test-token'
+  });
 
   const mockSettings: AppSetting[] = [
     {
@@ -29,8 +35,9 @@ describe('AppSettingsService', () => {
 
   beforeEach(() => {
     adminAuthServiceMock = {
-      clearToken: vi.fn().mockName('AdminAuthService.clearToken')
+      getAuthHeaders: vi.fn().mockName('AdminAuthService.getAuthHeaders')
     } as MockedObject<AdminAuthService>;
+    adminAuthServiceMock.getAuthHeaders.mockReturnValue(mockAuthHeaders);
 
     TestBed.configureTestingModule({
       providers: [
@@ -53,13 +60,14 @@ describe('AppSettingsService', () => {
   });
 
   describe('getSettings', () => {
-    it('should send GET to APP_SETTINGS', () => {
+    it('should send GET to APP_SETTINGS with auth headers', () => {
       service.getSettings().subscribe(response => {
         expect(response).toEqual(mockSettings);
       });
 
       const req = httpMock.expectOne(r => r.url === API_URI.APP_SETTINGS);
       expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
       req.flush(mockSettings);
     });
 
@@ -89,7 +97,7 @@ describe('AppSettingsService', () => {
   });
 
   describe('updateSetting', () => {
-    it('should send PUT with settingValue in body', () => {
+    it('should send PUT with auth headers and settingValue in body', () => {
       const setting = mockSettings[0];
       service.updateSetting(setting).subscribe(response => {
         expect(response).toEqual(setting);
@@ -98,6 +106,7 @@ describe('AppSettingsService', () => {
       const expectedUrl = `${API_URI.APP_SETTINGS}/${encodeURIComponent(setting.settingKey)}`;
       const req = httpMock.expectOne(r => r.url === expectedUrl);
       expect(req.request.method).toBe('PUT');
+      expect(req.request.headers.get(AUTHORIZATION_HEADER)).toBe('Bearer test-token');
       expect(req.request.body).toEqual({ settingValue: setting.settingValue });
       req.flush(setting);
     });

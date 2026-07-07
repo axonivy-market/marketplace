@@ -12,15 +12,18 @@ import {
   WritableSignal
 } from '@angular/core';
 import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
+import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../../../auth/auth.service';
 import { FeedbackApiResponse } from '../../../../../shared/models/apis/feedback-response.model';
 import { Feedback } from '../../../../../shared/models/feedback.model';
 import { ProductDetailService } from '../../product-detail.service';
 import { ProductStarRatingService } from '../product-star-rating-panel/product-star-rating.service';
 import {
+  BEARER,
   FEEDBACK_SORT_TYPES,
   GITHUB_JSON_MEDIA_TYPE,
   NOT_FOUND_ERROR_CODE,
+  TOKEN_KEY,
   USER_NOT_FOUND_ERROR_CODE
 } from '../../../../../shared/constants/common.constant';
 import { FeedbackStatus } from '../../../../../shared/enums/feedback-status.enum';
@@ -41,6 +44,7 @@ export class ProductFeedbackService {
   private readonly productDetailService = inject(ProductDetailService);
   private readonly productStarRatingService = inject(ProductStarRatingService);
   private readonly http = inject(HttpClient);
+  private readonly cookieService = inject(CookieService);
   private readonly adminAuthService = inject(AdminAuthService);
 
   sort: WritableSignal<string> = signal(FEEDBACK_SORT_TYPES[0].value);
@@ -70,6 +74,7 @@ export class ProductFeedbackService {
 
     return this.http
       .get<FeedbackApiResponse>(`${API_URI.FEEDBACK_APPROVAL}`, {
+        headers: this.adminAuthService.getAuthHeaders(),
         context: new HttpContext().set(
           LoadingComponent,
           LoadingComponentId.FEEDBACK_APPROVAL
@@ -96,10 +101,10 @@ export class ProductFeedbackService {
   }
 
   updateFeedbackStatus(request: FeedbackApproval): Observable<Feedback> {
+    const headers = this.adminAuthService.getAuthHeaders().set('Accept', GITHUB_JSON_MEDIA_TYPE);
+
     return this.http
-      .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request, {
-        headers: new HttpHeaders({ Accept: GITHUB_JSON_MEDIA_TYPE })
-      })
+      .put<Partial<Feedback>>(API_URI.FEEDBACK_APPROVAL, request, { headers })
       .pipe(
         map(partialUpdatedFeedback => {
           const existingFeedback =
@@ -124,8 +129,12 @@ export class ProductFeedbackService {
   }
 
   submitFeedback(feedback: Feedback): Observable<Feedback> {
+    const headers = new HttpHeaders().set(
+      'X-Authorization',
+      `${BEARER} ${this.authService.getToken()}`
+    );
     return this.http
-      .post<Feedback>(FEEDBACK_API_URL, feedback)
+      .post<Feedback>(FEEDBACK_API_URL, feedback, { headers })
       .pipe(
         tap(() => {
           this.fetchFeedbacks();
@@ -136,7 +145,7 @@ export class ProductFeedbackService {
             response.status === NOT_FOUND_ERROR_CODE &&
             response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
           ) {
-            this.adminAuthService.clearToken();
+            this.clearTokenCookie();
           }
           return throwError(() => response);
         })
@@ -174,11 +183,6 @@ export class ProductFeedbackService {
   }
 
   private processUserFeedbacks(): void {
-    if (!this.hasUserSession()) {
-      this.userFeedback.set(null);
-      return;
-    }
-
     this.findProductFeedbackOfUser().subscribe(userFeedbacks => {
       if (!userFeedbacks?.length) {
         return;
@@ -213,11 +217,6 @@ export class ProductFeedbackService {
   findProductFeedbackOfUser(
     productId: string = this.productDetailService.productId()
   ): Observable<Feedback[]> {
-    if (!this.hasUserSession()) {
-      this.userFeedback.set(null);
-      return of([]);
-    }
-
     const params = new HttpParams()
       .set('productId', productId)
       .set('userId', this.authService.getUserId() ?? '');
@@ -238,7 +237,7 @@ export class ProductFeedbackService {
             response.status === NOT_FOUND_ERROR_CODE &&
             response.error.helpCode === USER_NOT_FOUND_ERROR_CODE.toString()
           ) {
-            this.adminAuthService.clearToken();
+            this.clearTokenCookie();
           }
           const defaultFeedback: Feedback = {
             content: '',
@@ -253,10 +252,6 @@ export class ProductFeedbackService {
           return of([defaultFeedback]);
         })
       );
-  }
-
-  private hasUserSession(): boolean {
-    return Boolean(this.authService.getToken() && this.authService.getUserId());
   }
 
   fetchFeedbacks(): void {
@@ -274,6 +269,10 @@ export class ProductFeedbackService {
     this.page.set(0);
     this.sort.set(newSort);
     this.findProductFeedbacksByCriteria().subscribe();
+  }
+
+  private clearTokenCookie(): void {
+    this.cookieService.delete(TOKEN_KEY);
   }
 
   handleFeedbackApiResponse(response: FeedbackApiResponse): void {

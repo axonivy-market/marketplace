@@ -4,7 +4,6 @@ export interface RuntimeConfig {
   apiUrl: string;
   githubOAuthAppClientId: string;
   githubOAuthCallback: string;
-  githubAdminOAuthCallback: string;
   githubApiUrl: string;
   dayInMiliseconds: number;
   matomoSiteId: number;
@@ -22,8 +21,7 @@ export const ENV_VAR_NAMES = {
   MARKET_MATOMO_SITE_ID: 'MARKET_MATOMO_SITE_ID',
   MARKET_MATOMO_TRACKER_URL: 'MARKET_MATOMO_TRACKER_URL',
   MARKET_SIBLING_NODE_APP_IP: 'MARKET_SIBLING_NODE_APP_IP',
-  MARKET_ALLOWED_HOSTS: 'MARKET_ALLOWED_HOSTS',
-  MARKET_GITHUB_ADMIN_OAUTH_CALLBACK: 'MARKET_GITHUB_ADMIN_OAUTH_CALLBACK'
+  MARKET_ALLOWED_HOSTS: 'MARKET_ALLOWED_HOSTS'
 } as const;
 
 export const RUNTIME_CONFIG_KEYS = {
@@ -35,8 +33,7 @@ export const RUNTIME_CONFIG_KEYS = {
   MARKET_MATOMO_SITE_ID: 'matomoSiteId',
   MARKET_MATOMO_TRACKER_URL: 'matomoTrackerUrl',
   MARKET_SIBLING_NODE_APP_IP: 'siblingNodeAppIp',
-  MARKET_ALLOWED_HOSTS: 'allowedHosts',
-  MARKET_GITHUB_ADMIN_OAUTH_CALLBACK: 'githubAdminOAuthCallback'
+  MARKET_ALLOWED_HOSTS: 'allowedHosts'
 } as const satisfies Record<string, keyof RuntimeConfig>;
 
 // TransferState Key for Runtime Configuration
