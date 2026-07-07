@@ -19,6 +19,6 @@ export class AdminTokenComponent {
 
   onSubmit(): void {
     this.isGitHubProcessing = true;
-    this.authService.redirectToGitHub('/internal-dashboard');
+    this.authService.redirectToGitHub('/internal-dashboard', { useAdminState: true });
   }
 }

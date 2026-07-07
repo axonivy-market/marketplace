@@ -117,7 +117,8 @@ export class AuthService {
 
   private async redirectToGitHubInternal(originalUrl: string, useAdminState: boolean): Promise<void> {
     const state = useAdminState ? await this.fetchGitHubAdminAuthorizationState() : originalUrl;
-    this.redirectWindowToGitHub(this.buildGitHubAuthorizationUrl(state));
+    const redirectUrl = useAdminState ? this.githubAdminOAuthCallbackUrl : this.githubOAuthCallbackUrl;
+    this.redirectWindowToGitHub(this.buildGitHubAuthorizationUrl(state, redirectUrl));
   }
 
   private async handleGitHubCallbackInternal(code: string, state: string, callBackUrl: string): Promise<void> {
@@ -131,19 +132,14 @@ export class AuthService {
     this.router.navigate(['/internal-dashboard']);
   }
 
-  private buildGitHubAuthorizationUrl(state: string): string {
+  private buildGitHubAuthorizationUrl(state: string, redirectUri: string): string {
     const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID);
-    return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
-  }
-
-  private buildGitHubAdminAuthorizationUrl(state: string): string {
-    const githubClientId = this.runtimeConfig.get(RUNTIME_CONFIG_KEYS.MARKET_GITHUB_OAUTH_APP_CLIENT_ID);
-    return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${this.githubAdminOAuthCallbackUrl}&state=${encodeURIComponent(state)}`;
+    return `${this.githubAuthUrl}?client_id=${githubClientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}`;
   }
 
   private async fetchGitHubAdminAuthorizationState(): Promise<string> {
     await this.ensureCsrfToken();
-    const { state } = await firstValueFrom(this.http.get<GitHubAuthorizationState>(this.githubAdminOAuthCallbackUrl));
+    const { state } = await firstValueFrom(this.http.get<GitHubAuthorizationState>(API_URI.ADMIN_GITHUB_AUTHORIZATION));
     return state;
   }
 
