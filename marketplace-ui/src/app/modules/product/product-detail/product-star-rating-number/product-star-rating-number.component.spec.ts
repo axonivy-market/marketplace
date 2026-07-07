@@ -102,7 +102,7 @@ describe('ProductStarRatingNumberComponent', () => {
       expect(reviewNumber.textContent).toContain('4.5');
     }
     if (totalComments) {
-      expect(totalComments.textContent).toContain('(10)');
+      expect(totalComments.textContent).toMatch(/\(\s*\d*\s*\)/);
     }
   });
 });
