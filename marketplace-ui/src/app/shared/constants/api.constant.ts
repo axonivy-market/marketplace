@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 
 const API = 'api';
 const SYNC = 'sync';
+const INTERNAL = 'internal';
 
 export const API_URI = {
   APP: '/',
@@ -17,16 +18,22 @@ export const API_URI = {
   MONITOR_DASHBOARD: `${API}/monitor-dashboard/repos`,
   GITHUB_REPORT: `${API}/monitor-dashboard`,
   SYNC_GITHUB_MONITOR: `${API}/monitor-dashboard/${SYNC}`,
-  SYNC_SECURITY_MONITOR: `${API}/security-monitor`,
-  SYNC_TASK_EXECUTION: `${API}/sync-task-execution`,
-  SECURITY_MONITOR: `${API}/security-monitor`,
+  SYNC_SECURITY_MONITOR: `${API}/${INTERNAL}/security-monitor`,
+  SYNC_TASK_EXECUTION: `${API}/${INTERNAL}/sync-task-execution`,
+  SECURITY_MONITOR: `${API}/${INTERNAL}/security-monitor`,
   GITHUB_REQUEST_ACCESS: 'auth/github/request-access',
-  GITHUB_VALIDATE_TOKEN: 'auth/github/validate-token',
-  LOGS: `${API}/logs`,
+  GITHUB_CALLBACK: 'auth/github/callback',
+  ADMIN_GITHUB_AUTHORIZATION: 'auth/admin/github/authorization',
+  ADMIN_GITHUB_CALLBACK: 'auth/admin/github/callback',
+  ADMIN_SESSION: 'auth/admin/session',
+  ADMIN_CSRF: 'auth/admin/csrf',
+  ADMIN_LOGOUT: 'auth/admin/logout',
+  LOGS: `${API}/${INTERNAL}/logs`,
+  GITHUB_LOGIN: 'auth/github/login',
   RELEASE_LETTERS: `${API}/release-letters`,
   LATEST_RELEASE_LETTERS: `${API}/release-letters/latest`,
   PRODUCT_DEPRECATIONS: `${API}/product-marketplace-data/deprecations`,
-  APP_SETTINGS: `${API}/settings`,
+  APP_SETTINGS: `${API}/${INTERNAL}/settings`,
   PRODUCT_MARKETPLACE_DATA_DEPRECATED_BY_ID: (id: string) =>
     `${API}/product-marketplace-data/${encodeURIComponent(id)}/deprecations`,
   PRODUCT_MARKETPLACE_DATA_ARCHIVE_BY_ID: (id: string) =>

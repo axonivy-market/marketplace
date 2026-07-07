@@ -3,7 +3,6 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LogFileModel } from '../../shared/models/apis/log-file-response.model';
-import { AdminAuthService } from './admin-auth.service';
 
 const BLOB = 'blob';
 const RESPONSE = 'response';
@@ -13,14 +12,12 @@ const LOG_BASE_URL = API_URI.LOGS;
 @Injectable({ providedIn: 'root' })
 export class LogService {
   httpClient = inject(HttpClient);
-  adminAuth = inject(AdminAuthService);
 
   getLogFiles(date?: string): Observable<LogFileModel[]> {
     let requestParams = new HttpParams();
     requestParams = requestParams.set('date', date ?? '');
     return this.httpClient.get<LogFileModel[]>(LOG_BASE_URL, {
-      params: requestParams,
-      headers: this.adminAuth.getAuthHeaders()
+      params: requestParams
     });
   }
 
@@ -31,8 +28,7 @@ export class LogService {
       .get(`${LOG_BASE_URL}/download`, {
         params: requestParams,
         responseType: BLOB,
-        observe: RESPONSE,
-        headers: this.adminAuth.getAuthHeaders()
+        observe: RESPONSE
       })
       .subscribe({
         next: (response: HttpResponse<Blob>) => {

@@ -23,6 +23,7 @@ function loadRuntimeConfigFromEnv(): RuntimeConfig {
     matomoSiteId: Number.parseInt(process.env[ENV_VAR_NAMES.MARKET_MATOMO_SITE_ID] || '', 10) || environment.matomoSiteId,
     matomoTrackerUrl: process.env[ENV_VAR_NAMES.MARKET_MATOMO_TRACKER_URL] || environment.matomoTrackerUrl,
     siblingNodeAppIp: process.env[ENV_VAR_NAMES.MARKET_SIBLING_NODE_APP_IP] || environment.siblingNodeAppIp,
+    githubAdminOAuthCallback: process.env[ENV_VAR_NAMES.MARKET_GITHUB_ADMIN_OAUTH_CALLBACK] || environment.githubAdminOAuthCallback,
     allowedHosts:
       (process.env[ENV_VAR_NAMES.MARKET_ALLOWED_HOSTS] || '')
         .split(HOST_SEPARATOR)

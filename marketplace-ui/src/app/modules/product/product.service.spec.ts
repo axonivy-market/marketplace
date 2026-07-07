@@ -466,9 +466,7 @@ describe('ProductService', () => {
     it('should use custom page size and language', () => {
       const mockResponse = {
         _embedded: {
-          products: [
-            { id: 'product-1', marketDirectory: 'dir1' }
-          ]
+          products: [{ id: 'product-1', marketDirectory: 'dir1' }]
         },
         page: {
           number: 0,
