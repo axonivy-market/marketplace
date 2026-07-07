@@ -41,7 +41,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -119,6 +121,7 @@ class GitHubServiceImplTest extends BaseSetup {
   private RestClientBuilder restClientBuilder;
 
   private MockRestServiceServer server;
+  private MockedConstruction<GitHubBuilder> gitHubBuilderMock;
 
   @Mock
   private RestClient restClient;
@@ -145,11 +148,16 @@ class GitHubServiceImplTest extends BaseSetup {
     lenient().when(okHttpClientBuilder.build()).thenReturn(new OkHttpClient());
     gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository, appSettingService,
         productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils));
-    lenient().doReturn(gitHub).when(gitHubService).buildGitHub(anyString());
+    gitHubBuilderMock = Mockito.mockConstruction(GitHubBuilder.class,
+        Mockito.withSettings().defaultAnswer(Answers.RETURNS_SELF),
+        (builderMock, context) -> lenient().when(builderMock.build()).thenReturn(gitHub));
   }
 
   @AfterEach
   void verifyHttp() {
+    if (gitHubBuilderMock != null) {
+      gitHubBuilderMock.close();
+    }
     if (server != null) {
       server.verify();
     }
