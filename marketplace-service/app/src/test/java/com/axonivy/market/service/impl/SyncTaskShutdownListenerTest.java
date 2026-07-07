@@ -35,7 +35,7 @@ class SyncTaskShutdownListenerTest {
   @Test
   void testMarkRunningExecutionAsFailed() {
     SyncTaskExecution runningExecution = mock(SyncTaskExecution.class);
-    when(syncTaskExecutionRepo.findByStatusIn(any()))
+    when(syncTaskExecutionRepo.findByNodeNumberAndStatusIn(any(), any()))
         .thenReturn(List.of(runningExecution));
 
     listener.onShutdown();
@@ -48,7 +48,7 @@ class SyncTaskShutdownListenerTest {
 
   @Test
   void testShouldNotMarkNonRunningExecution() {
-    when(syncTaskExecutionRepo.findByStatusIn(any()))
+    when(syncTaskExecutionRepo.findByNodeNumberAndStatusIn(any(), any()))
         .thenReturn(List.of());
 
     listener.onShutdown();
@@ -62,7 +62,7 @@ class SyncTaskShutdownListenerTest {
     SyncTaskType startedType = SyncTaskType.values()[0];
     when(startedExecution.getType()).thenReturn(startedType);
 
-    when(syncTaskExecutionRepo.findByStatusIn(any()))
+    when(syncTaskExecutionRepo.findByNodeNumberAndStatusIn(any(), any()))
         .thenReturn(List.of(startedExecution));
 
     listener.onShutdown();
@@ -75,7 +75,7 @@ class SyncTaskShutdownListenerTest {
     SyncTaskExecution runningExecution = mock(SyncTaskExecution.class);
     when(runningExecution.getType()).thenReturn(SyncTaskType.values()[0]);
 
-    when(syncTaskExecutionRepo.findByStatusIn(any()))
+    when(syncTaskExecutionRepo.findByNodeNumberAndStatusIn(any(), any()))
         .thenReturn(List.of(runningExecution));
 
     doThrow(mock(DataAccessException.class))

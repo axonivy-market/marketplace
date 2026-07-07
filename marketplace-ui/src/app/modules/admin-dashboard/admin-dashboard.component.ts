@@ -136,8 +136,6 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-
-
   // Synchronize
   trigger(syncTask: SyncTaskRow): void {
     this.selectedTask.set(syncTask);
@@ -149,12 +147,12 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onAction(syncTask: SyncTaskRow): void {
-  if (syncTask.status === SyncTaskStatus.RUNNING) {
-    this.cancel(syncTask);
-  } else {
-    this.trigger(syncTask);
+    if (syncTask.status === SyncTaskStatus.RUNNING) {
+      this.cancel(syncTask);
+    } else {
+      this.trigger(syncTask);
+    }
   }
-}
 
   // Cancel a running sync task
   cancel(syncTask: SyncTaskRow) {
@@ -165,7 +163,6 @@ export class AdminDashboardComponent implements OnInit {
           completedDate: new Date(),
           message: 'Cancelled by user'
         });
-
         this.loadingSyncTaskKey = null;
       },
       error: () => {
@@ -330,6 +327,10 @@ export class AdminDashboardComponent implements OnInit {
 
   isExpanded(index: number): boolean {
     return this.expandedLogs().has(index);
+  }
+
+  isRunning(syncTask: SyncTaskRow): boolean {
+    return syncTask.status === SyncTaskStatus.RUNNING;
   }
 
   handleSyncDialogConfirm(event: { productId: string; marketDirectory: string; override: boolean }): void {

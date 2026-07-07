@@ -246,7 +246,7 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testInitializeCancellationRegistryMarksRunningTasksFailed() throws Exception {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).status(SyncTaskStatus.RUNNING).build();
-    when(repo.findByStatusIn(any())).thenReturn(List.of(execution));
+    when(repo.findByNodeNumberAndStatusIn(any(), any())).thenReturn(List.of(execution));
     when(repo.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     java.lang.reflect.Method method = SyncTaskExecutionServiceImpl.class.getDeclaredMethod("initializeCancellationRegistry");

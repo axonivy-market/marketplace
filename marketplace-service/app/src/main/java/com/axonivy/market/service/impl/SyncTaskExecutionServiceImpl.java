@@ -161,7 +161,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
       taskExecution.setCompletedDate(null);
     }
 
-    if (status == SyncTaskStatus.SUCCESS || status == SyncTaskStatus.FAILED) {
+    if (status == SyncTaskStatus.SUCCESS || status == SyncTaskStatus.FAILED || status == SyncTaskStatus.CANCELLED) {
       taskExecution.setCompletedDate(LocalDateTime.now());
     }
     taskExecution.setStatus(status);
@@ -188,13 +188,15 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
    */
   @PostConstruct
   private void initializeCancellationRegistry() {
-    List<SyncTaskExecution> taskExecutions = syncTaskExecutionRepo.findByStatusIn(List.of(SyncTaskStatus.RUNNING));
+    List<SyncTaskExecution> taskExecutions =
+        syncTaskExecutionRepo.findByNodeNumberAndStatusIn(nodeNumber, List.of(SyncTaskStatus.RUNNING));
     if (taskExecutions.isEmpty()) {
       return;
     }
     for (SyncTaskExecution execution : taskExecutions) {
       execution.setStatus(SyncTaskStatus.FAILED);
       execution.setMessage("Sync task was interrupted due to application restart.");
+      execution.setCompletedDate(LocalDateTime.now());
     }
     syncTaskExecutionRepo.saveAll(taskExecutions);
   }

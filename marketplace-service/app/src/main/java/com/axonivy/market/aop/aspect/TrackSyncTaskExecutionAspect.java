@@ -32,19 +32,19 @@ public class TrackSyncTaskExecutionAspect {
     MDC.put(LoggingConstants.TASK_KEY, taskKey);
     try {
       execution = syncTaskExecutionService.start(jobType);
-      syncTaskExecutionService.markStatusRunning(execution.getType(), SyncTaskConstants.RUNNING_MESSAGE);
+      syncTaskExecutionService.markStatusRunning(jobType, SyncTaskConstants.RUNNING_MESSAGE);
       Object result = pjp.proceed();
       syncTaskExecutionService.markStatusSuccess(execution.getType(), SyncTaskConstants.SYNC_SUCCESSFULLY_MESSAGE);
       return result;
     } catch (TaskCancelledException ex) {
       if (execution != null) {
-        syncTaskExecutionService.markStatusCancelled(execution.getType(), "Sync task was cancelled");
+        syncTaskExecutionService.markStatusCancelled(jobType, "Sync task was cancelled");
         log.warn("Sync task {} was cancelled", jobType, ex);
       }
-      return null;
+      throw ex;
     } catch (Throwable t) {
       if (execution != null) {
-        syncTaskExecutionService.markStatusFailure(execution.getType(), t.getMessage());
+        syncTaskExecutionService.markStatusFailure(jobType, t.getMessage());
       }
       log.error("Sync task {} failed", jobType, t);
       throw t;

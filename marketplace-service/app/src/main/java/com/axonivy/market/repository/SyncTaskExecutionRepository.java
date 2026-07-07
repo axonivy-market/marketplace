@@ -10,8 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SyncTaskExecutionRepository extends JpaRepository<SyncTaskExecution, String> {
-  Optional<SyncTaskExecution> findByType(SyncTaskType type);
   Optional<SyncTaskExecution> findByTypeAndNodeNumber(SyncTaskType type, Integer nodeNumber);
-  List<SyncTaskExecution> findByStatusIn(Collection<SyncTaskStatus> statuses);
+  List<SyncTaskExecution> findByNodeNumberAndStatusIn(Integer nodeNumber, Collection<SyncTaskStatus> statuses);
 
 }
