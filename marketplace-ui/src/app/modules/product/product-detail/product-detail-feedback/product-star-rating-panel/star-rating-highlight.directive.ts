@@ -10,16 +10,13 @@ export class StarRatingHighlightDirective implements OnChanges {
 
   constructor(private readonly el: ElementRef<HTMLElement>) {}
 
- ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges', this.percent, changes);
-
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes['percent']) {
       this.width(this.percent);
     }
   }
 
   private width(percent: number): void {
-    console.log('setting width', percent);
     this.el.nativeElement.style.width = `${percent}%`;
   }
 }
