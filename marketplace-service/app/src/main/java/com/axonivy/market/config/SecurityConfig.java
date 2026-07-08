@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,7 +21,6 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -39,16 +39,16 @@ public class SecurityConfig {
   private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
   private static final String[] AUTHENTICATED_GET_ENDPOINTS = {
         API + INTERNAL +"/**",
-        FEEDBACK + FEEDBACK_APPROVAL,
-        PRODUCT_MARKETPLACE_DATA+"/**",
         RELEASE_LETTER + "/**",
-  };
-  private static final String[] PUBLIC_GET_ENDPOINTS = {
-      PRODUCT_MARKETPLACE_DATA + "/installation-count/**"
+        FEEDBACK + FEEDBACK_APPROVAL,
+        PRODUCT_MARKETPLACE_DATA + DEPRECATIONS,
+        PRODUCT_MARKETPLACE_DATA + VERSION_DOWNLOAD_BY_ID,
+        PRODUCT_MARKETPLACE_DATA + CUSTOM_SORT,
   };
   private static final String[] PUBLIC_POST_ENDPOINTS = {
       ADMIN_AUTH + GITHUB_CALLBACK,
-      AUTH + GITHUB_LOGIN
+      AUTH + GITHUB_LOGIN,
+      RELEASE_PREVIEW
   };
 
   private final SessionCookieProperties sessionCookieProperties;
@@ -75,7 +75,6 @@ public class SecurityConfig {
             .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId))
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-            .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
             .requestMatchers(HttpMethod.GET, AUTHENTICATED_GET_ENDPOINTS).authenticated()
             .requestMatchers(HttpMethod.POST, "/**").authenticated()
             .requestMatchers(HttpMethod.PUT, "/**").authenticated()
@@ -109,7 +108,7 @@ public class SecurityConfig {
 
   @Bean
   public AuthenticationEntryPoint authenticationEntryPoint() {
-    return new HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED);
+    return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
   }
 
   @Bean

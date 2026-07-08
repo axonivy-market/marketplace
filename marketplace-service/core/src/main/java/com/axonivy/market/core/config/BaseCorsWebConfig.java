@@ -14,6 +14,8 @@ public abstract class BaseCorsWebConfig implements WebMvcConfigurer {
   private static final String DEFAULT_METHODS = "GET,POST,PUT,DELETE,OPTIONS";
   private static final String DEFAULT_ALLOWED_ORIGIN_PATTERNS = "*";
   private static final int DEFAULT_MAX_AGE = 3600;
+  private static final String DEFAULT_ALLOWED_HEADERS = "*";
+  private static final String DEFAULT_ALLOW_CREDENTIALS = "false";
 
   @Value("${market.cors.allowed.mappings:" + DEFAULT_MAPPING + "}")
   private String marketCorsMappings;
@@ -27,18 +29,21 @@ public abstract class BaseCorsWebConfig implements WebMvcConfigurer {
   @Value("${market.cors.allowed.origin.maxAge:" + DEFAULT_MAX_AGE + "}")
   private int marketCorsAllowedOriginMaxAge;
 
+  @Value("${market.cors.allow.credentials:" + DEFAULT_ALLOW_CREDENTIALS + "}")
+  private boolean allowCredentials;
+
   @Override
   public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping(marketCorsMappings)
         .allowedOriginPatterns(marketCorsAllowedOriginPatterns)
         .allowedMethods(resolveAllowedMethods())
         .allowedHeaders(resolveAllowedHeaders())
-        .allowCredentials(true)
+        .allowCredentials(allowCredentials)
         .maxAge(marketCorsAllowedOriginMaxAge);
   }
 
   protected String[] resolveAllowedHeaders() {
-    return new String[] {"*"};
+    return new String[] {DEFAULT_ALLOWED_HEADERS};
   }
 
   protected String[] resolveAllowedMethods() {

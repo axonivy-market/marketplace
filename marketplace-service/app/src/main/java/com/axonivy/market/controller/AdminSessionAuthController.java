@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import static com.axonivy.market.constants.RequestMappingConstants.ADMIN_AUTH;
 import static com.axonivy.market.constants.RequestMappingConstants.CSRF;
@@ -42,16 +42,16 @@ public class AdminSessionAuthController {
   }
 
   @GetMapping(SESSION)
-  public UserInfo session(@AuthenticationPrincipal UserInfo currentUser) {
+  public ResponseEntity<UserInfo> session(@AuthenticationPrincipal UserInfo currentUser) {
     if (currentUser == null) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin session not found");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-    return currentUser;
+    return ResponseEntity.ok(currentUser);
   }
 
   @PostMapping(GITHUB_CALLBACK)
-  public UserInfo exchangeCode(@RequestBody AdminGitHubCallbackRequest callbackRequest, HttpServletRequest request,
+  public ResponseEntity<UserInfo> exchangeCode(@RequestBody AdminGitHubCallbackRequest callbackRequest, HttpServletRequest request,
       HttpServletResponse response) {
-    return adminSessionAuthService.authenticate(callbackRequest, request, response);
+    return  ResponseEntity.ok(adminSessionAuthService.authenticate(callbackRequest, request, response));
   }
 }

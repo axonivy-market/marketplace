@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class AdminAuthenticationSessionServiceImplTest {
+class AdminSessionAuthServiceImplTest {
   @Mock
   private SessionAuthenticationStrategy sessionAuthenticationStrategy;
   @Mock
@@ -39,7 +39,7 @@ class AdminAuthenticationSessionServiceImplTest {
   private HttpServletResponse response;
 
   @InjectMocks
-  private AdminAuthenticationSessionServiceImpl service;
+  private AdminSessionAuthServiceImpl service;
 
   @AfterEach
   void clearSecurityContext() {

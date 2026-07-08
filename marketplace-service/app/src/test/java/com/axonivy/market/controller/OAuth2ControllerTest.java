@@ -1,12 +1,10 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +18,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
