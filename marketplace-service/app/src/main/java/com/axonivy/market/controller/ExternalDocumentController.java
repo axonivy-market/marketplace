@@ -1,7 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
-
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSION;
 
 import com.axonivy.market.core.enums.ErrorCode;
@@ -71,7 +69,6 @@ public class ExternalDocumentController {
     return response.location(URI.create(responseURL)).build();
   }
 
-  @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncDocumentForProduct(

@@ -1,11 +1,11 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import com.axonivy.market.util.FileUtils;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,24 +37,21 @@ import static com.axonivy.market.constants.RequestMappingConstants.*;
 @Log4j2
 @RequiredArgsConstructor
 @RequestMapping(LOGS)
+@Hidden
 @Tag(name = "Log Viewer API", description = "API to list and view compressed log files")
 public class LogController {
   private static final String HEART_BEAT_MESSAGE = "keep-alive";
   private static final int HEART_BEAT_INTERVAL_SECONDS = 30;
   private final LogService logService;
 
-  @Authorized
   @GetMapping
-  @Operation(hidden = true)
   public ResponseEntity<List<LogFileModel>> listGzLogs(
       @Parameter(description = "Filter logs by date (format: yyyy-MM-dd)")
       @RequestParam(required = false) LocalDate date) {
     return ResponseEntity.ok(logService.listGzLogNamesByDate(String.valueOf(date)));
   }
 
-  @Authorized
   @GetMapping(DOWNLOAD_LOG_ARTIFACT)
-  @Operation(hidden = true)
   public ResponseEntity<StreamingResponseBody> downloadLog(@RequestParam String fileName) {
     if (StringUtils.isBlank(fileName)) {
       return ResponseEntity.badRequest().build();
@@ -69,9 +66,7 @@ public class LogController {
         .body(outputStream -> logService.streamLogContent(safeFileName, outputStream));
   }
 
-  @Authorized
   @GetMapping(value = LOG_STREAM, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  @Operation(hidden = true)
   public Flux<ServerSentEvent<String>> stream(HttpServletRequest request) {
     String requesterIp = resolveRequesterIp(request);
     Flux<ServerSentEvent<String>> heartbeat = Flux.interval(Duration.ofSeconds(HEART_BEAT_INTERVAL_SECONDS))
@@ -89,7 +84,6 @@ public class LogController {
         });
   }
 
-  @Authorized
   @GetMapping(value = LOG_STREAM_BY_TASK_KEY, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public Flux<String> streamLogsByTaskKey(@PathVariable String taskKey) {
     log.info("SSE request received for taskKey: {}", taskKey);

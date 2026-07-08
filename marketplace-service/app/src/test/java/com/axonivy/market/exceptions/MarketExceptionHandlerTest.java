@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @ExtendWith(MockitoExtension.class)
@@ -113,9 +116,24 @@ class MarketExceptionHandlerTest {
   @Test
   void testHandleIOException() {
     IOException ioException = new IOException("File read error");
-    var responseEntity = exceptionHandler.handleIOException(ioException);
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getHeader(HttpHeaders.ACCEPT)).thenReturn(MediaType.APPLICATION_JSON_VALUE);
+
+    var responseEntity = exceptionHandler.handleIOException(ioException, request);
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode(),
         "Expected HTTP 500 INTERNAL_SERVER_ERROR");
+  }
+
+  @Test
+  void testHandleIOExceptionForSseRequest() {
+    IOException ioException = new IOException("File read error");
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getHeader(HttpHeaders.ACCEPT)).thenReturn(MediaType.TEXT_EVENT_STREAM_VALUE);
+
+    var responseEntity = exceptionHandler.handleIOException(ioException, request);
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode(),
+        "Expected HTTP 500 INTERNAL_SERVER_ERROR");
+    assertNull(responseEntity.getBody(), "SSE error response should not carry a body");
   }
 
   @Test

@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.Loggable;
 
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.VERSION;
@@ -50,7 +49,6 @@ import static com.axonivy.market.core.constants.CoreRequestParamConstants.ID;
 public class ProductMarketplaceDataController {
   private final ProductMarketplaceDataService productMarketplaceDataService;
 
-  @Authorized
   @PostMapping(CUSTOM_SORT)
   @Operation(hidden = true)
   public ResponseEntity<Message> createCustomSortProducts(@RequestBody @Valid
@@ -94,7 +92,6 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
-  @Authorized
   @PutMapping(DEPRECATION_BY_ID)
   @Operation(summary = "Update successor and deprecated for product",
       description = "Partially update successor URL and deprecated flag for a product")
@@ -104,7 +101,6 @@ public class ProductMarketplaceDataController {
     return new ResponseEntity<>(pullRequestUrl, HttpStatus.OK);
   }
 
-  @Authorized
   @PutMapping(ARCHIVE_BY_ID)
   @Operation(summary = "Archive or unarchive a product repository",
       description = "Archive or unarchive the GitHub repository of a product based on the given action")

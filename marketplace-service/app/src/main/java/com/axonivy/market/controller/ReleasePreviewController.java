@@ -2,6 +2,7 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -21,12 +22,12 @@ import static com.axonivy.market.constants.RequestMappingConstants.RELEASE_PREVI
 @RequestMapping(RELEASE_PREVIEW)
 @Tag(name = "Release Preview Controller", description = "API to extract zip file and return README data.")
 @AllArgsConstructor
+@Hidden
 public class ReleasePreviewController {
 
   private final ReleasePreviewService previewService;
 
   @PostMapping
-  @Operation(hidden = true)
   public ResponseEntity<Object> extractZipFile(@RequestParam(value = "file") MultipartFile file) {
     ReleasePreview preview = previewService.extract(file);
     if (preview == null) {

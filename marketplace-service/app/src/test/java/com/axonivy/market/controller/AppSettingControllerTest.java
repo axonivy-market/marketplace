@@ -33,8 +33,8 @@ class AppSettingControllerTest {
   @Test
   void testGetSettingsWithNoSearch() {
     List<AppSettingDto> settings = List.of(
-        buildDto(AppSettingKey.GITHUB_TOKEN, "token-value"),
-        buildDto(AppSettingKey.GITHUB_CONNECT_TIMEOUT, "10000"));
+        buildDto(AppSettingKey.GITHUB_CONNECT_TIMEOUT, "10000"),
+        buildDto(AppSettingKey.MAIL_PORT, "587"));
     when(service.search(null)).thenReturn(settings);
 
     ResponseEntity<List<AppSettingDto>> response = controller.getSettings(null);
@@ -46,21 +46,6 @@ class AppSettingControllerTest {
   }
 
   @Test
-  void testGetSettingsWithSearchKeyword() {
-    List<AppSettingDto> filtered = List.of(buildDto(AppSettingKey.GITHUB_TOKEN, "token-value"));
-    when(service.search("github")).thenReturn(filtered);
-
-    ResponseEntity<List<AppSettingDto>> response = controller.getSettings("github");
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals(1, response.getBody().size(), "Should return filtered settings");
-    assertEquals(AppSettingKey.GITHUB_TOKEN.getKey(), response.getBody().getFirst().getSettingKey(),
-        "Returned setting key should match the search");
-    verify(service, times(1)).search("github");
-  }
-
-  @Test
   void testGetSettingsReturnsEmptyList() {
     when(service.search("nonexistent")).thenReturn(Collections.emptyList());
 
@@ -69,21 +54,6 @@ class AppSettingControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
     assertNotNull(response.getBody(), "Response body should not be null");
     assertTrue(response.getBody().isEmpty(), "Should return empty list when no settings match");
-  }
-
-  @Test
-  void testUpdateSetting() {
-    AppSettingDto request = buildDto(AppSettingKey.GITHUB_TOKEN, "new-token");
-    AppSettingDto updated = buildDto(AppSettingKey.GITHUB_TOKEN, "new-token");
-    when(service.update(AppSettingKey.GITHUB_TOKEN.getKey(), "new-token")).thenReturn(updated);
-
-    ResponseEntity<AppSettingDto> response = controller.updateSetting(AppSettingKey.GITHUB_TOKEN.getKey(), request);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals(AppSettingKey.GITHUB_TOKEN.getKey(), response.getBody().getSettingKey(), "Returned setting key should match");
-    assertEquals("new-token", response.getBody().getSettingValue(), "Returned setting value should be updated");
-    verify(service, times(1)).update(AppSettingKey.GITHUB_TOKEN.getKey(), "new-token");
   }
 
   @Test

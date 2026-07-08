@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
@@ -93,7 +92,6 @@ public class ProductController {
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }
 
-  @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
@@ -113,7 +111,6 @@ public class ProductController {
     return ResponseEntity.ok(message);
   }
 
-  @Authorized
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
   @TrackSyncTaskExecution(SyncTaskType.SYNC_ONE_PRODUCT)
@@ -143,7 +140,6 @@ public class ProductController {
     }
   }
 
-  @Authorized
   @PutMapping(SYNC_FIRST_PUBLISHED_DATE_ALL_PRODUCTS)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncFirstPublishedDateOfAllProducts() {
@@ -165,7 +161,6 @@ public class ProductController {
     return ResponseEntity.ok(emptyPagedModel);
   }
 
-  @Authorized
   @Operation(hidden = true)
   @PutMapping(SYNC_ZIP_ARTIFACTS)
   public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false)

@@ -27,7 +27,6 @@ import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
-import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MultiTaskUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.axonivy.market.util.ProductContentUtils;
@@ -41,7 +40,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -101,6 +102,12 @@ class GitHubServiceImplTest extends BaseSetup {
   private GHTeam ghTeam;
 
   @Mock
+  private GHOrganization ghOrganization;
+
+  @Mock
+  private GHUser ghUser;
+
+  @Mock
   private GithubUserRepository githubUserRepository;
 
   @Mock
@@ -113,12 +120,10 @@ class GitHubServiceImplTest extends BaseSetup {
   private RestClientBuilder restClientBuilder;
 
   private MockRestServiceServer server;
+  private MockedConstruction<GitHubBuilder> gitHubBuilderMock;
 
   @Mock
   private RestClient restClient;
-
-  @Mock
-  private AppSettingService appSettingService;
 
   @Mock
   private MultiTaskUtils multiTaskUtils;
@@ -131,18 +136,24 @@ class GitHubServiceImplTest extends BaseSetup {
   private GitHubServiceImpl gitHubService;
 
   @BeforeEach
-  void setUpRestClientMocks() {
+  void setUpRestClientMocks() throws IOException {
     RestClient.Builder builder = RestClient.builder();
     server = MockRestServiceServer.bindTo(builder).ignoreExpectOrder(true).build();
     restClient = builder.build();
     lenient().when(restClientBuilder.build()).thenReturn(restClient);
     lenient().when(okHttpClientBuilder.build()).thenReturn(new OkHttpClient());
-    gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository, appSettingService,
+    gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository,
         productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils));
+    gitHubBuilderMock = Mockito.mockConstruction(GitHubBuilder.class,
+        Mockito.withSettings().defaultAnswer(Answers.RETURNS_SELF),
+        (builderMock, context) -> lenient().when(builderMock.build()).thenReturn(gitHub));
   }
 
   @AfterEach
   void verifyHttp() {
+    if (gitHubBuilderMock != null) {
+      gitHubBuilderMock.close();
+    }
     if (server != null) {
       server.verify();
     }
@@ -174,24 +185,6 @@ class GitHubServiceImplTest extends BaseSetup {
 
   private void mockGitHubBuild(String accessToken) throws IOException {
     doReturn(gitHub).when(gitHubService).buildGitHub(accessToken);
-  }
-
-  @Test
-  void testGetGitHubWithValidToken() throws IOException {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("validToken");
-    mockGitHubBuild("validToken");
-    assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
-    verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
-  }
-
-  @Test
-  void testGetGitHubWithExplicitAccessToken() throws IOException {
-    String accessToken = "explicitToken";
-    mockGitHubBuild(accessToken);
-    GitHub result = gitHubService.getGitHub(accessToken);
-
-    assertNotNull(result, "Expected GitHub object to be created with an explicit access token");
-    verify(appSettingService, never()).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   @Test
@@ -281,9 +274,6 @@ class GitHubServiceImplTest extends BaseSetup {
     String clientSecret = "clientSecret";
     String accessToken = "accessToken";
 
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
-
     expectPost(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL,
         withSuccess("{\"access_token\":\"" + accessToken + "\"}", MediaType.APPLICATION_JSON));
 
@@ -302,9 +292,6 @@ class GitHubServiceImplTest extends BaseSetup {
     String clientSecret = "clientSecret";
     String error = "invalid_grant";
     String errorDescription = "The authorization code is invalid";
-
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
 
     expectPost(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL,
         withSuccess("""
@@ -329,10 +316,6 @@ class GitHubServiceImplTest extends BaseSetup {
     String code = "validCode";
     String clientId = "clientId";
     String clientSecret = "clientSecret";
-
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID)).thenReturn(clientId);
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET)).thenReturn(clientSecret);
-
     expectPost(GitHubConstants.GITHUB_GET_ACCESS_TOKEN_URL,
         withSuccess("{\"error\":\"error_code\",\"error_description\":\"Error description\"}",
             MediaType.APPLICATION_JSON));
@@ -360,7 +343,7 @@ class GitHubServiceImplTest extends BaseSetup {
     doReturn(true).when(gitHubService).isUserInOrganizationAndTeam(gitHub, organization, team);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
-    GithubUser result = gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
+    var result = gitHubService.validateUserInOrganizationAndTeam(accessToken, organization, team);
 
     assertEquals(String.valueOf(123L), result.getGitHubId(), "GitHub ID should match the fake user");
     assertEquals("test-user", result.getName(), "Name should match the fake user");
@@ -383,23 +366,30 @@ class GitHubServiceImplTest extends BaseSetup {
   void testIsUserInOrganizationAndTeamWhenEmptyTeams() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(false);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertFalse(result, "Expected result to be false when user has no teams in GitHub");
+    assertFalse(result, "Expected result to be false when user is not a member of the organization");
   }
 
   @Test
   void testIsUserInOrganizationAndTeamWhenTeamNotFound() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Set<GHTeam> teams = new HashSet<>();
-    teams.add(ghTeam);
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    hashMapTeams.put(organization, teams);
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(true);
+    when(ghOrganization.getTeamBySlug(teamName)).thenReturn(null);
+    when(ghOrganization.getTeamByName(teamName)).thenReturn(null);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
@@ -407,15 +397,17 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testIsUserInOrganizationAndTeamWhenTeamFound() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenTeamFoundBySlug() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Set<GHTeam> teams = new HashSet<>();
-    when(ghTeam.getName()).thenReturn(teamName);
-    teams.add(ghTeam);
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    hashMapTeams.put(organization, teams);
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(true);
+    when(ghOrganization.getTeamBySlug(teamName)).thenReturn(ghTeam);
+    when(ghTeam.hasMember(ghUser)).thenReturn(true);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
@@ -423,16 +415,22 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testIsUserInOrganizationAndTeamWhenTeamListNull() throws IOException {
+  void testIsUserInOrganizationAndTeamWhenTeamFoundByNameFallback() throws IOException {
     String organization = "my-org";
     String teamName = "my-team";
-    Map<String, Set<GHTeam>> hashMapTeams = new HashMap<>();
-    hashMapTeams.put(organization, null);
-    when(gitHub.getMyTeams()).thenReturn(hashMapTeams);
+    GHMyself fakeMyself = getFakeGHMyself();
+    when(gitHub.getMyself()).thenReturn(fakeMyself);
+    doReturn(gitHub).when(gitHubService).getGitHub();
+    when(gitHub.getOrganization(organization)).thenReturn(ghOrganization);
+    when(gitHub.getUser(fakeMyself.getLogin())).thenReturn(ghUser);
+    when(ghOrganization.hasMember(ghUser)).thenReturn(true);
+    when(ghOrganization.getTeamBySlug(teamName)).thenReturn(null);
+    when(ghOrganization.getTeamByName(teamName)).thenReturn(ghTeam);
+    when(ghTeam.hasMember(ghUser)).thenReturn(true);
 
     boolean result = gitHubService.isUserInOrganizationAndTeam(gitHub, organization, teamName);
 
-    assertFalse(result, "Expected result to be false when the organization exists but its team list is null");
+    assertTrue(result, "Expected result to be true when the fallback team name lookup succeeds");
   }
 
   @Test
@@ -1226,7 +1224,6 @@ class GitHubServiceImplTest extends BaseSetup {
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
     ProductSecurityInfo mockInfo = buildMockProductSecurityInfo("test-repo");
 
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1258,7 +1255,6 @@ class GitHubServiceImplTest extends BaseSetup {
     ProductSecurityInfo infoB = buildMockProductSecurityInfo("repo-b");
     ProductSecurityInfo infoC = buildMockProductSecurityInfo("repo-c");
 
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1286,7 +1282,6 @@ class GitHubServiceImplTest extends BaseSetup {
     GHOrganization mockOrg = mock(GHOrganization.class);
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
 
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
@@ -1398,20 +1393,16 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testUnArchivedTheRepositoryWhenSuccessful() throws IOException {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
     String url = GitHubConstants.Url.REPOS_BASE_URL + "org/repo";
     server.expect(requestTo(url))
         .andExpect(method(org.springframework.http.HttpMethod.PATCH))
         .andRespond(withNoContent());
 
     gitHubService.unArchivedTheRepository("org/repo");
-
-    verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   @Test
   void testUnArchivedTheRepositoryWhenResponseNotSuccessful() throws IOException {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
     String url = GitHubConstants.Url.REPOS_BASE_URL + "org/repo";
     server.expect(requestTo(url))
         .andExpect(method(org.springframework.http.HttpMethod.PATCH))
@@ -1423,7 +1414,6 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testUnArchivedTheRepositoryWhenIOExceptionThrown() throws IOException {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("test-token");
     String url = GitHubConstants.Url.REPOS_BASE_URL + "org/repo";
     server.expect(requestTo(url))
         .andExpect(method(org.springframework.http.HttpMethod.PATCH))
@@ -1444,7 +1434,6 @@ class GitHubServiceImplTest extends BaseSetup {
 
   private void setupBaseRepositoryMocks(GHRepository repository, GHContent readme, String readmeContent)
       throws Exception {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
     when(gitHub.getRepository("org/repo")).thenReturn(repository);
     when(repository.getDefaultBranch()).thenReturn(BASE_BRANCH);

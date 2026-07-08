@@ -6,8 +6,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CookieConfig {
   @Bean
-  public CookieSameSiteSupplier applicationCookieSameSiteSupplier() {
-    return CookieSameSiteSupplier.ofNone();
+  public CookieSameSiteSupplier applicationCookieSameSiteSupplier(SessionCookieProperties cookieProperties) {
+    return CookieSameSiteSupplier.of(cookieProperties.getSameSiteEnum());
   }
-
 }

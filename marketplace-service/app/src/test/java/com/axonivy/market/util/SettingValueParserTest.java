@@ -20,12 +20,6 @@ class SettingValueParserTest {
   }
 
   @Test
-  void testParseLongReturnsZeroWhenBothInvalid() {
-    Long result = SettingValueParser.parseLong("invalid", AppSettingKey.GITHUB_TOKEN);
-    assertEquals(0L, result, "Should return 0 when both value and default are invalid");
-  }
-
-  @Test
   void testParseIntegerWithValidValue() {
     Integer result = SettingValueParser.parseInteger("42", AppSettingKey.MAIL_PORT);
     assertEquals(42, result, "Should parse valid integer value");
@@ -35,12 +29,6 @@ class SettingValueParserTest {
   void testParseIntegerFallsBackToDefault() {
     Integer result = SettingValueParser.parseInteger("invalid", AppSettingKey.MAIL_PORT);
     assertEquals(587, result, "Should fall back to default when value is not a valid integer");
-  }
-
-  @Test
-  void testParseIntegerReturnsNullWhenBothInvalid() {
-    Integer result = SettingValueParser.parseInteger("invalid", AppSettingKey.GITHUB_TOKEN);
-    assertNull(result, "Should return null when both value and default are invalid");
   }
 
   @Test

@@ -1,17 +1,13 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.annotation.Authorized.AuthorizationScope;
-import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
-import com.axonivy.market.constants.RequestParamConstants;
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
 import com.axonivy.market.model.ProductRating;
+import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.FeedbackService;
-import com.axonivy.market.service.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -30,6 +26,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,7 +51,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class FeedbackController {
 
   private final FeedbackService feedbackService;
-  private final JwtService jwtService;
   private final FeedbackModelAssembler feedbackModelAssembler;
   private final PagedResourcesAssembler<Feedback> pagedResourcesAssembler;
 
@@ -104,7 +100,6 @@ public class FeedbackController {
     return ResponseEntity.ok(feedbackModelAssembler.toModel(feedbacks));
   }
 
-  @Authorized
   @GetMapping(FEEDBACK_APPROVAL)
   @Operation(hidden = true)
   public ResponseEntity<PagedModel<FeedbackModel>> findAllFeedbacks(@ParameterObject Pageable pageable) {
@@ -116,19 +111,17 @@ public class FeedbackController {
     return ResponseEntity.ok(pageResources);
   }
 
-  @Authorized
   @PutMapping(FEEDBACK_APPROVAL)
   @Operation(hidden = true)
   public ResponseEntity<FeedbackModel> updateFeedbackWithNewStatus(
-      @RequestBody @Valid FeedbackApprovalModel feedbackApproval, HttpServletRequest request) {
-    var moderatorName = (String) request.getAttribute(AuthorizedAspect.USERNAME_ATTRIBUTE);
-    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval, moderatorName);
+      @RequestBody @Valid FeedbackApprovalModel feedbackApproval,
+      @AuthenticationPrincipal UserInfo currentUser) {
+    var feedback = feedbackService.updateFeedbackWithNewStatus(feedbackApproval, currentUser.getUsername());
     var model = feedbackModelAssembler.toModel(feedback);
     model.add(linkTo(methodOn(this.getClass()).findFeedback(feedback.getId())).withSelfRel());
     return ResponseEntity.ok(model);
   }
 
-  @Authorized(scope = AuthorizationScope.USER)
   @PostMapping
   @Operation(summary = "Create user feedback",
     description = "Save user feedback of product with their token from Github account.")
@@ -138,10 +131,8 @@ public class FeedbackController {
   @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Successfully created user feedback"),
       @ApiResponse(responseCode = "401", description = "Unauthorized request") })
   public ResponseEntity<Void> createFeedback(@RequestBody @Valid FeedbackModelRequest feedbackRequest,
-      HttpServletRequest request) {
-    String token = request.getHeader(RequestParamConstants.X_AUTHORIZATION);
-    var claims = jwtService.getClaimsFromToken(token);
-    var newFeedback = feedbackService.upsertFeedback(feedbackRequest, claims.getSubject());
+      @AuthenticationPrincipal UserInfo currentUser) {
+    var newFeedback = feedbackService.upsertFeedback(feedbackRequest, currentUser.getId());
     var location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path(BY_ID)
         .buildAndExpand(newFeedback.getId())

@@ -37,6 +37,7 @@ market:
       origin:
         patterns: '${MARKET_CORS_ALLOWED_ORIGIN}'
         maxAge: '3600'
+      credentials: '${MARKET_CORS_ALLOW_CREDENTIALS:false}'
       mappings: '${MARKET_CORS_ALLOWED_MAPPINGS}'
       methods: '${MARKET_CORS_ALLOWED_METHODS}'
 springdoc:

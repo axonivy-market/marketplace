@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.ProductSecuritySortOption;
@@ -34,7 +33,6 @@ public class SecurityMonitorController {
 
   private final GitHubService gitHubService;
 
-  @Authorized
   @PostMapping
   @Operation(hidden = true)
   public ResponseEntity<List<ProductSecurityInfo>> syncGitHubMarketplaceSecurity() throws IOException {
@@ -44,7 +42,6 @@ public class SecurityMonitorController {
 
   @GetMapping
   @Operation(hidden = true)
-  @Authorized
   public ResponseEntity<PagedModel<ProductSecurityInfo>> getGitHubMarketplaceSecurity(
       @RequestParam(value = SEARCH, required = false) String searchText,
       @RequestParam(value = SORT, required = false, defaultValue = "repoName") String sort,

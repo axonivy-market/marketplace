@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.core.constants.CorePostgresDBConstants;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
@@ -54,7 +53,6 @@ public class MonitorDashBoardController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
-  @Authorized
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<String> syncGithubMonitor() throws IOException {
@@ -62,7 +60,6 @@ public class MonitorDashBoardController {
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
 
-  @Authorized
   @PutMapping(SYNC_ONE_PRODUCT_BY_ID)
   @Operation(hidden = true)
   public ResponseEntity<String> syncOneGithubMonitor(@PathVariable(ID) @Parameter(
@@ -73,7 +70,6 @@ public class MonitorDashBoardController {
     return ResponseEntity.ok("Repository loaded successfully.");
   }
 
-  @Authorized
   @PutMapping(FOCUSED)
   @Operation(hidden = true)
   public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {

@@ -12,7 +12,6 @@ import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.AccessLevel;
-import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
@@ -30,7 +29,6 @@ import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.repository.GithubUserRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
-import com.axonivy.market.service.AppSettingService;
 import com.axonivy.market.util.MdcContextUtils;
 import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
@@ -42,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.kohsuke.github.*;
 import org.kohsuke.github.extras.okhttp3.OkHttpGitHubConnector;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -113,14 +112,19 @@ public class GitHubServiceImpl implements GitHubService {
 
   private final RestClientBuilder restClientBuilder;
   private final GithubUserRepository githubUserRepository;
-  private final AppSettingService appSettingService;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
   private final OkHttpClientBuilder okHttpClientBuilder;
   private final MultiTaskUtils multiTaskUtils;
+  @Value("${market.github.token}")
+  private String configuredToken;
+  @Value("${market.github.oauth2.clientId}")
+  private String oauth2DClientId;
+  @Value("${market.github.oauth2.clientSecret}")
+  private String oauth2ClientSecret;
 
   @Override
   public GitHub getGitHub() throws IOException {
-    return buildGitHub(getConfiguredToken());
+    return buildGitHub(configuredToken);
   }
 
   @Override
@@ -172,16 +176,10 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHubAccessTokenResponse getAccessToken(
       String code) throws Oauth2ExchangeCodeException, MissingHeaderException {
     // Read OAuth client id/secret from DB-backed AppSetting; throw if missing
-    var clientId = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_ID);
-    var clientSecret = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_OAUTH_CLIENT_SECRET);
-
-    if (StringUtils.isAnyBlank(clientId, clientSecret)) {
-      throw new MissingHeaderException();
-    }
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-    params.add(Json.CLIENT_ID, clientId);
-    params.add(Json.CLIENT_SECRET, clientSecret);
+    params.add(Json.CLIENT_ID, oauth2DClientId);
+    params.add(Json.CLIENT_SECRET, oauth2ClientSecret);
     params.add(Json.CODE, code);
 
     GitHubAccessTokenResponse response = restClientBuilder.build().post()
@@ -193,7 +191,7 @@ public class GitHubServiceImpl implements GitHubService {
         .body(GitHubAccessTokenResponse.class);
 
     if (response != null && response.getError() != null && !response.getError().isBlank()) {
-      log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code, clientId));
+      log.error(String.format(ErrorMessageConstants.CURRENT_CLIENT_ID_MISMATCH_MESSAGE, code, oauth2DClientId));
       throw new Oauth2ExchangeCodeException(response.getError(), response.getErrorDescription());
     }
 
@@ -224,8 +222,8 @@ public class GitHubServiceImpl implements GitHubService {
       String team) throws UnauthorizedException {
     try {
       var gitHub = getGitHub(accessToken);
+      GHMyself myself = gitHub.getMyself();
       if (isUserInOrganizationAndTeam(gitHub, organization, team)) {
-        GHMyself myself = gitHub.getMyself();
         var userInfo = new UserInfo();
         userInfo.setGitHubId(String.valueOf(myself.getId()));
         userInfo.setName(myself.getName());
@@ -253,12 +251,11 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
-    var gitHub = getGitHub(getConfiguredToken());
+    var gitHub = getGitHub();
     GHOrganization organization = gitHub.getOrganization(AXONIVY_MARKET_ORGANIZATION_NAME);
 
-    String token = getConfiguredToken();
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
-        repo -> fetchSecurityInfoSafe(repo, organization, token);
+        repo -> fetchSecurityInfoSafe(repo, organization, configuredToken);
 
     List<ProductSecurityInfo> productSecurityInfos = multiTaskUtils.parallelProcessWithLimit(
         organization.listRepositories().toList().stream().filter(repo -> !repo.isArchived()).toList(),
@@ -285,14 +282,32 @@ public class GitHubServiceImpl implements GitHubService {
     if (gitHub == null) {
       return false;
     }
+    GHMyself myself = gitHub.getMyself();
+    if (myself == null || StringUtils.isBlank(myself.getLogin())) {
+      return false;
+    }
+    return isUserInOrganizationAndTeam(myself.getLogin(), organization, teamName);
+  }
 
-    var hashMapTeams = gitHub.getMyTeams();
-    var hashSetTeam = hashMapTeams.get(organization);
-    if (CollectionUtils.isEmpty(hashSetTeam)) {
+  private boolean isUserInOrganizationAndTeam(String username, String organization, String teamIdentifier)
+      throws IOException {
+    GitHub serviceGitHub = getGitHub();
+    GHOrganization ghOrganization = serviceGitHub.getOrganization(organization);
+    GHUser user = serviceGitHub.getUser(username);
+    if (ghOrganization == null || user == null || !ghOrganization.hasMember(user)) {
       return false;
     }
 
-    return hashSetTeam.stream().anyMatch((GHTeam team) -> teamName.equals(team.getName()));
+    GHTeam team = findTeam(ghOrganization, teamIdentifier);
+    return team != null && team.hasMember(user);
+  }
+
+  private GHTeam findTeam(GHOrganization organization, String teamIdentifier) throws IOException {
+    GHTeam team = organization.getTeamBySlug(teamIdentifier);
+    if (team != null) {
+      return team;
+    }
+    return organization.getTeamByName(teamIdentifier);
   }
 
   public ProductSecurityInfo fetchSecurityInfoSafe(GHRepository repo, GHOrganization organization,
@@ -550,7 +565,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
       String repoPath, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
-    String accessToken = getConfiguredToken();
+    String accessToken = configuredToken;
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repoPath);
 
@@ -612,7 +627,7 @@ public class GitHubServiceImpl implements GitHubService {
       ResponseEntity<Void> response = restClientBuilder.build().patch()
           .uri(url)
           .header(HttpHeaders.AUTHORIZATION,
-              BEARER_PREFIX + appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN))
+              BEARER_PREFIX + configuredToken)
           .body("{\"archived\": false}")
           .retrieve()
           .toBodilessEntity();
@@ -773,13 +788,6 @@ public class GitHubServiceImpl implements GitHubService {
     // Build a regex that matches the full deprecation block:
     String regex = MULTILINE_START + Pattern.quote(noticePrefix) + BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN;
     return readmeContent.replaceFirst(regex, EMPTY);
-  }
-
-  /**
-   * Read the GitHub token from DB-backed AppSetting.
-   */
-  private String getConfiguredToken() {
-    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
   }
 
   /**

@@ -1,7 +1,6 @@
 package com.axonivy.market.controller;
 
 
-import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.model.AppSettingDto;
 import com.axonivy.market.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +25,11 @@ public class AppSettingController {
   private final AppSettingService service;
 
   @GetMapping
-  @Authorized
   public ResponseEntity<List<AppSettingDto>> getSettings(@RequestParam(required = false) String search) {
     return ResponseEntity.ok(service.search(search));
   }
 
   @PutMapping("/{key}")
-  @Authorized
   public ResponseEntity<AppSettingDto> updateSetting(
       @PathVariable String key,
       @RequestBody AppSettingDto request) {

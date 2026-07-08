@@ -68,27 +68,6 @@ public enum AppSettingKey {
   // GITHUB
   // =========================
 
-  GITHUB_OAUTH_CLIENT_ID(
-      "market.github.oauth2-clientId",
-      "",
-      AppSettingCategory.GITHUB.name(),
-      "GitHub OAuth application client id.",
-      true),
-
-  GITHUB_OAUTH_CLIENT_SECRET(
-      "market.github.oauth2-clientSecret",
-      "",
-      AppSettingCategory.GITHUB.name(),
-      "GitHub OAuth application client secret.",
-      true),
-
-  GITHUB_TOKEN(
-      "market.github.token",
-      "",
-      AppSettingCategory.GITHUB.name(),
-      "GitHub personal access token used for API requests.",
-      true),
-
   GITHUB_CONNECT_TIMEOUT(
       "market.github.connect-timeout",
       "10000",
