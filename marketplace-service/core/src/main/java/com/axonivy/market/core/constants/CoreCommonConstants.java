@@ -29,4 +29,5 @@ public class CoreCommonConstants {
   public static final String REQUESTED_BY = "X-Requested-By";
   public static final String USER_AGENT = "user-agent";
   public static final String SPACE_SEPARATOR = " ";
+  public static final String MARKET_WEBSITE = "marketplace-website";
 }

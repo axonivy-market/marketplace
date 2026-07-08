@@ -45,7 +45,7 @@ class LoggableAspectTest {
 
   @Test
   void testLogFileCreation() throws Exception {
-    mockRequestAttributes(LoggingConstants.MARKET_WEBSITE, "test-agent");
+    mockRequestAttributes(CoreCommonConstants.MARKET_WEBSITE, "test-agent");
     MethodSignature signature = mockMethodSignature();
 
     loggableAspect.logMethodCall(mockJoinPoint(signature));

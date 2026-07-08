@@ -47,7 +47,7 @@ public class LoggableAspect {
       saveLogToDailyFile(headersMap);
 
       // block execution if request isn't from Market or Ivy Designer
-      if (!LoggingConstants.MARKET_WEBSITE.equals(headersMap.get(CoreCommonConstants.REQUESTED_BY))) {
+      if (!CoreCommonConstants.MARKET_WEBSITE.equals(headersMap.get(CoreCommonConstants.REQUESTED_BY))) {
         throw new MissingHeaderException();
       }
     }
