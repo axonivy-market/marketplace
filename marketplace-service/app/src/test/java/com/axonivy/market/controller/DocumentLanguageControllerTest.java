@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.testutil.MockServletRequestUtils;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.model.DocumentInfoResponse;
 import com.axonivy.market.service.ExternalDocumentService;
@@ -10,9 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
@@ -34,11 +32,10 @@ class DocumentLanguageControllerTest {
 
   @BeforeEach
   void setup() {
-    MockHttpServletRequest request = new MockHttpServletRequest();
+    var request = MockServletRequestUtils.createAndBindMockRequest();
     request.setRequestURI("/api/docs/portal/12/en");
     request.setServerName("localhost");
     request.setServerPort(8080);
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
   }
 
   @Test

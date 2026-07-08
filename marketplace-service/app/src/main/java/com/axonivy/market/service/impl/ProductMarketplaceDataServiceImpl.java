@@ -24,15 +24,12 @@ import com.axonivy.market.service.FileDownloadService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.util.FileUtils;
 import com.axonivy.market.util.MavenUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.github.GHPullRequest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -40,15 +37,11 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -66,10 +59,7 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
   private final FileDownloadService fileDownloadService;
   private final GitHubService gitHubService;
   private final AxonIvyClient axonIvyClient;
-  private final ObjectMapper mapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
-  @Value("${market.legacy.installation.counts.path}")
-  private String legacyInstallationCountPath;
 
   @Override
   public void addCustomSortProduct(ProductCustomSortRequest customSort) {
@@ -127,37 +117,19 @@ public class ProductMarketplaceDataServiceImpl implements ProductMarketplaceData
     if (BooleanUtils.isTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
       return productMarketplaceDataRepo.increaseInstallationCount(productId);
     }
-    int installationCount = getInstallationCountFromFileOrInitializeRandomly(productId);
+    int installationCount = generateRandomInstallationCount();
     return productMarketplaceDataRepo.updateInitialCount(productId, installationCount + 1);
   }
 
-  public int getInstallationCountFromFileOrInitializeRandomly(String productId) {
-    log.info("synchronizing installation count for product {}", productId);
-    var result = 0;
-    try {
-      var installationCounts = Files.readString(Paths.get(legacyInstallationCountPath));
-      Map<String, Integer> mapping = mapper.readValue(installationCounts,
-          new TypeReference<HashMap<String, Integer>>() {
-          });
-      List<String> keyList = mapping.keySet().stream().toList();
-      if (keyList.contains(productId)) {
-        result = mapping.get(productId);
-      } else {
-        result = random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
-      }
-      log.info("synchronized installation count for product {} successfully", productId);
-    } catch (IOException ex) {
-      log.error("Could not read the marketplace-installation file to synchronize", ex);
-    }
-    return result;
+  public int generateRandomInstallationCount() {
+    return random.nextInt(MIN_RANDOM_INSTALLATION_COUNT, MAX_RANDOM_INSTALLATION_COUNT);
   }
 
   @Override
   public ProductMarketplaceData updateProductInstallationCount(String id) {
     var productMarketplaceData = getProductMarketplaceData(id);
     if (BooleanUtils.isNotTrue(productMarketplaceData.getSynchronizedInstallationCount())) {
-        int installationCount = productMarketplaceDataRepo.updateInitialCount(id,
-          getInstallationCountFromFileOrInitializeRandomly(id));
+      int installationCount = productMarketplaceDataRepo.updateInitialCount(id, generateRandomInstallationCount());
       productMarketplaceData.setInstallationCount(installationCount);
     }
     return productMarketplaceData;

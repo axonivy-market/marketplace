@@ -52,7 +52,8 @@
       "monitor": "Monitor",
       "login": "Login with GitHub",
       "logout": "Logout",
-      "logs": "Logs Viewer"
+      "logs": "Logs Viewer",
+      "settings": "Settings"
     },
     "introduction": {
       "about": "The Axon Ivy market offers a unique experience to accelerate process automation.",
@@ -528,6 +529,23 @@
         "confirmUnarchiveContent": "Are you sure you want to unarchive the GitHub repository for this extension?",
         "archiveSuccess": "Extension has been archived successfully!",
         "unarchiveSuccess": "Extension has been unarchived successfully!"
+      },
+      "settings": {
+        "title": "Application Settings",
+        "description": "Manage runtime configuration for the Marketplace application.",
+        "helpText": "Administrators can update scheduling, integrations, notifications, security, and other application settings without modifying deployment configuration or restarting services. Changes are stored centrally and can be applied across all Marketplace nodes.",
+        "category": "Category",
+        "key": "Setting Key",
+        "value": "Value",
+        "action": "Actions",
+        "settingDescription": "Description",
+        "noSettings": "No settings found.",
+        "saveSuccess": "Setting updated successfully.",
+        "saveError": "Failed to update setting.",
+        "save": {
+          "label": "Save",
+          "saving": "Saving..."
+         }
       },
       "releaseLetterEdit": {
         "createPageTitle": "Create release letter",

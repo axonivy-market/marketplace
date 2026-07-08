@@ -1,7 +1,9 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyMarketRepoServiceImpl;
+import com.axonivy.market.service.AppSettingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +52,9 @@ class GHAxonIvyMarketRepoServiceImplTest {
   @Mock
   GitHubService gitHubService;
 
+  @Mock
+  AppSettingService appSettingService;
+
   @InjectMocks
   GHAxonIvyMarketRepoServiceImpl axonIvyMarketRepoServiceImpl;
 
@@ -56,6 +62,7 @@ class GHAxonIvyMarketRepoServiceImplTest {
   void setup() throws IOException {
     when(ghOrganization.getRepository(any())).thenReturn(ghRepository);
     when(gitHubService.getOrganization(anyString())).thenReturn(ghOrganization);
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH)).thenReturn("master");
   }
 
   @Test

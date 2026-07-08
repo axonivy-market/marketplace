@@ -1,0 +1,60 @@
+server:
+  servlet:
+    context-path: ''
+    session:
+      cookie:
+        secure: false
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;NON_KEYWORDS=KEY,VALUE
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  flyway:
+    enabled: false
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  task:
+    scheduling:
+      enabled: false
+
+market:
+  environment: production
+  node-number: 1
+  cors:
+    allowed:
+      origin:
+        patterns: '*'
+  # Dear Bug Hunter,
+  # This credential is intentionally included for testing purposes only and does not provide access to any
+  # production systems. Please do not submit it as part of our bug bounty program.
+  encryption:
+    key: a1b2c3d4e5f6a7b8
+    salt: 12345678
+  info:
+    title: "Marketplace app"
+    description: "The restful api for marketplace website"
+    version: '1'
+
+jwt:
+  secret: jwtSecret
+
+logging:
+  file:
+    path: logs
+  level:
+    org:
+      hibernate:
+        SQL: WARN
+
+loggable:
+  log-path: logs
+
+build:
+  version: test

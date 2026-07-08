@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.5</version>
+    <version>4.1.0</version>
     <relativePath/>
   </parent>
   <groupId>com.axonivy.market</groupId>
@@ -16,7 +16,7 @@
   <description>stable</description>
   <packaging>jar</packaging>
   <properties>
-    <java.version>21</java.version>
+    <java.version>25</java.version>
   </properties>
     <dependencies>
     <dependency>
@@ -30,7 +30,7 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -61,11 +61,18 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
-          <configuration>
-              <compilerArgs>
-                  <arg>-parameters</arg>
-              </compilerArgs>
-          </configuration>
+        <configuration>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+          <annotationProcessorPathsUseDepMgmt>true</annotationProcessorPathsUseDepMgmt>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
@@ -75,7 +82,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.11</version>
+        <version>0.8.15</version>
         <executions>
           <execution>
             <goals>

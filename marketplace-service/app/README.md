@@ -1,6 +1,6 @@
 # Marketplace App Module
 
-Production Spring Boot 3.2.5 API for AxonIvy Marketplace with full CRUD operations, product management, and GitHub integration.
+Production Spring Boot 4.1.0 API for AxonIvy Marketplace with full CRUD operations, product management, and GitHub integration.
 
 ## Overview
 
@@ -14,12 +14,12 @@ Complete product marketplace API with full CRUD operations. Manages products, im
 
 ## Technology
 
-Java 21 LTS • Spring Boot 3.2.5 • PostgreSQL • Lombok • Spring Data JPA
+Java 25 • Spring Boot 4.1.0 • PostgreSQL • Lombok • Spring Data JPA
 
 ## Quick Start
 
 ### Prerequisites
-JDK 21+, Maven 3.9+, PostgreSQL 16+
+JDK 25+, Maven 3.9+, PostgreSQL 16+
 
 ### Environment
 See [Marketplace Service](../README.md#environment-setup) for environment variable configuration. App module also requires `GITHUB_TOKEN`.
@@ -97,7 +97,8 @@ app/target/classes/db/migration/
 
 This matches the Flyway configuration:
 ```yaml
-flyway:
+spring:
+  flyway:
   locations: classpath:db/migration
   baseline-on-migrate: true
   baseline-version: 1
