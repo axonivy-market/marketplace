@@ -1,6 +1,6 @@
 # Marketplace Service
 
-Spring Boot 3.2.5 backend application for AxonIvy Marketplace with three specialized Maven modules.
+Spring Boot 4.1.0 backend application for AxonIvy Marketplace with three specialized Maven modules.
 
 ## Modules
 
@@ -24,7 +24,7 @@ Spring Boot 3.2.5 backend application for AxonIvy Marketplace with three special
 
 ## Prerequisites
 
-- JDK 21+
+- JDK 25+
 - Maven 3.9+
 - PostgreSQL 17+
 
@@ -70,7 +70,7 @@ Both App and Stable depend on Core for shared data models and repositories.
 
 ## Technology Stack
 
-Java 21 LTS • Spring Boot 3.2.5 • Spring Data JPA • PostgreSQL • Lombok • Swagger/OpenAPI 3.1
+Java 25 • Spring Boot 4.1.0 • Spring Data JPA • PostgreSQL • Lombok • Swagger/OpenAPI 3.1
 
 ## Testing
 

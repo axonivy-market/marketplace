@@ -29,6 +29,7 @@ public class GitHubConstants {
   public static final String BEARER_PREFIX = "Bearer ";
   public static final String HEADS_PREFIX = "heads/";
   public static final String REFS_HEADS_PREFIX = "refs/" + HEADS_PREFIX;
+  public static final String DEFAULT_BRANCH = "master";
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {

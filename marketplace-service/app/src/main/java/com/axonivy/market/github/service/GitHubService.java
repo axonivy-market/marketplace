@@ -8,7 +8,6 @@ import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
-import com.axonivy.market.github.model.GitHubProperty;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.GitHubReleaseModel;
@@ -143,14 +142,12 @@ public interface GitHubService {
    *
    * @param  code
    *              type {@link String} - the OAuth2 authorization code from GitHub
-   * @param  gitHubProperty
-   *              type {@link GitHubProperty} - GitHub OAuth2 app configuration (client ID, secret)
    * @return {@link GitHubAccessTokenResponse} - response containing the access token and user info
    * @throws Oauth2ExchangeCodeException - if token exchange fails or code is invalid
-   * @throws MissingHeaderException - if required headers are missing from GitHub response
+   * @throws MissingHeaderException - if required client id/secret are not configured
    * @author ntqdinh
    */
-  GitHubAccessTokenResponse getAccessToken(String code, GitHubProperty gitHubProperty)
+  GitHubAccessTokenResponse getAccessToken(String code)
       throws Oauth2ExchangeCodeException, MissingHeaderException;
 
   /**
