@@ -3,7 +3,6 @@ package com.axonivy.market.core.aop.aspect;
 
 import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.constants.CoreCommonConstants;
-import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.annotation.AfterReturning;
