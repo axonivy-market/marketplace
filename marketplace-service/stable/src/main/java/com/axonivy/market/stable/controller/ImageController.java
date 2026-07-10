@@ -2,7 +2,6 @@ package com.axonivy.market.stable.controller;
 
 import com.axonivy.market.core.controller.CoreImageController;
 import com.axonivy.market.core.service.CoreImageService;
-import com.axonivy.market.stable.service.ImageService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,7 +12,7 @@ import static com.axonivy.market.core.constants.CoreRequestMappingConstants.IMAG
 @RequestMapping(IMAGE)
 @Tag(name = "Image Controllers", description = "API collection to get image's detail.")
 public class ImageController extends CoreImageController {
-  public ImageController(ImageService ImageService) {
-    super(ImageService);
+  public ImageController(CoreImageService coreImageService) {
+    super(coreImageService);
   }
 }

@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MatomoAppTrackerBuilderTest {
+  private final String SITE_ID = "1234";
+  private final String API_ENDPOINT = "https://matomo.example.com/matomo.php";
 
   @Mock
   private AppSettingService appSettingService;
@@ -25,8 +27,8 @@ class MatomoAppTrackerBuilderTest {
   private MatomoTrackerBuilder builder;
 
   private final Map<String, String> matomoSettings = Map.ofEntries(
-      Map.entry(AppSettingKey.MATOMO_SITE_ID.getKey(), "1234"),
-      Map.entry(AppSettingKey.MATOMO_API_ENDPOINT.getKey(), "https://matomo.example.com/matomo.php"),
+      Map.entry(AppSettingKey.MATOMO_SITE_ID.getKey(), SITE_ID),
+      Map.entry(AppSettingKey.MATOMO_API_ENDPOINT.getKey(), API_ENDPOINT),
       Map.entry(AppSettingKey.MATOMO_ENABLED.getKey(), "false"));
 
   @BeforeEach
@@ -68,8 +70,8 @@ class MatomoAppTrackerBuilderTest {
   @Test
   void testBuildCreatesNewTrackerWhenSiteIdChanges() {
     when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(
-        matomoSettings("1234", "https://matomo.example.com/matomo.php", "false")).thenReturn(
-        matomoSettings("789", "https://matomo.example.com/matomo.php", "false"));
+        matomoSettings(SITE_ID, API_ENDPOINT, "false")).thenReturn(
+        matomoSettings("789", API_ENDPOINT, "false"));
 
     MatomoTracker first = builder.build();
     MatomoTracker second = builder.build();
@@ -80,8 +82,8 @@ class MatomoAppTrackerBuilderTest {
   @Test
   void testBuildCreatesNewTrackerWhenEnabledChanges() {
     when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(
-        matomoSettings("1234", "https://matomo.example.com/matomo.php", "false")).thenReturn(
-        matomoSettings("1234", "https://matomo.example.com/matomo.php", "true"));
+        matomoSettings(SITE_ID, API_ENDPOINT, "false")).thenReturn(
+        matomoSettings(SITE_ID, API_ENDPOINT, "true"));
 
     MatomoTracker first = builder.build();
     MatomoTracker second = builder.build();
@@ -92,8 +94,8 @@ class MatomoAppTrackerBuilderTest {
   @Test
   void testBuildReturnsPreviousTrackerWhenEndpointChanges() {
     when(appSettingService.getByCategory(AppSettingCategory.MATOMO)).thenReturn(
-        matomoSettings("1234", "https://matomo.example.com/matomo.php", "false")).thenReturn(
-        matomoSettings("1234", "invalid-uri", "false"));
+        matomoSettings(SITE_ID, API_ENDPOINT, "false")).thenReturn(
+        matomoSettings(SITE_ID, "invalid-uri", "false"));
 
     MatomoTracker first = builder.build();
     MatomoTracker second = builder.build();
