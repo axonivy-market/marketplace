@@ -1,7 +1,9 @@
 package com.axonivy.market.core.aop.aspect;
 
 
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.constants.CoreCommonConstants;
+import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -20,8 +22,8 @@ public class TrackApiCallFromNeoAspect {
     this.matomoService = matomoService;
   }
 
-  @AfterReturning("@annotation(com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo)")
-  public void afterTrackedApiCall() {
+  @AfterReturning("@annotation(trackApiCallFromNeo)")
+  public void afterTrackedApiCall(TrackApiCallFromNeo trackApiCallFromNeo) {
     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attributes != null) {
       HttpServletRequest request = attributes.getRequest();

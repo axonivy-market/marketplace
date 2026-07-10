@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MatomoTrackerBuilderTest {
+class MatomoAppTrackerBuilderTest {
 
   @Mock
   private AppSettingService appSettingService;
@@ -31,7 +31,22 @@ class MatomoTrackerBuilderTest {
 
   @BeforeEach
   void setUp() {
-    builder = new MatomoTrackerBuilder(appSettingService);
+    builder = new MatomoTrackerBuilder(appSettingService) {
+      @Override
+      protected AppSettingKey getEndpointKey() {
+        return AppSettingKey.MATOMO_API_ENDPOINT;
+      }
+
+      @Override
+      protected AppSettingKey getSiteIdKey() {
+        return AppSettingKey.MATOMO_SITE_ID;
+      }
+
+      @Override
+      protected AppSettingKey getEnabledKey() {
+        return AppSettingKey.MATOMO_ENABLED;
+      }
+    };
   }
 
   @Test

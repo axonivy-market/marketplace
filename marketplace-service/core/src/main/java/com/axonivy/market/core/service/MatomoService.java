@@ -1,5 +1,6 @@
 package com.axonivy.market.core.service;
 
+import com.axonivy.market.core.enums.MatomoTrackerSource;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface MatomoService {

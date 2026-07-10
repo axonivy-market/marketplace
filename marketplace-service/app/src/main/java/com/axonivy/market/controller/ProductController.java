@@ -6,6 +6,7 @@ import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
+import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
@@ -54,7 +55,7 @@ public class ProductController {
   private final ProductDependencyService productDependencyService;
 
   @GetMapping()
-  @TrackApiCallFromNeo
+  @TrackApiCallFromNeo(MatomoTrackerSource.APP)
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",

@@ -1,6 +1,7 @@
 package com.axonivy.market.stable.controller;
 
 import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
+import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.stable.model.BestMatchVersion;
 import com.axonivy.market.stable.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +28,7 @@ public class ProductDetailsController {
   private final ProductService productService;
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
-  @TrackApiCallFromNeo
+  @TrackApiCallFromNeo(MatomoTrackerSource.STABLE)
   @Operation(summary = "Find best match version of a product by product id and version.",
       description = "Get best match version by product id and version")
   public ResponseEntity<BestMatchVersion> findBestMatchProductDetailsByVersion(

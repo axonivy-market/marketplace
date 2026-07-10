@@ -7,6 +7,7 @@ import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.constants.CoreRegexConstants;
 import com.axonivy.market.core.constants.CoreRequestMappingConstants;
+import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -83,7 +84,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
-  @TrackApiCallFromNeo
+  @TrackApiCallFromNeo(MatomoTrackerSource.APP)
   @Operation(summary = "Find best match product detail by product id and version.",
       description = "get product detail by it product id and version")
   public ResponseEntity<ProductDetailModel> findBestMatchProductDetailsByVersion(
@@ -139,7 +140,7 @@ public class ProductDetailsController {
   @GetMapping(VERSIONS_BY_ID)
   @Operation(summary = "Get product versions by product id",
       description = "Get all product versions by product id")
-  @TrackApiCallFromNeo
+  @TrackApiCallFromNeo(MatomoTrackerSource.APP)
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector",
           in = ParameterIn.PATH) String id,
@@ -153,7 +154,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
-  @TrackApiCallFromNeo
+  @TrackApiCallFromNeo(MatomoTrackerSource.APP)
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")

@@ -127,6 +127,27 @@ public enum AppSettingKey {
       "Default Matomo site identifier.",
       true),
 
+  MATOMO_STABLE_ENABLED(
+      "matomo.tracker.enabled",
+      "true",
+      AppSettingCategory.MATOMO.name(),
+      "Enable Matomo tracking.",
+      false),
+
+  MATOMO_STABLE_API_ENDPOINT(
+      "matomo.tracker.api-endpoint",
+      "",
+      AppSettingCategory.MATOMO.name(),
+      "Matomo tracker API endpoint.",
+      false),
+
+  MATOMO_STABLE_SITE_ID(
+      "matomo.tracker.default-site-id",
+      "1",
+      AppSettingCategory.MATOMO.name(),
+      "Default Matomo site identifier.",
+      true),
+
 // =========================
 // MAIL
 // =========================

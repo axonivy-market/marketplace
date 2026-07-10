@@ -1,11 +1,11 @@
-package com.axonivy.market.aspect;
+package com.axonivy.market.stable.aspect;
 
 import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.aop.aspect.TrackApiCallFromNeoAspect;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.service.MatomoService;
-import com.axonivy.market.testutil.MockServletRequestUtils;
+import com.axonivy.market.stable.testutil.MockServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +17,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import static com.axonivy.market.core.constants.CoreCommonConstants.REQUESTED_BY;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,12 +42,12 @@ class TrackApiCallFromNeoAspectTest {
 
   private static class AnnotatedFixture {
     @TrackApiCallFromNeo(MatomoTrackerSource.APP)
-    public void appEndpoint() {}
+    public void stableEndpoint() {}
   }
 
   private static TrackApiCallFromNeo getTrackApiCallFromNeo() throws NoSuchMethodException {
     return AnnotatedFixture.class
-        .getMethod("appEndpoint")
+        .getMethod("stableEndpoint")
         .getAnnotation(TrackApiCallFromNeo.class);
   }
 
@@ -54,7 +55,7 @@ class TrackApiCallFromNeoAspectTest {
   void testTrackEventAsyncWhenOriginAllowedAndRequestedByNotMarketWebsite() throws NoSuchMethodException {
     HttpServletRequest request = mock(HttpServletRequest.class);
 
-    when(request.getHeader(CoreCommonConstants.REQUESTED_BY)).thenReturn("ivy");
+    when(request.getHeader(REQUESTED_BY)).thenReturn("ivy");
 
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
         .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
