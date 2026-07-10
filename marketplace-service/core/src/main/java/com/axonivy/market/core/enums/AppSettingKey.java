@@ -110,42 +110,42 @@ public enum AppSettingKey {
       "matomo.tracker.enabled",
       "true",
       AppSettingCategory.MATOMO.name(),
-      "Enable Matomo tracking.",
+      "Enable Matomo app tracking.",
       false),
 
   MATOMO_API_ENDPOINT(
       "matomo.tracker.api-endpoint",
       "",
       AppSettingCategory.MATOMO.name(),
-      "Matomo tracker API endpoint.",
+      "Matomo app tracker API endpoint.",
       false),
 
   MATOMO_SITE_ID(
       "matomo.tracker.default-site-id",
       "1",
       AppSettingCategory.MATOMO.name(),
-      "Default Matomo site identifier.",
+      "Default Matomo app site identifier.",
       true),
 
   MATOMO_STABLE_ENABLED(
-      "matomo.tracker.enabled",
+      "matomo.stable.tracker.enabled",
       "true",
       AppSettingCategory.MATOMO.name(),
-      "Enable Matomo tracking.",
+      "Enable Matomo stable tracking.",
       false),
 
   MATOMO_STABLE_API_ENDPOINT(
-      "matomo.tracker.api-endpoint",
+      "matomo.stable.tracker.api-endpoint",
       "",
       AppSettingCategory.MATOMO.name(),
-      "Matomo tracker API endpoint.",
+      "Matomo stable tracker API endpoint.",
       false),
 
   MATOMO_STABLE_SITE_ID(
-      "matomo.tracker.default-site-id",
+      "matomo.stable.tracker.default-site-id",
       "1",
       AppSettingCategory.MATOMO.name(),
-      "Default Matomo site identifier.",
+      "Default Matomo stable site identifier.",
       true),
 
 // =========================
