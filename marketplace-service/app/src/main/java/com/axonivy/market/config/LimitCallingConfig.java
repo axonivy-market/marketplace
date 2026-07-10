@@ -73,7 +73,7 @@ public class LimitCallingConfig extends OncePerRequestFilter {
   }
 
   private static String getClientIp(HttpServletRequest request) {
-    String realIp = StringUtils.trimToNull(request.getHeader(CoreHttpHeaderConstants.X_REAL_IP));
+    var realIp = StringUtils.trimToNull(request.getHeader(CoreHttpHeaderConstants.X_REAL_IP));
     return isValidIp(realIp) ? realIp : request.getRemoteAddr();
   }
 
