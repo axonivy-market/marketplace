@@ -3,7 +3,6 @@ package com.axonivy.market.aspect;
 import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.aop.aspect.TrackApiCallFromNeoAspect;
 import com.axonivy.market.core.constants.CoreCommonConstants;
-import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.service.MatomoService;
 import com.axonivy.market.testutil.MockServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +39,7 @@ class TrackApiCallFromNeoAspectTest {
   }
 
   private static class AnnotatedFixture {
-    @TrackApiCallFromNeo(MatomoTrackerSource.APP)
+    @TrackApiCallFromNeo()
     public void appEndpoint() {}
   }
 
@@ -59,8 +58,7 @@ class TrackApiCallFromNeoAspectTest {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
         .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
-    TrackApiCallFromNeo annotation = getTrackApiCallFromNeo();
-    aspect.afterTrackedApiCall(annotation);
+    aspect.afterTrackedApiCall();
 
     verify(matomoService, times(1)).trackEventAsync(request);
   }
@@ -74,8 +72,7 @@ class TrackApiCallFromNeoAspectTest {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes)
         .thenReturn(MockServletRequestUtils.createRequestAttributes(request));
 
-    TrackApiCallFromNeo annotation = getTrackApiCallFromNeo();
-    aspect.afterTrackedApiCall(annotation);
+    aspect.afterTrackedApiCall();
 
     verify(matomoService, never()).trackEventAsync(any());
   }
@@ -84,8 +81,7 @@ class TrackApiCallFromNeoAspectTest {
   void testShouldNotTrackWhenNoRequestContext() throws NoSuchMethodException {
     requestContextHolderMock.when(RequestContextHolder::getRequestAttributes).thenReturn(null);
 
-    TrackApiCallFromNeo annotation = getTrackApiCallFromNeo();
-    aspect.afterTrackedApiCall(annotation);
+    aspect.afterTrackedApiCall();
 
     verify(matomoService, never()).trackEventAsync(any());
   }

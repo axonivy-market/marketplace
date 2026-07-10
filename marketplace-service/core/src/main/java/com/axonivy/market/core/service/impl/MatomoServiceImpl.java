@@ -3,16 +3,13 @@ package com.axonivy.market.core.service.impl;
 import com.axonivy.market.core.config.MatomoTrackerBuilder;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.constants.CoreHttpHeaderConstants;
-import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.matomo.java.tracking.MatomoRequest;
 import org.matomo.java.tracking.MatomoRequests;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;

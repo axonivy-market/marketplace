@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.config.MatomoAppTrackerBuilder;
-import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.service.impl.MatomoServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;

@@ -1,13 +1,12 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.constants.CoreRegexConstants;
 import com.axonivy.market.core.constants.CoreRequestMappingConstants;
-import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.ProductDetailModel;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -47,9 +45,9 @@ import java.util.List;
 import java.util.Map;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.*;
+import static com.axonivy.market.constants.RequestParamConstants.ARTIFACT;
+import static com.axonivy.market.constants.RequestParamConstants.ARTIFACT_ID;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
-
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -84,7 +82,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(BEST_MATCH_BY_ID_AND_VERSION)
-  @TrackApiCallFromNeo(MatomoTrackerSource.APP)
+  @TrackApiCallFromNeo()
   @Operation(summary = "Find best match product detail by product id and version.",
       description = "get product detail by it product id and version")
   public ResponseEntity<ProductDetailModel> findBestMatchProductDetailsByVersion(
@@ -140,7 +138,7 @@ public class ProductDetailsController {
   @GetMapping(VERSIONS_BY_ID)
   @Operation(summary = "Get product versions by product id",
       description = "Get all product versions by product id")
-  @TrackApiCallFromNeo(MatomoTrackerSource.APP)
+  @TrackApiCallFromNeo()
   public ResponseEntity<List<MavenArtifactVersionModel>> findProductVersionsById(
       @PathVariable(ID) @Parameter(description = "Product id (from meta.json)", example = "adobe-acrobat-connector",
           in = ParameterIn.PATH) String id,
@@ -154,7 +152,7 @@ public class ProductDetailsController {
   }
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_PRODUCT_ID_AND_VERSION)
-  @TrackApiCallFromNeo(MatomoTrackerSource.APP)
+  @TrackApiCallFromNeo()
   @Operation(summary = "Get product json content for designer to install",
       description = "When we click install in designer, this API will send content of product json for installing in " +
           "Ivy designer")

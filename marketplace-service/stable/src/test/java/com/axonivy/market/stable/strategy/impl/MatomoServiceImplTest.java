@@ -1,8 +1,7 @@
 package com.axonivy.market.stable.strategy.impl;
 
-import com.axonivy.market.stable.config.MatomoStableTrackerBuilder;
-import com.axonivy.market.core.enums.MatomoTrackerSource;
 import com.axonivy.market.core.service.impl.MatomoServiceImpl;
+import com.axonivy.market.stable.config.MatomoStableTrackerBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

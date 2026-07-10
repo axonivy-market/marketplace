@@ -21,8 +21,8 @@ public class TrackApiCallFromNeoAspect {
     this.matomoService = matomoService;
   }
 
-  @AfterReturning("@annotation(trackApiCallFromNeo)")
-  public void afterTrackedApiCall(TrackApiCallFromNeo trackApiCallFromNeo) {
+  @AfterReturning("@annotation(com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo)")
+  public void afterTrackedApiCall() {
     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attributes != null) {
       HttpServletRequest request = attributes.getRequest();
