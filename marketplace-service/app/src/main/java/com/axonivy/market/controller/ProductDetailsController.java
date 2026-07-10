@@ -45,8 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.axonivy.market.constants.RequestMappingConstants.*;
-import static com.axonivy.market.constants.RequestParamConstants.ARTIFACT;
-import static com.axonivy.market.constants.RequestParamConstants.ARTIFACT_ID;
+import static com.axonivy.market.constants.RequestParamConstants.*;
 import static com.axonivy.market.core.constants.CoreRequestParamConstants.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;

@@ -18,8 +18,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MatomoAppTrackerBuilderTest {
-  private final String SITE_ID = "1234";
-  private final String API_ENDPOINT = "https://matomo.example.com/matomo.php";
+  private static final String SITE_ID = "1234";
+  private static final String API_ENDPOINT = "https://matomo.example.com/matomo.php";
 
   @Mock
   private AppSettingService appSettingService;

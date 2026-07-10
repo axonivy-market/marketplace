@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-@Service("CoreImageService")
+@Service("coreImageService")
 @Log4j2
 @AllArgsConstructor
 public class CoreImageServiceImpl implements CoreImageService {

@@ -36,7 +36,7 @@ public class ImageServiceImpl implements ImageService {
   private final CoreImageService coreImageService;
 
   public ImageServiceImpl(ImageRepository imageRepository, FileDownloadService fileDownloadService,
-      @Qualifier("CoreImageService") CoreImageService coreImageService) {
+      @Qualifier("coreImageService") CoreImageService coreImageService) {
     this.imageRepository = imageRepository;
     this.fileDownloadService = fileDownloadService;
     this.coreImageService = coreImageService;
