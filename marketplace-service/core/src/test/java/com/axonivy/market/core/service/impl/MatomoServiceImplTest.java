@@ -1,7 +1,6 @@
-package com.axonivy.market.service.impl;
+package com.axonivy.market.core.service.impl;
 
-import com.axonivy.market.config.MatomoAppTrackerBuilder;
-import com.axonivy.market.core.service.impl.MatomoServiceImpl;
+import com.axonivy.market.core.config.MatomoTrackerBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,20 +16,19 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MatomoServiceImplTest {
-  private MatomoAppTrackerBuilder matomoAppTrackerBuilder;
   private MatomoTracker matomoTracker;
   private MatomoServiceImpl matomoService;
 
   @BeforeEach
   void setUp() {
-    matomoAppTrackerBuilder = mock(MatomoAppTrackerBuilder.class);
+    MatomoTrackerBuilder matomoTrackerBuilder = mock(MatomoTrackerBuilder.class);
     matomoTracker = mock(MatomoTracker.class);
 
-    when(matomoAppTrackerBuilder.build()).thenReturn(matomoTracker);
+    when(matomoTrackerBuilder.build()).thenReturn(matomoTracker);
     when(matomoTracker.sendRequestAsync(any(MatomoRequest.class)))
             .thenReturn(CompletableFuture.completedFuture(null));
 
-    matomoService = new MatomoServiceImpl(matomoAppTrackerBuilder);
+    matomoService = new MatomoServiceImpl(matomoTrackerBuilder);
   }
 
   @Test

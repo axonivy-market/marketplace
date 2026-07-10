@@ -4,7 +4,7 @@ import com.axonivy.market.aop.aspect.LoggableAspect;
 import com.axonivy.market.constants.LoggingConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
-import com.axonivy.market.testutil.MockServletRequestUtils;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import com.axonivy.market.util.LoggingUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;

@@ -1,10 +1,9 @@
-package com.axonivy.market.aspect;
+package com.axonivy.market.core.aspect;
 
-import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.aop.aspect.TrackApiCallFromNeoAspect;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.service.MatomoService;
-import com.axonivy.market.testutil.MockServletRequestUtils;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,17 +35,6 @@ class TrackApiCallFromNeoAspectTest {
   @AfterEach
   void teardown() {
     requestContextHolderMock.close();
-  }
-
-  private static class AnnotatedFixture {
-    @TrackApiCallFromNeo()
-    public void appEndpoint() {}
-  }
-
-  private static TrackApiCallFromNeo getTrackApiCallFromNeo() throws NoSuchMethodException {
-    return AnnotatedFixture.class
-        .getMethod("appEndpoint")
-        .getAnnotation(TrackApiCallFromNeo.class);
   }
 
   @Test

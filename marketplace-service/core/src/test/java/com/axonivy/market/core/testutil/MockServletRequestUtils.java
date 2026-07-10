@@ -1,4 +1,4 @@
-package com.axonivy.market.stable.testutil;
+package com.axonivy.market.core.testutil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.mock.web.MockHttpServletRequest;

@@ -9,7 +9,7 @@ import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
-import com.axonivy.market.testutil.MockServletRequestUtils;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import com.axonivy.market.service.FeedbackService;
 import com.axonivy.market.service.JwtService;
 import com.axonivy.market.service.GithubUserService;
