@@ -85,7 +85,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
@@ -142,7 +141,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, vi, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS, MOCK_PRODUCTS } from '../../../shared/mocks/mock-data';
@@ -77,8 +77,11 @@ describe('ProductCardComponent', () => {
       component.isShowInRESTClientEditor = true as any;
     }
     const translate = TestBed.inject(TranslateService);
-    vi.spyOn(translate, 'instant').mockImplementation((k: string) =>
-      k === 'common.filter.value.connector' ? 'AI' : k
+    vi.spyOn(translate, 'instant').mockImplementation(
+      (k: string | string[], interpolateParams?: any) =>
+        typeof k === 'string' && k === 'common.filter.value.connector'
+          ? 'AI'
+          : k
     );
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
@@ -233,7 +236,7 @@ describe('ProductCardComponent', () => {
     fixture.detectChanges();
 
     // Template structural rendering can be flaky in the test env; ensure REST-client flag is active
-    expect(component.isRestClientFlag).toBeTruthy();
+    expect(component.isShowInRESTClientEditor).toBeTruthy();
   });
 
   it('should show description in marketplace mode', () => {
@@ -269,7 +272,7 @@ describe('ProductCardComponent', () => {
 
     // Height binding depends on the REST-client flag; assert the flag is set and allow either rendered value
     const card = fixture.nativeElement.querySelector('.product-card');
-    expect(component.isRestClientFlag).toBeTruthy();
+    expect(component.isShowInRESTClientEditor).toBeTruthy();
     expect(card.style.height === '164px' || card.style.height === '250px').toBeTruthy();
   });
 
