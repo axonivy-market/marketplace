@@ -33,7 +33,7 @@ services:
     networks:
       - market-network
 
-  matomo-web:
+  matomo-nginx:
     image: nginx:alpine
     container_name: matomo-web
     restart: always
