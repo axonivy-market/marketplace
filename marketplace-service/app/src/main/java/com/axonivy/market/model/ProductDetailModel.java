@@ -28,11 +28,6 @@ public class ProductDetailModel extends ProductModel {
   private String vendorUrl;
   @Schema(description = "Product vendor image", example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
   private String vendorImage;
-  @Schema(description = "Product vendor logo", example = "https://api.example.com/api/image/67079ca57b9ee74b16c181231")
-  private String vendorLogo;
-  @Schema(description = "Product vendor logo dark mode", example = "https://api.example" +
-      ".com/api/image/67079ca57b9ee74b16c123231")
-  private String vendorLogoDarkMode;
   @Schema(description = "Product vendor image dark mode",
       example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
   private String vendorImageDarkMode;
@@ -128,15 +123,6 @@ public class ProductDetailModel extends ProductModel {
         : ImageUtils::createImageUrl;
     if (StringUtils.isNotBlank(product.getVendorImage())) {
       model.setVendorImage(imageUrlMapper.apply(product.getVendorImage()));
-    }
-
-    if (StringUtils.isNotBlank(product.getVendorLogo())) {
-      model.setVendorLogo(imageUrlMapper.apply(product.getVendorLogo()));
-    }
-
-    if (StringUtils.isNotBlank(product.getVendorLogoDarkMode())) {
-      model.setVendorLogoDarkMode(
-          imageUrlMapper.apply(product.getVendorLogoDarkMode()));
     }
 
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {

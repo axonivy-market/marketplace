@@ -90,9 +90,10 @@ class ProductDetailModelTest {
     assertEquals(42, model.getInstallationCount(), "Installation count should be copied");
     assertEquals("10.0+", model.getCompatibilityRange(), "Compatibility range should be copied");
     assertTrue(model.isMavenDropins(), "MavenDropins should be copied");
-
     assertNotNull(model.getVendorImage(), "Vendor image should be set for non-production");
     assertNotNull(model.getVendorImageDarkMode(), "Vendor dark image should be set for non-production");
+//    assertNotNull(model.getVendorLogo(), "Vendor image should be set for non-production");
+//    assertNotNull(model.getVendorLogoDarkMode(), "Vendor image should be set for non-production");
   }
 
   @Test
