@@ -13,6 +13,8 @@ export interface Product {
   platformReview: string;
   vendor: string;
   vendorImage: string;
+  badgeUrl?: string;
+  badgeDarkUrl?: string;
   vendorUrl: string;
   sourceUrl: string;
   statusBadgeUrl: string;

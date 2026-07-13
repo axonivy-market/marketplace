@@ -14,15 +14,13 @@
       [lang]="languageService.selectedLanguage()" />
     @if (isShowInRESTClientEditor) {
       <div class="internal-badge-container d-flex align-items-center gap-1">
-        @if (product.internal) {
-           <div class="lh-md px-2 py-1 text-capitalize">
-          <img
-            class="internal-badge"
-            [src]="themeService.isDarkMode()
-              ? darkInternalBadgeUrl
-              : lightInternalBadgeUrl"
-            alt="Internal" />
-            </div>
+        @if (product.internal || smallBadgeLightUrl !== '' || smallBadgeDarkUrl !== '') {
+          <div class="lh-md px-2 py-1 text-capitalize">
+            <img
+              class="internal-badge"
+              [src]="themeService.isDarkMode() ? smallBadgeDarkUrl : smallBadgeLightUrl"
+              alt="Internal" />
+          </div>
         }
 
         <div
@@ -33,15 +31,13 @@
       </div>
     } @else {
       <div class="internal-badge-container d-flex gap-2 align-items-center">
-        @if (product.internal) {
+        @if (product.internal || smallBadgeLightUrl !== '' || smallBadgeDarkUrl !== '') {
           <div class="lh-md px-2 py-1 text-capitalize">
-          <img
-            class="internal-badge"
-            [src]="themeService.isDarkMode()
-              ? darkInternalBadgeUrl
-              : lightInternalBadgeUrl"
-            alt="Internal" />
-            </div>
+            <img
+              class="internal-badge"
+              [src]="themeService.isDarkMode() ? smallBadgeDarkUrl : smallBadgeLightUrl"
+              alt="Internal" />
+          </div>
         }
 
         @if (product.deprecated) {

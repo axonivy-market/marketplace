@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.util.function.Function;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -26,6 +28,11 @@ public class ProductDetailModel extends ProductModel {
   private String vendorUrl;
   @Schema(description = "Product vendor image", example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
   private String vendorImage;
+  @Schema(description = "Product vendor logo", example = "https://api.example.com/api/image/67079ca57b9ee74b16c181231")
+  private String vendorLogo;
+  @Schema(description = "Product vendor logo dark mode", example = "https://api.example" +
+      ".com/api/image/67079ca57b9ee74b16c123231")
+  private String vendorLogoDarkMode;
   @Schema(description = "Product vendor image dark mode",
       example = "https://api.example.com/api/image/67079ca57b9ee74b16c18111")
   private String vendorImageDarkMode;
@@ -115,20 +122,28 @@ public class ProductDetailModel extends ProductModel {
     model.setCompatibilityRange(product.getCompatibilityRange());
     model.setProductModuleContent(
         ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
+
+    Function<String, String> imageUrlMapper = isProduction
+        ? ImageUtils::createImageUrlForProduction
+        : ImageUtils::createImageUrl;
     if (StringUtils.isNotBlank(product.getVendorImage())) {
-      if (isProduction) {
-        model.setVendorImage(ImageUtils.createImageUrlForProduction(product.getVendorImage()));
-      } else {
-        model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage()));
-      }
+      model.setVendorImage(imageUrlMapper.apply(product.getVendorImage()));
     }
+
+    if (StringUtils.isNotBlank(product.getVendorLogo())) {
+      model.setVendorLogo(imageUrlMapper.apply(product.getVendorLogo()));
+    }
+
+    if (StringUtils.isNotBlank(product.getVendorLogoDarkMode())) {
+      model.setVendorLogoDarkMode(
+          imageUrlMapper.apply(product.getVendorLogoDarkMode()));
+    }
+
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
-      if (isProduction) {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()));
-      } else {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode()));
-      }
+      model.setVendorImageDarkMode(
+          imageUrlMapper.apply(product.getVendorImageDarkMode()));
     }
+
     model.setMavenDropins(product.isMavenDropins());
     model.setIsFocusedProduct(product.getIsFocused());
     model.setSuccessor(product.getSuccessor());

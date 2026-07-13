@@ -385,6 +385,12 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       if (StringUtils.isNotBlank(product.getVendorImagePath())) {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
+      if (StringUtils.isNotBlank(product.getVendorLogoPath())) {
+        product.setVendorLogo(mapVendorImage(product.getId(), ghContent, product.getVendorLogoPath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorLogoDarkModePath())) {
+        product.setVendorLogoDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorLogoDarkModePath()));
+      }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
         product.setVendorImageDarkMode(
             mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));

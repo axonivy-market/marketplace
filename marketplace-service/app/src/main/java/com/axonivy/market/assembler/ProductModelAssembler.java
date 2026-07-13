@@ -37,6 +37,17 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
       resource.setLogoDarkUrl(logoDarkLink.getHref());
     }
 
+    if (StringUtils.isNotBlank(product.getVendorLogo())) {
+      var badgeLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorLogo())).withSelfRel();
+      resource.setBadgeUrl(badgeLink.getHref());
+    }
+
+    if (StringUtils.isNotBlank(product.getVendorLogoDarkMode())) {
+      var badgeDarkLink =
+          linkTo(methodOn(ImageController.class).findImageById(product.getVendorLogoDarkMode())).withSelfRel();
+      resource.setBadgeDarkUrl(badgeDarkLink.getHref());
+    }
+
     return resource;
   }
 
