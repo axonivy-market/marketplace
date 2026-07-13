@@ -56,14 +56,9 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     requestURL = `${apiURL}/${req.url}`;
   }
 
-  const cloneReq = req.clone({
-    url: requestURL,
-    headers: addIvyHeaders(req.headers)
-  });
-
-  return next(cloneReq).pipe(
+  return next(buildApiRequest(req, requestURL)).pipe(
     tap(event => {
-      if (req.method === 'GET'
+      if ( req.method === 'GET'
         && event instanceof HttpResponse && event.status === HttpStatusCode.Ok
         && req.context.get(CachingEnabled) !== false) {
         transferState.set(key, event.body);
@@ -77,10 +72,20 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
-  if (headers.has(REQUEST_BY)) {
-    return headers;
-  }
-  return headers.append(REQUEST_BY, IVY);
+function buildApiRequest(req: Parameters<HttpInterceptorFn>[0], requestURL: string) {
+  const headers = addIvyHeaders(req.headers);
+
+  return req.clone({
+    headers,
+    url: requestURL,
+    withCredentials: true
+  });
 }
 
+function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
+  let updatedHeaders = headers;
+  if (!updatedHeaders.has(REQUEST_BY)) {
+    updatedHeaders = updatedHeaders.append(REQUEST_BY, IVY);
+  }
+  return updatedHeaders;
+}
