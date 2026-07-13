@@ -10,8 +10,6 @@ import {
   DEFAULT_IMAGE_URL,
   DARK_INTERNAL_BADGE_URL,
   LIGHT_INTERNAL_BADGE_URL,
-  DEFAULT_VENDOR_IMAGE,
-  DEFAULT_VENDOR_IMAGE_BLACK
 } from '../../../shared/constants/common.constant';
 
 @Component({
