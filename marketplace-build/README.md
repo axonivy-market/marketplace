@@ -11,7 +11,6 @@ marketplace-build/
 ├── templates/
 │   ├── .env
 │   ├── docker-compose.yml
-│   ├── data/
 │   └── dev/
 │       └── docker-compose.yml
 ├── nginx/
