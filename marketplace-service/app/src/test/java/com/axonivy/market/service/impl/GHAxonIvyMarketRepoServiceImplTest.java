@@ -1,9 +1,9 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyMarketRepoServiceImpl;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.service.AppSettingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

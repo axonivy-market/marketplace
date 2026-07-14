@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.core.entity.GenericIdEntity;
 import com.axonivy.market.enums.WorkFlowType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -16,7 +17,6 @@ import lombok.Setter;
 import java.io.Serial;
 import java.util.Date;
 
-import static com.axonivy.market.constants.EntityConstants.WORKFLOW_INFORMATION;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,7 +24,7 @@ import static com.axonivy.market.constants.EntityConstants.WORKFLOW_INFORMATION;
 @Setter
 @Builder
 @Entity
-@Table(name = WORKFLOW_INFORMATION)
+@Table(name = EntityConstants.WORKFLOW_INFORMATION)
 public class WorkflowInformation extends GenericIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;

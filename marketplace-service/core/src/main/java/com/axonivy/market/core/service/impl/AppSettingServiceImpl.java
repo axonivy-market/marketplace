@@ -1,13 +1,14 @@
-package com.axonivy.market.service.impl;
+package com.axonivy.market.core.service.impl;
 
-import com.axonivy.market.entity.AppSetting;
-import com.axonivy.market.enums.AppSettingCategory;
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.model.AppSettingDto;
-import com.axonivy.market.repository.AppSettingRepository;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.service.EncryptionService;
-import com.axonivy.market.util.SettingValueParser;
+import com.axonivy.market.core.entity.AppSetting;
+import com.axonivy.market.core.model.AppSettingDto;
+import com.axonivy.market.core.repository.AppSettingRepository;
+import com.axonivy.market.core.enums.AppSettingCategory;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.service.EncryptionService;
+
+import com.axonivy.market.core.utils.SettingValueParser;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

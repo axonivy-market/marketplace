@@ -1,11 +1,12 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.entity.AppSetting;
-import com.axonivy.market.enums.AppSettingCategory;
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.model.AppSettingDto;
-import com.axonivy.market.repository.AppSettingRepository;
-import com.axonivy.market.service.EncryptionService;
+import com.axonivy.market.core.entity.AppSetting;
+import com.axonivy.market.core.enums.AppSettingCategory;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.model.AppSettingDto;
+import com.axonivy.market.core.repository.AppSettingRepository;
+import com.axonivy.market.core.service.EncryptionService;
+import com.axonivy.market.core.service.impl.AppSettingServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

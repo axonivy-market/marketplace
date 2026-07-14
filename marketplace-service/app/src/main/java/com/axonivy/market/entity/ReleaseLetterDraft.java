@@ -1,5 +1,7 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.constants.CoreEntityConstants;
+import com.axonivy.market.core.entity.EntityConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -9,14 +11,12 @@ import lombok.Setter;
 
 import java.io.Serial;
 
-import static com.axonivy.market.constants.EntityConstants.RELEASE_LETTER_DRAFTS;
-import static com.axonivy.market.core.constants.CoreEntityConstants.TEXT_TYPE;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = RELEASE_LETTER_DRAFTS)
+@Table(name = EntityConstants.RELEASE_LETTER_DRAFTS)
 public class ReleaseLetterDraft extends AuditableIdEntity {
 
   @Serial
@@ -25,6 +25,6 @@ public class ReleaseLetterDraft extends AuditableIdEntity {
   private String gitHubUserId;
   private String releaseLetterId;
 
-  @Column(columnDefinition = TEXT_TYPE)
+  @Column(columnDefinition = CoreEntityConstants.TEXT_TYPE)
   private String draftContent;
 }

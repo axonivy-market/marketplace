@@ -1,7 +1,7 @@
 package com.axonivy.market.config;
 
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

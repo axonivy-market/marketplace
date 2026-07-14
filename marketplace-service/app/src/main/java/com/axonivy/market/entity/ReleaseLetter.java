@@ -1,8 +1,8 @@
 package com.axonivy.market.entity;
 
-import static com.axonivy.market.constants.EntityConstants.RELEASE_LETTER;
-import static com.axonivy.market.core.constants.CoreEntityConstants.TEXT_TYPE;
 
+import com.axonivy.market.core.constants.CoreEntityConstants;
+import com.axonivy.market.core.entity.EntityConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -20,14 +20,14 @@ import java.io.Serial;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = RELEASE_LETTER)
+@Table(name = EntityConstants.RELEASE_LETTER)
 public class ReleaseLetter extends AuditableIdEntity {
 
   @Serial
   private static final long serialVersionUID = 1;
   private String sprint;
 
-  @Column(columnDefinition = TEXT_TYPE)
+  @Column(columnDefinition = CoreEntityConstants.TEXT_TYPE)
   private String content;
 
   private boolean isLatest;
