@@ -15,19 +15,30 @@ pipeline {
     }
 
     parameters {
+        gitParameter(
+                name: 'BRANCH',
+                type: 'PT_BRANCH',
+                defaultValue: 'origin/develop',
+                description: 'Choose the GitHub branch that contains the Nginx configuration to deploy',
+                branchFilter: '.*',
+                tagFilter: '*',
+                sortMode: 'NONE',
+                selectedValue: 'DEFAULT',
+                quickFilterEnabled: true
+        )
         choice(
             name: 'DEPLOYMENT_TARGET',
             choices: [
                 'PREVIEW node',
                 'PROD_1 node',
-                'PROD_2 node',
-                'All PROD nodes'
+                'PROD_2 node'
             ],
             description: 'Select which node(s) to deploy to'
         )
         string(
-            name: 'RELEASE_VERSION',
-            description: 'Release version (e.g., 1.2.0)'
+            name: 'NGINX_VERSION',
+            description: 'NGINX version (e.g., 1.31.2)',
+            defaultValue: 'latest'
         )
     }
 
@@ -38,20 +49,21 @@ pipeline {
                 script {
                     sh 'rm -rf target-source'
                     dir('target-source') {
-                        git branch: 'master', url: env.MARKETPLACE_GIT_URL
+                        def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+                        git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
                     }
-                    deployStages = load 'target-source/.build/pipeline-lib/deployStages.groovy'
+                    deployStages = load '.build/pipeline-lib/deployStages.groovy'
                 }
             }
         }
-        
+
         stage('Confirm Production Deployment') {
             when {
                 expression { params.DEPLOYMENT_TARGET != 'PREVIEW node' }
             }
             steps {
                 script {
-                    deployStages.confirmProductionDeployment(params.DEPLOYMENT_TARGET, params.RELEASE_VERSION)
+                    deployStages.confirmProductionDeployment(params.DEPLOYMENT_TARGET, params.NGINX_VERSION)
                 }
             }
         }
@@ -64,27 +76,30 @@ pipeline {
             }
         }
 
-        stage('Merge Configuration') {
+        stage('Configure Nginx') {
             steps {
                 script {
                     for (node in nodesToDeploy) {
-                        echo "Merging config for node: ${node.name} (${node.ip})"
+                        echo "Configuring nginx for node: ${node.name} (${node.ip})"
 
                         withCredentials([
                             string(credentialsId: node.credId, variable: 'EC2_NODE'),
-                            sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
-                            file(credentialsId: node.envCredId, variable: 'ENV_SECRET_FILE')
+                            sshUserPrivateKey(
+                                credentialsId: 'aws-ec2-ssh-key',
+                                keyFileVariable: 'SSH_PRIVATE_KEY_FILE',
+                                usernameVariable: 'SSH_REMOTE_USER'
+                            )
                         ]) {
                             sh """
                                 set +x
                                 export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
                                 export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
-                                export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./.build/scripts/release/prepare-release-config.sh \
+                                bash ./.build/scripts/nginx/prepare-release-nginx-config.sh \
                                     "\${EC2_NODE}" \
-                                    "${params.RELEASE_VERSION}" \
-                                    "${node.nginxPort}" \
-                                    "\${ENV_SECRET_FILE}"
+                                    "${params.NGINX_VERSION}" \
+                                    "${env.WORKSPACE}" \
+                                    "${node.nginxConfigPath ?: ''}" \
+                                    "${node.nginxPort ?: ''}"
                             """
                         }
                     }
@@ -92,28 +107,27 @@ pipeline {
             }
         }
 
-        stage('Deploy and Promote Release') {
+        stage('Deploy And Switch Nginx') {
             steps {
                 script {
                     for (node in nodesToDeploy) {
-                        echo "Deploying and promoting release for node: ${node.name} (${node.ip})"
+                        echo "Deploying and switching nginx for node: ${node.name} (${node.ip})"
 
                         withCredentials([
                             string(credentialsId: node.credId, variable: 'EC2_NODE'),
-                            sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
-                            usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+                            sshUserPrivateKey(
+                                credentialsId: 'aws-ec2-ssh-key',
+                                keyFileVariable: 'SSH_PRIVATE_KEY_FILE',
+                                usernameVariable: 'SSH_REMOTE_USER'
+                            )
                         ]) {
                             sh """
                                 set +x
                                 export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
                                 export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
-                                export GHCR_USERNAME="\${GHCR_USERNAME}"
-                                export GHCR_TOKEN="\${GHCR_TOKEN}"
-                                export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./.build/scripts/release/run-release-rollout.sh \
+                                bash ./.build/scripts/nginx/deploy-and-switch-release-nginx.sh \
                                     "\${EC2_NODE}" \
-                                    "${params.RELEASE_VERSION}" \
-                                    "${node.healthCheckEndpoints}"
+                                    "${params.NGINX_VERSION}"
                             """
                         }
                     }
