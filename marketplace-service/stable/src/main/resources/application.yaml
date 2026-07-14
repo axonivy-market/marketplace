@@ -39,6 +39,9 @@ market:
         maxAge: '3600'
       mappings: '${MARKET_CORS_ALLOWED_MAPPINGS}'
       methods: '${MARKET_CORS_ALLOWED_METHODS}'
+  encryption:
+    key: '${MARKET_ENCRYPTION_SECRET_KEY}'
+    salt: '${MARKET_ENCRYPTION_SALT}'
 springdoc:
   api-docs:
     path: /api-docs

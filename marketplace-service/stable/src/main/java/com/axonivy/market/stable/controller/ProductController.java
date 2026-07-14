@@ -1,5 +1,6 @@
 package com.axonivy.market.stable.controller;
 
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
 import com.axonivy.market.core.model.ProductModel;
@@ -75,6 +76,7 @@ public class ProductController {
   }
 
   @GetMapping()
+  @TrackApiCallFromNeo()
   @Operation(summary = "Retrieve a list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'")
   public ResponseEntity<List<ProductModel>> findProducts(

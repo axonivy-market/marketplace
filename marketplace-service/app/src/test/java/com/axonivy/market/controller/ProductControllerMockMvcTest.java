@@ -6,7 +6,7 @@ import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ProductDependencyService;
 import org.junit.jupiter.api.Test;

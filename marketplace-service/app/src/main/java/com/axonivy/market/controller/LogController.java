@@ -2,16 +2,17 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.core.constants.CoreCommonConstants;
+import com.axonivy.market.core.constants.CoreHttpHeaderConstants;
 import com.axonivy.market.logging.LogStreamRegistry;
 import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import com.axonivy.market.util.FileUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.log4j.Log4j2;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,12 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import reactor.core.publisher.Flux;
 
-import java.time.LocalDate;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 
-import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
-import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
 import static com.axonivy.market.constants.RequestMappingConstants.*;
 
 @RestController
@@ -99,11 +98,11 @@ public class LogController {
   }
 
   private String resolveRequesterIp(HttpServletRequest request) {
-    String forwardedFor = request.getHeader(X_FORWARDED_FOR);
+    String forwardedFor = request.getHeader(CoreHttpHeaderConstants.X_FORWARDED_FOR);
     if (StringUtils.isNotBlank(forwardedFor)) {
       return forwardedFor.split(CoreCommonConstants.COMMA)[0].trim();
     }
-    String realIp = request.getHeader(X_REAL_IP);
+    String realIp = request.getHeader(CoreHttpHeaderConstants.X_REAL_IP);
     if (StringUtils.isNotBlank(realIp)) {
       return realIp;
     }

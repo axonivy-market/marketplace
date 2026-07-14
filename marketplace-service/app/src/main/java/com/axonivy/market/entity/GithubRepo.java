@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.core.entity.GenericIdEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -18,8 +19,6 @@ import java.io.Serial;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.axonivy.market.constants.EntityConstants.GITHUB_REPO;
-import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
 
 @Getter
 @Setter
@@ -27,7 +26,7 @@ import static com.axonivy.market.constants.EntityConstants.REPOSITORY_ID;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = GITHUB_REPO)
+@Table(name = EntityConstants.GITHUB_REPO)
 public class GithubRepo extends GenericIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
@@ -37,11 +36,11 @@ public class GithubRepo extends GenericIdEntity {
   private String htmlUrl;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = REPOSITORY_ID)
+  @JoinColumn(name = EntityConstants.REPOSITORY_ID)
   private Set<WorkflowInformation> workflowInformation;
   private Boolean focused;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = REPOSITORY_ID)
+  @JoinColumn(name = EntityConstants.REPOSITORY_ID)
   private Set<TestStep> testSteps;
 
   public static GithubRepo from(GHObject repo, String productId) throws IOException {

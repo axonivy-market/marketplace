@@ -1,4 +1,4 @@
-package com.axonivy.market.service;
+package com.axonivy.market.core.service;
 
 public interface EncryptionService {
 

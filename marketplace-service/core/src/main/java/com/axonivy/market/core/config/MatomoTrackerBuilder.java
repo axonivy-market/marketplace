@@ -1,9 +1,9 @@
-package com.axonivy.market.config;
+package com.axonivy.market.core.config;
 
-import com.axonivy.market.enums.AppSettingCategory;
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.util.SettingValueParser;
+import com.axonivy.market.core.enums.AppSettingCategory;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.utils.SettingValueParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.matomo.java.tracking.MatomoTracker;
@@ -21,10 +21,14 @@ import java.util.Objects;
 @Log4j2
 @Component
 @RequiredArgsConstructor
-public class MatomoTrackerBuilder {
+public abstract class MatomoTrackerBuilder {
 
   private final AppSettingService appSettingService;
   private MatomoTracker tracker;
+
+  protected abstract AppSettingKey getEndpointKey();
+  protected abstract AppSettingKey getSiteIdKey();
+  protected abstract AppSettingKey getEnabledKey();
 
   private String endpoint;
   private Integer siteId;
@@ -32,9 +36,9 @@ public class MatomoTrackerBuilder {
 
   public synchronized MatomoTracker build() {
     Map<String, String> matomoSettings = appSettingService.getByCategory(AppSettingCategory.MATOMO);
-    String rawEndpoint = matomoSettings.get(AppSettingKey.MATOMO_API_ENDPOINT.getKey()).trim();
-    String rawSiteId = matomoSettings.get(AppSettingKey.MATOMO_SITE_ID.getKey()).trim();
-    boolean newEnabled = SettingValueParser.parseBoolean(matomoSettings.get(AppSettingKey.MATOMO_ENABLED.getKey()));
+    String rawEndpoint = matomoSettings.get(getEndpointKey().getKey()).trim();
+    String rawSiteId = matomoSettings.get(getSiteIdKey().getKey()).trim();
+    boolean newEnabled = SettingValueParser.parseBoolean(matomoSettings.get(getEnabledKey().getKey()));
 
     int newSiteId;
     try {

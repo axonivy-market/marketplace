@@ -1,9 +1,9 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;

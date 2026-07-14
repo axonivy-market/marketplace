@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serial;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INSTALLATION;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DESIGNER_INST
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = PRODUCT_DESIGNER_INSTALLATION)
+@Table(name = EntityConstants.PRODUCT_DESIGNER_INSTALLATION)
 public class ProductDesignerInstallation extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1;

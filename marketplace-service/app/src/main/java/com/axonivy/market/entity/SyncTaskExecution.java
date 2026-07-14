@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import jakarta.persistence.Column;
@@ -17,7 +18,6 @@ import lombok.Setter;
 import java.io.Serial;
 import java.time.LocalDateTime;
 
-import static com.axonivy.market.constants.EntityConstants.SYNC_TASK;
 
 @Getter
 @Setter
@@ -25,7 +25,7 @@ import static com.axonivy.market.constants.EntityConstants.SYNC_TASK;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = SYNC_TASK)
+@Table(name = EntityConstants.SYNC_TASK)
 public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;

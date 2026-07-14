@@ -2,7 +2,7 @@ package com.axonivy.market.aop.aspect;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.constants.LoggingConstants;
-import com.axonivy.market.constants.SyncTaskConstants;
+import com.axonivy.market.core.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.TaskCancelledException;

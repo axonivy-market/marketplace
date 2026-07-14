@@ -1,7 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
-import com.axonivy.market.constants.SyncTaskConstants;
+import com.axonivy.market.core.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
@@ -10,8 +10,6 @@ import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;

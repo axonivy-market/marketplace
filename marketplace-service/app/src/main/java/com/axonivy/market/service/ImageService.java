@@ -55,18 +55,4 @@ public interface ImageService extends CoreImageService {
    * @author ndkhanh
    */
   Image mappingImageFromDownloadedFolder(String productId, Path imagePath);
-
-  /**
-   * <p>
-   * Reads and returns the binary data of a product image by its ID. Retrieves the image from local
-   * storage cache or generates it on-demand, suitable for serving to web clients.
-   * </p>
-   *
-   * @param  id
-   *              type {@link String} - the unique image identifier in the database
-   * @return {@link byte[]} - the raw image binary data; returns null if image not found or
-   *         cannot be read from storage
-   * @author tvtphuc
-   */
-  byte[] readImage(String id);
 }
