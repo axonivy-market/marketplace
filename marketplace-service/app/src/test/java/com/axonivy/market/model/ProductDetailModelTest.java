@@ -92,8 +92,6 @@ class ProductDetailModelTest {
     assertTrue(model.isMavenDropins(), "MavenDropins should be copied");
     assertNotNull(model.getVendorImage(), "Vendor image should be set for non-production");
     assertNotNull(model.getVendorImageDarkMode(), "Vendor dark image should be set for non-production");
-//    assertNotNull(model.getVendorLogo(), "Vendor image should be set for non-production");
-//    assertNotNull(model.getVendorLogoDarkMode(), "Vendor image should be set for non-production");
   }
 
   @Test

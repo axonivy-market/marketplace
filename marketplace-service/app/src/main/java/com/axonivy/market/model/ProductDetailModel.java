@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -118,7 +118,7 @@ public class ProductDetailModel extends ProductModel {
     model.setProductModuleContent(
         ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
 
-    Function<String, String> imageUrlMapper = isProduction
+    UnaryOperator<String> imageUrlMapper = isProduction
         ? ImageUtils::createImageUrlForProduction
         : ImageUtils::createImageUrl;
     if (StringUtils.isNotBlank(product.getVendorImage())) {
