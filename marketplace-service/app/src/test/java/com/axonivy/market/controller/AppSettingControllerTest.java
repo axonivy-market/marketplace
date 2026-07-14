@@ -1,8 +1,8 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.model.AppSettingDto;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.model.AppSettingDto;
+import com.axonivy.market.core.service.AppSettingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

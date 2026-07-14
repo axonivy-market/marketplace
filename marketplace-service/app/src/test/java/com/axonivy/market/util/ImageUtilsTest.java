@@ -2,7 +2,7 @@ package com.axonivy.market.util;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.entity.ProductModuleContent;
-import com.axonivy.market.testutil.MockServletRequestUtils;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

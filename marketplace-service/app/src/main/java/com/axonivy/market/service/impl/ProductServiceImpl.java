@@ -66,8 +66,8 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;

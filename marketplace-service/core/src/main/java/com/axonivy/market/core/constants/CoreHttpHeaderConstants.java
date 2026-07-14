@@ -1,4 +1,4 @@
-package com.axonivy.market.constants;
+package com.axonivy.market.core.constants;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
  * @author ntqdinh
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class HttpHeaderConstants {
+public class CoreHttpHeaderConstants {
   public static final String X_FORWARDED_FOR = "X-Forwarded-For";
   public static final String X_REAL_IP = "X-Real-IP";
 }

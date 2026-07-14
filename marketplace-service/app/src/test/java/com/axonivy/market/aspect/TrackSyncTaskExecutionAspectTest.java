@@ -2,7 +2,7 @@ package com.axonivy.market.aspect;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.aop.aspect.TrackSyncTaskExecutionAspect;
-import com.axonivy.market.constants.SyncTaskConstants;
+import com.axonivy.market.core.constants.SyncTaskConstants;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.entity.SyncTaskExecution;
 import com.axonivy.market.enums.SyncTaskStatus;

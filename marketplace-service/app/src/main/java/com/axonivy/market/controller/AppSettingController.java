@@ -2,8 +2,8 @@ package com.axonivy.market.controller;
 
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.model.AppSettingDto;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.model.AppSettingDto;
+import com.axonivy.market.core.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

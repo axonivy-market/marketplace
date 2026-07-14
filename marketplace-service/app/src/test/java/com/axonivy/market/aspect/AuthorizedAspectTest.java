@@ -6,7 +6,7 @@ import static org.springframework.http.HttpHeaders.*;
 
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.UserInfo;
-import com.axonivy.market.testutil.MockServletRequestUtils;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

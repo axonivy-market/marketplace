@@ -1,9 +1,9 @@
 package com.axonivy.market.rest.axonivy;
 
-import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.config.RestClientBuilder;
+import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.model.DocumentInfoResponse;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

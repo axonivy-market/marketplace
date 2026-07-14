@@ -24,4 +24,10 @@ public class CoreCommonConstants {
   public static final int ONE = 1;
   public static final int TWO = 2;
   public static final int THREE = 3;
+  public static final String IVY_HEADER = "ivy";
+  public static final String REFERER = "Referer";
+  public static final String REQUESTED_BY = "X-Requested-By";
+  public static final String USER_AGENT = "user-agent";
+  public static final String SPACE_SEPARATOR = " ";
+  public static final String MARKET_WEBSITE = "marketplace-website";
 }

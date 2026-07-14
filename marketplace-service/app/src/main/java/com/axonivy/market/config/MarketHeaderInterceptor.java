@@ -1,6 +1,6 @@
 package com.axonivy.market.config;
 
-import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ public class MarketHeaderInterceptor implements HandlerInterceptor {
       return true;
     }
     if (!HttpMethod.GET.name().equalsIgnoreCase(request.getMethod())
-        && StringUtils.isBlank(request.getHeader(CommonConstants.REQUESTED_BY))) {
+        && StringUtils.isBlank(request.getHeader(CoreCommonConstants.REQUESTED_BY))) {
       throw new MissingHeaderException();
     }
     return true;

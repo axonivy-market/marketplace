@@ -1,7 +1,6 @@
-package com.axonivy.market.entity;
+package com.axonivy.market.core.entity;
 
-import com.axonivy.market.core.entity.GenericIdEntity;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.enums.AppSettingKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -13,13 +12,11 @@ import lombok.Setter;
 
 import java.io.Serial;
 
-import static com.axonivy.market.constants.EntityConstants.APP_SETTINGS;
-
 @Getter
 @Setter
 @Builder
 @Entity
-@Table(name = APP_SETTINGS)
+@Table(name = EntityConstants.APP_SETTINGS)
 @AllArgsConstructor
 @NoArgsConstructor
 public class AppSetting extends GenericIdEntity {

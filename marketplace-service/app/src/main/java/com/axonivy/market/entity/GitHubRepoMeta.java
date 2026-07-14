@@ -2,6 +2,7 @@ package com.axonivy.market.entity;
 
 import com.axonivy.market.core.entity.AbstractAuditableEntity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -10,7 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import static com.axonivy.market.constants.EntityConstants.GH_REPO_META;
 
 import java.io.Serial;
 
@@ -18,7 +18,7 @@ import java.io.Serial;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = GH_REPO_META)
+@Table(name = EntityConstants.GH_REPO_META)
 public class GitHubRepoMeta extends AbstractAuditableEntity<String> {
 
   @Serial

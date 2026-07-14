@@ -1,9 +1,9 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.model.ProductModel;
@@ -55,7 +55,7 @@ public class ProductController {
   private final ProductDependencyService productDependencyService;
 
   @GetMapping()
-  @TrackApiCallFromNeo
+  @TrackApiCallFromNeo()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",

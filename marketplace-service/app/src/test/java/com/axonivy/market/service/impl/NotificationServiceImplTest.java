@@ -2,10 +2,10 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.config.MailSenderBuilder;
 import com.axonivy.market.enums.AccessLevel;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.enums.SecurityFeature;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.service.AppSettingService;
 import jakarta.mail.Address;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;

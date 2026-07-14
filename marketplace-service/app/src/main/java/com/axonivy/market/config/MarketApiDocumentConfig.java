@@ -1,5 +1,6 @@
 package com.axonivy.market.config;
 
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -12,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.axonivy.market.constants.CommonConstants.REQUESTED_BY;
 
 @Configuration
 public class MarketApiDocumentConfig {
@@ -50,7 +50,7 @@ public class MarketApiDocumentConfig {
     return new Parameter()
         .in(HEADER_PARAM)
         .schema(new StringSchema())
-        .name(REQUESTED_BY)
+        .name(CoreCommonConstants.REQUESTED_BY)
         .description(DEFAULT_PARAM)
         .required(true);
   }
