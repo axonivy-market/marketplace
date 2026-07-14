@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.core.entity.GenericIdEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -9,7 +10,6 @@ import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import static com.axonivy.market.constants.EntityConstants.GITHUB_USER;
 
 import java.io.Serial;
 
@@ -17,7 +17,7 @@ import java.io.Serial;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = GITHUB_USER)
+@Table(name = EntityConstants.GITHUB_USER)
 public class GithubUser extends GenericIdEntity {
 
   @Serial

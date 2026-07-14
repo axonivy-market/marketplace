@@ -1,6 +1,6 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.testutil.MockServletRequestUtils;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.model.DocumentInfoResponse;
 import com.axonivy.market.service.ExternalDocumentService;

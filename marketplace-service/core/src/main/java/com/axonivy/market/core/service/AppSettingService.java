@@ -1,8 +1,9 @@
-package com.axonivy.market.service;
+package com.axonivy.market.core.service;
 
-import com.axonivy.market.enums.AppSettingCategory;
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.model.AppSettingDto;
+import com.axonivy.market.core.enums.AppSettingCategory;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.model.AppSettingDto;
+
 
 import java.util.List;
 import java.util.Map;
