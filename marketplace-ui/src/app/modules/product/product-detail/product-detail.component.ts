@@ -293,17 +293,30 @@ export class ProductDetailComponent implements AfterViewInit, OnInit {
   }
 
   private handlePopupLogic(): void {
-    this.route.queryParams.subscribe(params => {
-      this.ngZone.run(() => {
-        this.showPopup = params['showPopup'] === 'true';
-        if (this.showPopup && this.authService.getToken()) {
-          this.appModalService
-            .openAddFeedbackDialog()
-            .then(() => this.ngZone.run(() => { this.removeQueryParam(); this.cdr.markForCheck(); }))
-            .catch(() => this.ngZone.run(() => { this.removeQueryParam(); this.cdr.markForCheck(); }));
-        }
-        this.cdr.markForCheck();
-      });
+    this.route.queryParams.subscribe(params => this.handlePopupParams(params));
+  }
+
+  private handlePopupParams(params: any): void {
+    this.ngZone.run(() => {
+      this.showPopup = params['showPopup'] === 'true';
+      if (this.showPopup && this.authService.getToken()) {
+        this.openAddFeedbackDialogAndHandleClosure();
+      }
+      this.cdr.markForCheck();
+    });
+  }
+
+  private openAddFeedbackDialogAndHandleClosure(): void {
+    this.appModalService
+      .openAddFeedbackDialog()
+      .then(() => this.handleAddFeedbackDialogClose())
+      .catch(() => this.handleAddFeedbackDialogClose());
+  }
+
+  private handleAddFeedbackDialogClose(): void {
+    this.ngZone.run(() => {
+      this.removeQueryParam();
+      this.cdr.markForCheck();
     });
   }
 

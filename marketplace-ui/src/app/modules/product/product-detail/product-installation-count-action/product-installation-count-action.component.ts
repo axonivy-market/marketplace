@@ -2,6 +2,7 @@ import { Component, effect, inject, Input, Signal, signal, ChangeDetectorRef, Ng
 import { TranslateModule } from "@ngx-translate/core";
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductService } from '../../product.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-product-installation-count-action',
@@ -18,18 +19,28 @@ export class ProductInstallationCountActionComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly ngZone = inject(NgZone);
 
+  private handleInstallationCount = (data: number) => {
+    this.ngZone.run(() => {
+      this.currentInstallationCount.set(data);
+      this.cdr.markForCheck();
+    });
+  };
+
   constructor(private readonly productService: ProductService) {
-    effect(() => {
+    effect((onCleanup) => {
       this.refreshInstallationCount();
-      setTimeout(() => {
-        this.productService.sendRequestToGetInstallationCount(this.productId).subscribe(
-          (data: number) => {
-            this.ngZone.run(() => {
-              this.currentInstallationCount.set(data);
-              this.cdr.markForCheck();
-            });
-          });
+
+      let sub: Subscription | undefined;
+      const timer = setTimeout(() => {
+        sub = this.productService
+          .sendRequestToGetInstallationCount(this.productId)
+          .subscribe(this.handleInstallationCount);
       }, 100);
+
+      onCleanup(() => {
+        clearTimeout(timer);
+        sub?.unsubscribe();
+      });
     });
   }
 }

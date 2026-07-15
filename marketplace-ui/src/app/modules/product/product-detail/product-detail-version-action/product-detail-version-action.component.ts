@@ -225,27 +225,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         this.getShowDevVersionFromCookie(),
         this.designerVersion
       )
-      .subscribe(data => {
-        this.ngZone.run(() => {
-          data.forEach(item => {
-            const version = VERSION.displayPrefix.concat(item.version);
-            this.versions.update(currentVersions => [
-              ...currentVersions,
-              version
-            ]);
-
-            if (!this.versionMap.get(version)) {
-              this.versionMap.set(version, item.artifactsByVersion);
-            }
-          });
-          if (this.versions().length !== 0) {
-            this.onSelectVersion(
-              this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
-            );
-          }
-          this.cdr.markForCheck();
-        });
-      });
+      .subscribe(data => this.handleVersionData(data, ignoreRouteVersion));
   }
 
   getVersionFromRoute(ignoreRouteVersion: boolean): string | null {
@@ -264,26 +244,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.versionDropdownInDesigner = [];
     this.productService
       .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
-      .subscribe(data => {
-        this.ngZone.run(() => {
-          const versionMap = data
-            .map(dataVersionAndUrl => dataVersionAndUrl.version)
-            .map(version => VERSION.displayPrefix.concat(version));
-          data.forEach(dataVersionAndUrl => {
-            const currentVersion = VERSION.displayPrefix.concat(
-              dataVersionAndUrl.version
-            );
-            const versionAndUrl: ItemDropdown = {
-              value: currentVersion,
-              label: currentVersion,
-              metaDataJsonUrl: dataVersionAndUrl.url
-            };
-            this.versionDropdownInDesigner.push(versionAndUrl);
-          });
-          this.versions.set(versionMap);
-          this.cdr.markForCheck();
-        });
-      });
+      .subscribe(data => this.handleDesignerVersionData(data));
   }
 
   sanitizeDataBeforeFetching(): void {
@@ -323,20 +284,71 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   fetchAndDownloadArtifact(url: string, fileName: string): void {
     this.httpClient
       .get(url, {responseType: BLOB, observe: RESPONSE})
-      .pipe(finalize(() => this.ngZone.run(() => { this.isDownloading.set(false); this.cdr.markForCheck(); })))
+      .pipe(finalize(() => this.handleDownloadFinalize()))
       .subscribe({
-        next: (response: HttpResponse<Blob>) => {
-          this.ngZone.run(() => {
-            if (response.body) {
-              this.triggerDownload(response.body, fileName);
-              this.onUpdateInstallationCount();
-            }
-            this.cdr.markForCheck();
-          });
-        },
+        next: (response: HttpResponse<Blob>) => this.handleDownloadNext(response, fileName),
         error: () => {
         }
       });
+  }
+
+  private handleVersionData(data: any[], ignoreRouteVersion: boolean): void {
+    this.ngZone.run(() => {
+      const newVersions = data.map(item => VERSION.displayPrefix.concat(item.version));
+      const mergedVersions = [...this.versions(), ...newVersions];
+      this.versions.set(mergedVersions);
+
+      data.forEach(item => {
+        const version = VERSION.displayPrefix.concat(item.version);
+        if (!this.versionMap.get(version)) {
+          this.versionMap.set(version, item.artifactsByVersion);
+        }
+      });
+      if (this.versions().length !== 0) {
+        this.onSelectVersion(
+          this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
+        );
+      }
+      this.cdr.markForCheck();
+    });
+  }
+
+  private handleDesignerVersionData(data: any[]): void {
+    this.ngZone.run(() => {
+      const versionMap = data
+        .map(dataVersionAndUrl => dataVersionAndUrl.version)
+        .map(version => VERSION.displayPrefix.concat(version));
+      data.forEach(dataVersionAndUrl => {
+        const currentVersion = VERSION.displayPrefix.concat(
+          dataVersionAndUrl.version
+        );
+        const versionAndUrl: ItemDropdown = {
+          value: currentVersion,
+          label: currentVersion,
+          metaDataJsonUrl: dataVersionAndUrl.url
+        };
+        this.versionDropdownInDesigner.push(versionAndUrl);
+      });
+      this.versions.set(versionMap);
+      this.cdr.markForCheck();
+    });
+  }
+
+  private handleDownloadNext(response: HttpResponse<Blob>, fileName: string): void {
+    this.ngZone.run(() => {
+      if (response.body) {
+        this.triggerDownload(response.body, fileName);
+        this.onUpdateInstallationCount();
+      }
+      this.cdr.markForCheck();
+    });
+  }
+
+  private handleDownloadFinalize(): void {
+    this.ngZone.run(() => {
+      this.isDownloading.set(false);
+      this.cdr.markForCheck();
+    });
   }
 
   triggerDownload(blob: Blob, fileName: string): void {
