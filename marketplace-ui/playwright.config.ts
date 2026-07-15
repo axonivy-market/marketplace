@@ -10,9 +10,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
-  reporter: [['html', { open: 'never' }]],
+  reporter: [['html', { open: 'never' }], ['list']],
   use: {
     baseURL,
+    headless: false,
     trace: isCI ? 'retain-on-failure' : 'on-first-retry',
     screenshot: isCI ? 'only-on-failure' : 'off',
     video: isCI ? 'retain-on-failure' : 'off'

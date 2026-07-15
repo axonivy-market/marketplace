@@ -1,5 +1,6 @@
 import {
   Component,
+  ChangeDetectorRef,
   EventEmitter,
   inject,
   Input,
@@ -15,12 +16,7 @@ import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
-import {
-  NgbTooltipModule,
-  NgbPagination,
-  NgbPaginationModule,
-  NgbTypeaheadModule
-} from '@ng-bootstrap/ng-bootstrap';
+import { NgbTooltipModule, NgbPagination, NgbPaginationModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
 import { RepoTestResultComponent } from '../repo-test-result/repo-test-result.component';
@@ -98,6 +94,7 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   githubService = inject(GithubService);
+  cdr = inject(ChangeDetectorRef);
   router = inject(Router);
   route = inject(ActivatedRoute);
   platformId = inject(PLATFORM_ID);
@@ -117,24 +114,22 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     this.criteria.search = this.initialSearch;
     if (isPlatformBrowser(this.platformId)) {
       this.subscriptions.push(
-        this.searchTextChanged
-          .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
-          .subscribe(value => {
-            this.criteria = {
-              ...this.criteria,
-              search: value
-            };
-            this.loadRepositories();
-            let queryParams: { repoSearch: string | null } = { repoSearch: null };
-            if (value) {
-              queryParams = { repoSearch: this.criteria.search };
-            }
-            this.router.navigate([], {
-              relativeTo: this.route,
-              queryParamsHandling: 'merge',
-              queryParams
-            });
-          })
+        this.searchTextChanged.pipe(debounceTime(SEARCH_DEBOUNCE_TIME)).subscribe(value => {
+          this.criteria = {
+            ...this.criteria,
+            search: value
+          };
+          this.loadRepositories();
+          let queryParams: { repoSearch: string | null } = { repoSearch: null };
+          if (value) {
+            queryParams = { repoSearch: this.criteria.search };
+          }
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParamsHandling: 'merge',
+            queryParams
+          });
+        })
       );
       this.loadRepositories();
     }
@@ -233,6 +228,7 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
         next: data => {
           this.displayedRepositories = data?._embedded?.githubRepos || [];
           this.totalElements = data.page?.totalElements ?? 0;
+          this.cdr.markForCheck();
         }
       })
     );
