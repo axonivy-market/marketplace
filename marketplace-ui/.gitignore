@@ -48,3 +48,8 @@ Thumbs.db
 /test-results
 
 **/assets/market-cache
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/

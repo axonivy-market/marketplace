@@ -10,7 +10,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:real": "E2E_REAL_ENDPOINT=true playwright test --grep @real-endpoint",
-    "serve:ssr:marketplace-ui": "node dist/server/server.mjs"
+    "serve:ssr:marketplace-ui": "node dist/server/server.mjs",
+    "e2e": "ng e2e"
   },
   "private": true,
   "dependencies": {
@@ -68,6 +69,7 @@
     "@types/markdown-it-emoji": "^3.0.1",
     "@types/node": "^20.19.37",
     "jsdom": "^26.1.0",
+    "playwright-ng-schematics": "^22.0.1",
     "prettier": "^3.7.4",
     "typescript": "~6.0.3",
     "vitest": "^4.1.2"
