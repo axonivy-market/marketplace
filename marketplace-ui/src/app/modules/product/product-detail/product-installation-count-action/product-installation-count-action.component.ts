@@ -1,8 +1,7 @@
-import { Component, effect, inject, Input, Signal, signal, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, effect, inject, Input, Signal, signal } from '@angular/core';
 import { TranslateModule } from "@ngx-translate/core";
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductService } from '../../product.service';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-product-installation-count-action',
@@ -16,31 +15,16 @@ export class ProductInstallationCountActionComponent {
   currentInstallationCount = signal<number>(0);
 
   languageService = inject(LanguageService);
-  private readonly cdr = inject(ChangeDetectorRef);
-  private readonly ngZone = inject(NgZone);
-
-  private handleInstallationCount = (data: number) => {
-    this.ngZone.run(() => {
-      this.currentInstallationCount.set(data);
-      this.cdr.markForCheck();
-    });
-  };
 
   constructor(private readonly productService: ProductService) {
-    effect((onCleanup) => {
+    effect(() => {
       this.refreshInstallationCount();
-
-      let sub: Subscription | undefined;
-      const timer = setTimeout(() => {
-        sub = this.productService
-          .sendRequestToGetInstallationCount(this.productId)
-          .subscribe(this.handleInstallationCount);
+      setTimeout(() => {
+        this.productService.sendRequestToGetInstallationCount(this.productId).subscribe(
+          (data: number) => {
+            this.currentInstallationCount.set(data);
+          });
       }, 100);
-
-      onCleanup(() => {
-        clearTimeout(timer);
-        sub?.unsubscribe();
-      });
     });
   }
 }

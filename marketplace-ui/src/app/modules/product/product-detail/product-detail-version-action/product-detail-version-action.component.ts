@@ -45,6 +45,8 @@ import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
+import { VersionData } from '../../../../shared/models/vesion-artifact.model';
+import { VersionAndUrl } from '../../../../shared/models/version-and-url';
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
 const DOC = '-doc';
@@ -292,7 +294,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       });
   }
 
-  private handleVersionData(data: any[], ignoreRouteVersion: boolean): void {
+  private handleVersionData(data: VersionData[], ignoreRouteVersion: boolean): void {
     this.ngZone.run(() => {
       const newVersions = data.map(item => VERSION.displayPrefix.concat(item.version));
       const mergedVersions = [...this.versions(), ...newVersions];
@@ -313,7 +315,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     });
   }
 
-  private handleDesignerVersionData(data: any[]): void {
+  private handleDesignerVersionData(data: VersionAndUrl[]): void {
     this.ngZone.run(() => {
       const versionMap = data
         .map(dataVersionAndUrl => dataVersionAndUrl.version)

@@ -22,7 +22,7 @@ import {
   NgZone,
   OnInit
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { forkJoin, Subscription, throwError } from 'rxjs';
@@ -296,7 +296,7 @@ export class ProductDetailComponent implements AfterViewInit, OnInit {
     this.route.queryParams.subscribe(params => this.handlePopupParams(params));
   }
 
-  private handlePopupParams(params: any): void {
+  private handlePopupParams(params: Params): void {
     this.ngZone.run(() => {
       this.showPopup = params['showPopup'] === 'true';
       if (this.showPopup && this.authService.getToken()) {
