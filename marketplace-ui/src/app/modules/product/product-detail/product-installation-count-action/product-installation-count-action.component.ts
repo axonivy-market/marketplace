@@ -1,4 +1,4 @@
-import { Component, effect, inject, Input, Signal, signal } from '@angular/core';
+import { Component, effect, inject, Input, Signal, signal, ChangeDetectorRef, NgZone } from '@angular/core';
 import { TranslateModule } from "@ngx-translate/core";
 import { LanguageService } from '../../../../core/services/language/language.service';
 import { ProductService } from '../../product.service';
@@ -15,6 +15,8 @@ export class ProductInstallationCountActionComponent {
   currentInstallationCount = signal<number>(0);
 
   languageService = inject(LanguageService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   constructor(private readonly productService: ProductService) {
     effect(() => {
@@ -22,7 +24,10 @@ export class ProductInstallationCountActionComponent {
       setTimeout(() => {
         this.productService.sendRequestToGetInstallationCount(this.productId).subscribe(
           (data: number) => {
-            this.currentInstallationCount.set(data);
+            this.ngZone.run(() => {
+              this.currentInstallationCount.set(data);
+              this.cdr.markForCheck();
+            });
           });
       }, 100);
     });

@@ -1,5 +1,5 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { ThemeService } from '../../../core/services/theme/theme.service';
@@ -14,7 +14,7 @@ import { DEFAULT_IMAGE_URL } from '../../../shared/constants/common.constant';
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.scss'
 })
-export class ProductCardComponent {
+export class ProductCardComponent implements OnInit {
   themeService = inject(ThemeService);
   languageService = inject(LanguageService);
   isShowInRESTClientEditor = inject(ProductComponent).isRESTClient();

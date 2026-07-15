@@ -3,12 +3,14 @@ import { FormsModule } from '@angular/forms';
 import {
   ChangeDetectorRef,
   Component,
+  ChangeDetectionStrategy,
   inject,
   OnInit,
   ViewEncapsulation,
   TemplateRef,
   ViewChild,
-  signal
+  signal,
+  NgZone
 } from '@angular/core';
 import {
   ActivatedRoute,
@@ -46,6 +48,7 @@ import { SyncTaskDialogComponent } from './components/sync-task-dialog.component
   imports: [CommonModule, FormsModule, RouterModule, TranslateModule, SyncTaskDialogComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   encapsulation: ViewEncapsulation.Emulated
 })
 export class AdminDashboardComponent implements OnInit {
@@ -57,6 +60,7 @@ export class AdminDashboardComponent implements OnInit {
   pageTitleService = inject(PageTitleService);
   authService = inject(AdminAuthService);
   cdr = inject(ChangeDetectorRef);
+  ngZone = inject(NgZone);
   router = inject(Router);
   activatedRoute = inject(ActivatedRoute);
   modalService = inject(NgbModal);
@@ -83,15 +87,19 @@ export class AdminDashboardComponent implements OnInit {
 
   onRouteActivate(): void {
     queueMicrotask(() => {
-      this.showSyncTask = false;
-      this.cdr.markForCheck();
+      this.ngZone.run(() => {
+        this.showSyncTask = false;
+        this.cdr.markForCheck();
+      });
     });
   }
 
   onRouteDeactivate(): void {
     queueMicrotask(() => {
-      this.showSyncTask = true;
-      this.cdr.markForCheck();
+      this.ngZone.run(() => {
+        this.showSyncTask = true;
+        this.cdr.markForCheck();
+      });
     });
   }
 
@@ -116,11 +124,17 @@ export class AdminDashboardComponent implements OnInit {
           );
         }
       });
+    this.ngZone.run(() => this.cdr.markForCheck());
   }
 
   private loadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => this.applySyncTaskExecutions(executions),
+      next: executions => {
+        this.ngZone.run(() => {
+          this.applySyncTaskExecutions(executions);
+          this.cdr.markForCheck();
+        });
+      },
       error: err => {
         this.handleAuthError(err);
       }
@@ -158,15 +172,21 @@ export class AdminDashboardComponent implements OnInit {
   cancel(syncTask: SyncTaskRow) {
     this.service.cancelSyncTask(syncTask.key).subscribe({
       next: () => {
-        Object.assign(syncTask, {
-          status: SyncTaskStatus.CANCELLED,
-          completedDate: new Date(),
-          message: 'Cancelled by user'
+        this.ngZone.run(() => {
+          Object.assign(syncTask, {
+            status: SyncTaskStatus.CANCELLED,
+            completedDate: new Date(),
+            message: 'Cancelled by user'
+          });
+          this.loadingSyncTaskKey = null;
+          this.cdr.markForCheck();
         });
-        this.loadingSyncTaskKey = null;
       },
       error: () => {
-        this.loadingSyncTaskKey = null;
+        this.ngZone.run(() => {
+          this.loadingSyncTaskKey = null;
+          this.cdr.markForCheck();
+        });
       }
     });
   }
@@ -182,23 +202,34 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private handleSyncTaskSuccess(syncTask: SyncTaskRow): void {
-    syncTask.status = SyncTaskStatus.SUCCESS;
-    syncTask.completedDate = new Date();
-    this.reloadExecutions();
+    this.ngZone.run(() => {
+      syncTask.status = SyncTaskStatus.SUCCESS;
+      syncTask.completedDate = new Date();
+      this.reloadExecutions();
+      this.cdr.markForCheck();
+    });
   }
 
   private handleSyncTaskFailure(syncTask: SyncTaskRow): void {
-    Object.assign(syncTask, {
-      status: SyncTaskStatus.FAILED,
-      completedDate: new Date(),
-      message: 'Failed'
+    this.ngZone.run(() => {
+      Object.assign(syncTask, {
+        status: SyncTaskStatus.FAILED,
+        completedDate: new Date(),
+        message: 'Failed'
+      });
+      this.reloadExecutions();
+      this.cdr.markForCheck();
     });
-    this.reloadExecutions();
   }
 
   private reloadExecutions(): void {
     this.service.fetchSyncTaskExecutions().subscribe({
-      next: executions => this.applySyncTaskExecutions(executions),
+      next: executions => {
+        this.ngZone.run(() => {
+          this.applySyncTaskExecutions(executions);
+          this.cdr.markForCheck();
+        });
+      },
       error: err => this.handleAuthError(err)
     });
   }
@@ -251,8 +282,11 @@ export class AdminDashboardComponent implements OnInit {
   private openSyncProductDialog(): void {
     this.productService.fetchAllProductsForSync()
       .subscribe(products => {
-        this.products = products;
-        this.showSyncProductDialog = true;
+        this.ngZone.run(() => {
+          this.products = products;
+          this.showSyncProductDialog = true;
+          this.cdr.markForCheck();
+        });
       });
   }
 
@@ -356,9 +390,18 @@ export class AdminDashboardComponent implements OnInit {
     this.logStream.resetTask(task.key);
     this.showSyncProductDialog = false;
 
-    request$.pipe(finalize(() => (this.loadingSyncTaskKey = null))).subscribe({
-      next: () => this.handleSyncTaskSuccess(task),
-      error: () => this.handleSyncTaskFailure(task)
-    });
+    request$
+      .pipe(
+        finalize(() => {
+          this.ngZone.run(() => {
+            this.loadingSyncTaskKey = null;
+            this.cdr.markForCheck();
+          });
+        })
+      )
+      .subscribe({
+        next: () => this.ngZone.run(() => this.handleSyncTaskSuccess(task)),
+        error: () => this.ngZone.run(() => this.handleSyncTaskFailure(task))
+      });
   }
 }

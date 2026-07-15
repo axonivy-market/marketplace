@@ -17,7 +17,10 @@ import {
   WritableSignal,
   computed,
   inject,
-  signal
+  signal,
+  ChangeDetectorRef,
+  NgZone,
+  OnInit
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
@@ -107,7 +110,7 @@ const GITHUB_BASE_URL = 'https://github.com/';
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss'
 })
-export class ProductDetailComponent implements AfterViewInit {
+export class ProductDetailComponent implements AfterViewInit, OnInit {
   themeService = inject(ThemeService);
   route = inject(ActivatedRoute);
   router = inject(Router);
@@ -124,6 +127,8 @@ export class ProductDetailComponent implements AfterViewInit {
   loadingService = inject(LoadingService);
   historyService = inject(HistoryService);
   markdownService = inject(MarkdownService);
+  cdr = inject(ChangeDetectorRef);
+  ngZone = inject(NgZone);
   subscriptions: Subscription[] = [];
   criteria: ChangeLogCriteria = {
     pageable: DEFAULT_CHANGELOG_PAGEABLE,
@@ -235,35 +240,39 @@ export class ProductDetailComponent implements AfterViewInit {
           this.productFeedbackService.getInitFeedbacksObservable(),
         rating: this.productStarRatingService.getRatingObservable(productId),
         changelogs: this.productService.getProductChangelogs(this.criteria)
-      }).subscribe(res => {
-        this.setupMarkdownParser(productDetail.sourceUrl);
+      })
+      .subscribe(res => {
+        this.ngZone.run(() => {
+          this.setupMarkdownParser(productDetail.sourceUrl);
 
-        const gitHubReleaseModelList =
-          res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
-        if (gitHubReleaseModelList.length > 0) {
-          this.productReleaseSafeHtmls.set(
-            this.renderChangelogContent(gitHubReleaseModelList)
+          const gitHubReleaseModelList =
+            res.changelogs?._embedded?.gitHubReleaseModelList ?? [];
+          if (gitHubReleaseModelList.length > 0) {
+            this.productReleaseSafeHtmls.set(
+              this.renderChangelogContent(gitHubReleaseModelList)
+            );
+            // Update pagination metadata information
+            this.changeLogLinks = res.changelogs._links;
+            this.changeLogPages = res.changelogs.page;
+            this.criteria.nextPageHref = this.changeLogLinks?.next?.href;
+          }
+
+          this.handleProductDetail(productDetail);
+          this.getReadmeContent();
+          this.productFeedbackService.handleFeedbackApiResponse(
+            res.productFeedBack
           );
-          // Update pagination metadata information
-          this.changeLogLinks = res.changelogs._links;
-          this.changeLogPages = res.changelogs.page;
-          this.criteria.nextPageHref = this.changeLogLinks?.next?.href;
-        }
+          this.updateDropdownSelection();
+          this.checkMediaSize();
 
-        this.handleProductDetail(productDetail);
-        this.getReadmeContent();
-        this.productFeedbackService.handleFeedbackApiResponse(
-          res.productFeedBack
-        );
-        this.updateDropdownSelection();
-        this.checkMediaSize();
-
-        this.handlePopupLogic();
-        this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
-        this.isDataLoaded = true;
-        setTimeout(() => {
-          this.navigateToProductDetailsWithTabFragment();
-        }, 0);
+          this.handlePopupLogic();
+          this.loadingService.hideLoading(LoadingComponentId.DETAIL_PAGE);
+          this.isDataLoaded = true;
+          setTimeout(() => {
+            this.navigateToProductDetailsWithTabFragment();
+          }, 0);
+          this.cdr.markForCheck();
+        });
       });
     }
   }
@@ -285,13 +294,16 @@ export class ProductDetailComponent implements AfterViewInit {
 
   private handlePopupLogic(): void {
     this.route.queryParams.subscribe(params => {
-      this.showPopup = params['showPopup'] === 'true';
-      if (this.showPopup && this.authService.getToken()) {
-        this.appModalService
-          .openAddFeedbackDialog()
-          .then(() => this.removeQueryParam())
-          .catch(() => this.removeQueryParam());
-      }
+      this.ngZone.run(() => {
+        this.showPopup = params['showPopup'] === 'true';
+        if (this.showPopup && this.authService.getToken()) {
+          this.appModalService
+            .openAddFeedbackDialog()
+            .then(() => this.ngZone.run(() => { this.removeQueryParam(); this.cdr.markForCheck(); }))
+            .catch(() => this.ngZone.run(() => { this.removeQueryParam(); this.cdr.markForCheck(); }));
+        }
+        this.cdr.markForCheck();
+      });
     });
   }
 
@@ -361,22 +373,25 @@ export class ProductDetailComponent implements AfterViewInit {
       .getProductChangelogs(this.criteria)
       .subscribe({
         next: response => {
-          if (!response) {
-            return;
-          }
-          const newChangelogs =
-            response._embedded?.gitHubReleaseModelList ?? [];
-          if (newChangelogs.length > 0) {
-            this.productReleaseSafeHtmls.update(existingChangelog =>
-              existingChangelog.concat(
-                this.renderChangelogContent(newChangelogs)
-              )
-            );
-          }
-          // Update pagination metadata information
-          this.changeLogLinks = response._links;
-          this.changeLogPages = response.page;
-          this.criteria.nextPageHref = this.changeLogLinks?.next?.href;
+          this.ngZone.run(() => {
+            if (!response) {
+              return;
+            }
+            const newChangelogs =
+              response._embedded?.gitHubReleaseModelList ?? [];
+            if (newChangelogs.length > 0) {
+              this.productReleaseSafeHtmls.update(existingChangelog =>
+                existingChangelog.concat(
+                  this.renderChangelogContent(newChangelogs)
+                )
+              );
+            }
+            // Update pagination metadata information
+            this.changeLogLinks = response._links;
+            this.changeLogPages = response.page;
+            this.criteria.nextPageHref = this.changeLogLinks?.next?.href;
+            this.cdr.markForCheck();
+          });
         },
         error: error => throwError(() => error)
       });
@@ -471,9 +486,12 @@ export class ProductDetailComponent implements AfterViewInit {
     this.productService
       .getProductDetailsWithVersion(this.productDetail().id, version)
       .subscribe(updatedProductDetail => {
-        this.productModuleContent.set(
-          updatedProductDetail.productModuleContent
-        );
+        this.ngZone.run(() => {
+          this.productModuleContent.set(
+            updatedProductDetail.productModuleContent
+          );
+          this.cdr.markForCheck();
+        });
       });
   }
 
@@ -725,18 +743,21 @@ export class ProductDetailComponent implements AfterViewInit {
   navigateToProductDetailsWithTabFragment(): void {
     this.subscriptions.push(
       this.route.fragment.subscribe(fragment => {
-        const tabValue = RouteUtils.getTabFragment(fragment);
-        const hasValidFragment = !!fragment
-          && PRODUCT_DETAIL_TABS.some(tab => tab.value === fragment)
-          && fragment !== DEFAULT_ACTIVE_TAB;
-        if (fragment) {
-          const shouldUpdateUrl = this.initialFragmentHandled;
-          this.setActiveTab(tabValue, shouldUpdateUrl, hasValidFragment);
-        }
-        if (!this.initialFragmentHandled) {
-          this.initialFragmentHandled = true;
-          this.activeTab = DEFAULT_ACTIVE_TAB;
-        }
+        this.ngZone.run(() => {
+          const tabValue = RouteUtils.getTabFragment(fragment);
+          const hasValidFragment = !!fragment
+            && PRODUCT_DETAIL_TABS.some(tab => tab.value === fragment)
+            && fragment !== DEFAULT_ACTIVE_TAB;
+          if (fragment) {
+            const shouldUpdateUrl = this.initialFragmentHandled;
+            this.setActiveTab(tabValue, shouldUpdateUrl, hasValidFragment);
+          }
+          if (!this.initialFragmentHandled) {
+            this.initialFragmentHandled = true;
+            this.activeTab = DEFAULT_ACTIVE_TAB;
+          }
+          this.cdr.markForCheck();
+        });
       })
     );
   }

@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectorRef,
   Component,
   computed,
   ElementRef,
@@ -14,7 +13,9 @@ import {
   PLATFORM_ID,
   Signal,
   signal,
-  WritableSignal
+  WritableSignal,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -107,11 +108,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
   routingQueryParamService = inject(RoutingQueryParamService);
-  changeDetectorRef = inject(ChangeDetectorRef);
+  
   cookieService = inject(CookieService);
   router = inject(Router);
   route = inject(ActivatedRoute);
   httpClient = inject(HttpClient);
+  cdr = inject(ChangeDetectorRef);
+  ngZone = inject(NgZone);
 
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
@@ -223,22 +226,25 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         this.designerVersion
       )
       .subscribe(data => {
-        data.forEach(item => {
-          const version = VERSION.displayPrefix.concat(item.version);
-          this.versions.update(currentVersions => [
-            ...currentVersions,
-            version
-          ]);
+        this.ngZone.run(() => {
+          data.forEach(item => {
+            const version = VERSION.displayPrefix.concat(item.version);
+            this.versions.update(currentVersions => [
+              ...currentVersions,
+              version
+            ]);
 
-          if (!this.versionMap.get(version)) {
-            this.versionMap.set(version, item.artifactsByVersion);
+            if (!this.versionMap.get(version)) {
+              this.versionMap.set(version, item.artifactsByVersion);
+            }
+          });
+          if (this.versions().length !== 0) {
+            this.onSelectVersion(
+              this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
+            );
           }
+          this.cdr.markForCheck();
         });
-        if (this.versions().length !== 0) {
-          this.onSelectVersion(
-            this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
-          );
-        }
       });
   }
 
@@ -259,21 +265,24 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.productService
       .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
       .subscribe(data => {
-        const versionMap = data
-          .map(dataVersionAndUrl => dataVersionAndUrl.version)
-          .map(version => VERSION.displayPrefix.concat(version));
-        data.forEach(dataVersionAndUrl => {
-          const currentVersion = VERSION.displayPrefix.concat(
-            dataVersionAndUrl.version
-          );
-          const versionAndUrl: ItemDropdown = {
-            value: currentVersion,
-            label: currentVersion,
-            metaDataJsonUrl: dataVersionAndUrl.url
-          };
-          this.versionDropdownInDesigner.push(versionAndUrl);
+        this.ngZone.run(() => {
+          const versionMap = data
+            .map(dataVersionAndUrl => dataVersionAndUrl.version)
+            .map(version => VERSION.displayPrefix.concat(version));
+          data.forEach(dataVersionAndUrl => {
+            const currentVersion = VERSION.displayPrefix.concat(
+              dataVersionAndUrl.version
+            );
+            const versionAndUrl: ItemDropdown = {
+              value: currentVersion,
+              label: currentVersion,
+              metaDataJsonUrl: dataVersionAndUrl.url
+            };
+            this.versionDropdownInDesigner.push(versionAndUrl);
+          });
+          this.versions.set(versionMap);
+          this.cdr.markForCheck();
         });
-        this.versions.set(versionMap);
       });
   }
 
@@ -314,13 +323,16 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   fetchAndDownloadArtifact(url: string, fileName: string): void {
     this.httpClient
       .get(url, {responseType: BLOB, observe: RESPONSE})
-      .pipe(finalize(() => this.isDownloading.set(false)))
+      .pipe(finalize(() => this.ngZone.run(() => { this.isDownloading.set(false); this.cdr.markForCheck(); })))
       .subscribe({
         next: (response: HttpResponse<Blob>) => {
-          if (response.body) {
-            this.triggerDownload(response.body, fileName);
-            this.onUpdateInstallationCount();
-          }
+          this.ngZone.run(() => {
+            if (response.body) {
+              this.triggerDownload(response.body, fileName);
+              this.onUpdateInstallationCount();
+            }
+            this.cdr.markForCheck();
+          });
         },
         error: () => {
         }

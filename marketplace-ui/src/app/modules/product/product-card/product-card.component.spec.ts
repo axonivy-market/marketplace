@@ -35,7 +35,7 @@ describe('ProductCardComponent', () => {
         provideHttpClientTesting(),
         TranslateService,
         ProductService,
-        ProductComponent,
+        { provide: ProductComponent, useValue: { isRESTClient: () => false } },
         { provide: ActivatedRoute, useValue: mockActivatedRoute }
       ]
     }).compileComponents();

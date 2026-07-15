@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -53,6 +53,8 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   repos: ProductSecurityInfo[] = [];
   errorMessage = '';
@@ -155,16 +157,17 @@ export class SecurityMonitorComponent implements OnInit, OnDestroy {
     const subscription = this.adminDashboardService
       .searchSecurityDetails(this.criteria)
       .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
+        finalize(() => this.ngZone.run(() => { this.isLoading = false; this.cdr.markForCheck(); }))
       )
       .subscribe({
         next: response => {
-          this.repos = response?._embedded?.productSecurityInfoList || [];
-          this.totalElements = response?.page?.totalElements ?? 0;
+          this.ngZone.run(() => {
+            this.repos = response?._embedded?.productSecurityInfoList || [];
+            this.totalElements = response?.page?.totalElements ?? 0;
+            this.cdr.markForCheck();
+          });
         },
-        error: err => this.handleError(err)
+        error: err => this.ngZone.run(() => this.handleError(err))
       });
 
     this.subscriptions.push(subscription);
