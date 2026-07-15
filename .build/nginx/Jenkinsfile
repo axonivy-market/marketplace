@@ -20,8 +20,7 @@ pipeline {
                 type: 'PT_BRANCH',
                 defaultValue: 'origin/develop',
                 description: 'Choose the GitHub branch that contains the Nginx configuration to deploy',
-                branchFilter: '.*',
-                tagFilter: '*',
+                branchFilter: '^(origin/master|origin/develop|origin/release/.*)$',
                 sortMode: 'NONE',
                 selectedValue: 'DEFAULT',
                 quickFilterEnabled: true
@@ -29,6 +28,7 @@ pipeline {
         choice(
             name: 'DEPLOYMENT_TARGET',
             choices: [
+                'DEV node',
                 'PREVIEW node',
                 'PROD_1 node',
                 'PROD_2 node'
@@ -59,7 +59,7 @@ pipeline {
 
         stage('Confirm Production Deployment') {
             when {
-                expression { params.DEPLOYMENT_TARGET != 'PREVIEW node' }
+                expression { params.DEPLOYMENT_TARGET == 'PROD_1 node' || params.DEPLOYMENT_TARGET == 'PROD_2 node' }
             }
             steps {
                 script {
