@@ -113,7 +113,8 @@ describe('AdminDashboardComponent', () => {
       syncGithubMonitor: vi
         .fn()
         .mockName('AdminDashboardService.syncGithubMonitor'),
-      syncOneProduct: vi.fn().mockName('AdminDashboardService.syncOneProduct')
+      syncOneProduct: vi.fn().mockName('AdminDashboardService.syncOneProduct'),
+      cancelSyncTask: vi.fn().mockName('AdminDashboardService.cancelSyncTask')
     } as any;
     mockProductService = {
       fetchAllProductsForSync: vi
@@ -277,6 +278,66 @@ describe('AdminDashboardComponent', () => {
         SYNC_TASK_KEYS.SYNC_GITHUB_MONITOR,
         SyncTaskStatus.RUNNING
       );
+    });
+  });
+
+  describe('onAction', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
+    it('should call cancel when task status is RUNNING', () => {
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
+      syncTask.status = SyncTaskStatus.RUNNING;
+      mockAdminService.cancelSyncTask.mockReturnValue(of(undefined));
+      const cancelSpy = vi.spyOn(component, 'cancel');
+
+      component.onAction(syncTask);
+
+      expect(cancelSpy).toHaveBeenCalledWith(syncTask);
+    });
+
+    it('should call trigger when task status is not RUNNING', () => {
+      mockAdminService.syncProducts.mockReturnValue(of());
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
+      syncTask.status = SyncTaskStatus.SUCCESS;
+      const triggerSpy = vi.spyOn(component, 'trigger');
+
+      component.onAction(syncTask);
+
+      expect(triggerSpy).toHaveBeenCalledWith(syncTask);
+    });
+  });
+
+  describe('cancel', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
+
+    it('should call cancelSyncTask and set status to CANCELLED on success', () => {
+      mockAdminService.cancelSyncTask.mockReturnValue(of(undefined));
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
+      syncTask.status = SyncTaskStatus.RUNNING;
+
+      component.cancel(syncTask);
+
+      expect(mockAdminService.cancelSyncTask).toHaveBeenCalledWith(SYNC_TASK_KEYS.SYNC_PRODUCTS);
+      expect(syncTask.status).toBe(SyncTaskStatus.CANCELLED);
+      expect(syncTask.message).toBe('Cancelled by user');
+      expect(component.loadingSyncTaskKey).toBeNull();
+    });
+
+    it('should reset loadingSyncTaskKey on error', () => {
+      mockAdminService.cancelSyncTask.mockReturnValue(
+        throwError(() => new Error('cancel failed'))
+      );
+      const syncTask = component.syncTasks.find(t => t.key === SYNC_TASK_KEYS.SYNC_PRODUCTS)!;
+      syncTask.status = SyncTaskStatus.RUNNING;
+      component.loadingSyncTaskKey = syncTask.key;
+
+      component.cancel(syncTask);
+
+      expect(component.loadingSyncTaskKey).toBeNull();
     });
   });
 

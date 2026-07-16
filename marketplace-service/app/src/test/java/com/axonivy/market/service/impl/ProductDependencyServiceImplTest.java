@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Metadata;
 import com.axonivy.market.core.entity.Product;
@@ -52,6 +53,8 @@ class ProductDependencyServiceImplTest extends BaseSetup {
   MavenArtifactVersionRepository mavenArtifactVersionRepository;
   @Mock
   ProductDependencyRepository productDependencyRepository;
+  @Mock
+  SyncTaskCancellationRegistry cancellationRegistry;
   @Mock
   MetadataService metadataService;
   @InjectMocks

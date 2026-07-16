@@ -4,7 +4,9 @@ import {
   effect,
   inject,
   PLATFORM_ID,
-  signal
+  signal,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LogStreamService } from '../../../core/services/logging/log-stream.service';
@@ -36,6 +38,8 @@ export class LogViewerComponent {
   readonly logFiles = signal<LogFileModel[]>([]);
   readonly filteredLogFiles = signal<LogFileModel[]>([]);
   private readonly logParser = inject(LogParserService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   constructor() {
     if (this.isBrowser) {
@@ -173,12 +177,18 @@ export class LogViewerComponent {
     const selectedDate = this.selectedDate();
     this.logService.getLogFiles(selectedDate).subscribe({
       next: (response: LogFileModel[]) => {
-        this.logFiles.set(response);
-        this.filteredLogFiles.set(response);
+        this.ngZone.run(() => {
+          this.logFiles.set(response);
+          this.filteredLogFiles.set(response);
+          this.cdr.markForCheck();
+        });
       },
       error: _error => {
-        this.logFiles.set([]);
-        this.filteredLogFiles.set([]);
+        this.ngZone.run(() => {
+          this.logFiles.set([]);
+          this.filteredLogFiles.set([]);
+          this.cdr.markForCheck();
+        });
       }
     });
   }

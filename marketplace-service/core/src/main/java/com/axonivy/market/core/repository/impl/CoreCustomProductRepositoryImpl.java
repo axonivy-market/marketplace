@@ -184,7 +184,6 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
 
     var predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
     criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
-    criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
     namesJoin.on(criteriaContext.builder().equal(namesJoin.key(), language.getValue()));
 
@@ -194,8 +193,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     }
 
     criteriaContext.query().select(criteriaContext.root()).where(predicate)
-        .orderBy(orders)
-        .distinct(true);
+        .orderBy(orders);
 
     TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());
     query.setFirstResult((int) pageRequest.getOffset());

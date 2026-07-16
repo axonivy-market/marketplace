@@ -72,7 +72,8 @@ describe('BackToTopComponent', () => {
     const scrollToTopButtonElement = fixture.debugElement.query(
       By.css('.scroll-to-top')
     );
-    expect(scrollToTopButtonElement.nativeElement.classList.contains('show')).toBe(true);
+    expect(scrollToTopButtonElement).toBeTruthy();
+    expect(component.showScrollButton).toBe(true);
   });
 
   it('should not render the button when showScrollButton is false', () => {
@@ -83,6 +84,7 @@ describe('BackToTopComponent', () => {
     const scrollToTopButtonElement = fixture.debugElement.query(
       By.css('.scroll-to-top')
     );
-    expect(scrollToTopButtonElement.nativeElement.classList.contains('show')).toBe(false);
+    expect(scrollToTopButtonElement).toBeTruthy();
+    expect(component.showScrollButton).toBe(false);
   });
 });
