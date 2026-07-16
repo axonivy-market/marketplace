@@ -4,9 +4,10 @@ set -euo pipefail
 
 NODE_IP="${1:-}"
 NGINX_VERSION="${2:-}"
-WORKSPACE_ROOT="${3:-}"
-NGINX_CONFIG_PATH="${4:-}"
-NGINX_PORT="${5:-80}"
+TARGET_ENV="${3:-default}"
+WORKSPACE_ROOT="${4:-}"
+NGINX_CONFIG_PATH="${5:-}"
+NGINX_PORT="${6:-80}"
 
 missing_args=()
 [[ -z "${NODE_IP}" ]] && missing_args+=("NODE_IP")
@@ -15,7 +16,13 @@ missing_args=()
 [[ -z "${NGINX_CONFIG_PATH}" ]] && missing_args+=("NGINX_CONFIG_PATH")
 if [[ ${#missing_args[@]} -gt 0 ]]; then
     echo "ERROR: $0 Missing required arguments: ${missing_args[*]}"
-    echo "Usage: $0 <NODE_IP> <NGINX_VERSION> <WORKSPACE_ROOT> <NGINX_CONFIG_PATH> [NGINX_PORT]"
+    echo "Usage: $0 <NODE_IP> <NGINX_VERSION> <TARGET_ENV> <WORKSPACE_ROOT> <NGINX_CONFIG_PATH> [NGINX_PORT]"
+    exit 1
+fi
+
+TARGET_ENV="$(printf '%s' "${TARGET_ENV}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+if [[ -z "${TARGET_ENV}" ]]; then
+    echo "ERROR: Invalid TARGET_ENV after normalization."
     exit 1
 fi
 
@@ -68,10 +75,11 @@ scp "${SSH_OPTS[@]}" "${LOCAL_FIXED_DOCKER_COMPOSE}" "${SSH_USER}@${NODE_IP}:${R
 scp "${SSH_OPTS[@]}" "${LOCAL_FIXED_DOCKERFILE}" "${SSH_USER}@${NODE_IP}:${REMOTE_DOCKERFILE_FILE}"
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
-    "NGINX_VERSION='${NGINX_VERSION}' REMOTE_NGINX_CONFIG_FILE='${REMOTE_NGINX_CONFIG_FILE}' REMOTE_ENV_FILE='${REMOTE_ENV_FILE}' REMOTE_DOCKER_COMPOSE_FILE='${REMOTE_DOCKER_COMPOSE_FILE}' REMOTE_DOCKERFILE_FILE='${REMOTE_DOCKERFILE_FILE}' bash -se" <<'REMOTE_EOF'
+    "NGINX_VERSION='${NGINX_VERSION}' TARGET_ENV='${TARGET_ENV}' REMOTE_NGINX_CONFIG_FILE='${REMOTE_NGINX_CONFIG_FILE}' REMOTE_ENV_FILE='${REMOTE_ENV_FILE}' REMOTE_DOCKER_COMPOSE_FILE='${REMOTE_DOCKER_COMPOSE_FILE}' REMOTE_DOCKERFILE_FILE='${REMOTE_DOCKERFILE_FILE}' bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
-NEW_RELEASE_PATH="/home/axonivy/marketplace/nginx/${NGINX_VERSION}"
+REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx/${TARGET_ENV}"
+NEW_RELEASE_PATH="${REMOTE_NGINX_BASE}/${NGINX_VERSION}"
 NEW_NGINX_CONFIG_PATH="${NEW_RELEASE_PATH}/nginx.conf"
 NEW_NGINX_DOCKER_COMPOSE_PATH="${NEW_RELEASE_PATH}/docker-compose.yml"
 NEW_NGINX_DOCKERFILE_PATH="${NEW_RELEASE_PATH}/Dockerfile"
