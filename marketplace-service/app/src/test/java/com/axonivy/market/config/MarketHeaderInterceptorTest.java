@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import static com.axonivy.market.core.constants.CoreCommonConstants.REQUESTED_BY;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -37,7 +38,7 @@ class MarketHeaderInterceptorTest {
   @Test
   void testPreHandleGetRequestWithoutHeaderShouldReturnTrue() throws Exception {
     when(request.getMethod()).thenReturn(HttpMethod.GET.name());
-    when(request.getHeader(CommonConstants.REQUESTED_BY)).thenReturn(null);
+    when(request.getHeader(REQUESTED_BY)).thenReturn(null);
 
     boolean result = interceptor.preHandle(request, response, new Object());
 
@@ -47,7 +48,7 @@ class MarketHeaderInterceptorTest {
   @Test
   void testPreHandlePostRequestWithHeaderShouldReturnTrue() throws Exception {
     when(request.getMethod()).thenReturn(HttpMethod.POST.name());
-    when(request.getHeader(CommonConstants.REQUESTED_BY)).thenReturn("test-client");
+    when(request.getHeader(REQUESTED_BY)).thenReturn("test-client");
 
     boolean result = interceptor.preHandle(request, response, new Object());
 
@@ -57,7 +58,7 @@ class MarketHeaderInterceptorTest {
   @Test
   void testPreHandlePostRequestWithoutHeaderShouldThrowException() {
     when(request.getMethod()).thenReturn(HttpMethod.POST.name());
-    when(request.getHeader(CommonConstants.REQUESTED_BY)).thenReturn(null);
+    when(request.getHeader(REQUESTED_BY)).thenReturn(null);
 
     MissingHeaderException exception = assertThrows(
         MissingHeaderException.class,

@@ -2,25 +2,6 @@
 name: marketplace
 
 services:
-  nginx:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    restart: always
-    volumes:
-      - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
-      - ${NGINX_CACHE_PATH}:/usr/share/nginx/html/cache
-      - ${NGINX_LOG_PATH}:/var/log/nginx
-      - marketcache:/usr/share/nginx/html/market-cache
-      - marketbrowser:/usr/share/nginx/html/browser
-    ports:
-      - "4500:80"
-    depends_on:
-      - ui
-      - app
-    networks:
-      - marketplace-network
-
   ui:
     env_file:
       - ../.env
@@ -78,4 +59,8 @@ networks:
 
 volumes:
   marketcache:
+    name: marketplace_marketcache
+    external: true
   marketbrowser:
+    name: marketplace_marketbrowser
+    external: true

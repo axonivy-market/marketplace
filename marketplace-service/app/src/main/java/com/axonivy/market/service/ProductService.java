@@ -2,6 +2,7 @@ package com.axonivy.market.service;
 
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UpdateProductRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -224,4 +225,19 @@ public interface ProductService {
    * @author pvquan
    */
   String getBestMatchVersion(String productId, String version, Boolean isShowDevVersion);
+
+  /**
+   * <p>
+   * Updates a product's information based on the provided update request. Modifies product metadata,
+   * versions, artifacts, and other details according to the fields specified in the UpdateProductRequest.
+   * </p>
+   *
+   * @param  id
+   *              type {@link String} - the unique product identifier to update
+   * @param  request
+   *              type {@link UpdateProductRequest} - the request object containing updated product information
+   * @return {@link Product} - the updated product object with new data; throws exception if product not found.
+   * @author pvquan
+   */
+  Product updateProduct(String id, UpdateProductRequest request);
 }

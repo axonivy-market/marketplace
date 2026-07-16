@@ -1,7 +1,8 @@
 package com.axonivy.market.rest.axonivy;
 
-import com.axonivy.market.enums.AppSettingKey;
 import com.axonivy.market.config.RestClientBuilder;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.model.DocumentInfoResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +30,7 @@ class AxonIvyClientTest {
   private RestClientBuilder restClientBuilder;
 
   @Mock
-  private com.axonivy.market.service.AppSettingService settingService;
+  private AppSettingService settingService;
 
   @InjectMocks
   private AxonIvyClient axonIvyClient;

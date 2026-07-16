@@ -1,6 +1,6 @@
-package com.axonivy.market.service.impl;
+package com.axonivy.market.core.service.impl;
 
-import com.axonivy.market.service.EncryptionService;
+import com.axonivy.market.core.service.EncryptionService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;

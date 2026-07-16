@@ -9,6 +9,7 @@ import com.axonivy.market.core.enums.Language;
 import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
 import com.axonivy.market.core.utils.CoreVersionUtils;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -30,8 +31,8 @@ import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import com.axonivy.market.service.VersionService;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.util.HttpFetchingUtils;
 import com.axonivy.market.util.MavenUtils;
 import com.axonivy.market.util.VersionUtils;
@@ -1043,6 +1044,51 @@ class ProductServiceImplTest extends BaseSetup {
     productService.syncLatestDataFromMarketRepo(true);
 
     verify(productRepo, times(mockProducts.size())).save(any(Product.class));
+  }
+
+  @Test
+  void testUpdateProductSuccess() {
+    Product mockProduct = new Product();
+    mockProduct.setId(MOCK_PRODUCT_ID);
+    mockProduct.setInternal(false);
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
+    when(productRepo.save(mockProduct)).thenReturn(mockProduct);
+
+    var request = new UpdateProductRequest(true);
+    Product result = productService.updateProduct(MOCK_PRODUCT_ID, request);
+
+    assertNotNull(result, "Updated product should not be null");
+    assertTrue(result.getInternal(), "Product internal flag should be set to true");
+    verify(productRepo).findById(MOCK_PRODUCT_ID);
+    verify(productRepo).save(mockProduct);
+  }
+
+  @Test
+  void testUpdateProductNotFound() {
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.empty());
+
+    var request = new UpdateProductRequest(true);
+    assertThrows(NotFoundException.class, () -> productService.updateProduct(MOCK_PRODUCT_ID, request),
+        "Should throw NotFoundException when product does not exist");
+    verify(productRepo).findById(MOCK_PRODUCT_ID);
+    verify(productRepo, never()).save(any());
+  }
+
+  @Test
+  void testUpdateProductWithNullInternalField() {
+    Product mockProduct = new Product();
+    mockProduct.setId(MOCK_PRODUCT_ID);
+    mockProduct.setInternal(false);
+    when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(mockProduct));
+    when(productRepo.save(mockProduct)).thenReturn(mockProduct);
+
+    var request = new UpdateProductRequest(null);
+    Product result = productService.updateProduct(MOCK_PRODUCT_ID, request);
+
+    assertNotNull(result, "Updated product should not be null");
+    assertFalse(result.getInternal(), "Product internal flag should remain unchanged when request internal is null");
+    verify(productRepo).findById(MOCK_PRODUCT_ID);
+    verify(productRepo).save(mockProduct);
   }
 
   private void prepareMockDataForSync(GitHubRepoMeta repoMeta) throws IOException {

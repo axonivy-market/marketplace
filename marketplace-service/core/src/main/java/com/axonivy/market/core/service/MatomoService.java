@@ -1,4 +1,4 @@
-package com.axonivy.market.service;
+package com.axonivy.market.core.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 

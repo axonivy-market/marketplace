@@ -34,6 +34,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -65,8 +66,8 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
@@ -234,14 +235,14 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
           EMPTY);
       List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
       if (ObjectUtils.isNotEmpty(productList)) {
-        productId = productList.get(0).getId();
+        productId = productList.getFirst().getId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
       }
     } else {
       List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(file.getFileName());
       if (ObjectUtils.isNotEmpty(images)) {
-        var currentImage = images.get(0);
+        var currentImage = images.getFirst();
         productId = currentImage.getProductId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
@@ -384,6 +385,12 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       if (StringUtils.isNotBlank(product.getVendorImagePath())) {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
       }
+      if (StringUtils.isNotBlank(product.getVendorLogoPath())) {
+        product.setVendorLogo(mapVendorImage(product.getId(), ghContent, product.getVendorLogoPath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorLogoDarkModePath())) {
+        product.setVendorLogoDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorLogoDarkModePath()));
+      }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
         product.setVendorImageDarkMode(
             mapVendorImage(product.getId(), ghContent, product.getVendorImageDarkModePath()));
@@ -422,7 +429,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     try {
       if (!CollectionUtils.isEmpty(gitHubTags)) {
         List<GHTag> sortedTags = sortByTagCommitDate(gitHubTags);
-        GHCommit commit = sortedTags.get(0).getCommit();
+        GHCommit commit = sortedTags.getFirst().getCommit();
         if (commit != null) {
           firstTagPublishedDate = commit.getCommitDate();
         }
@@ -619,6 +626,17 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
     return versions.contains(version) ? version : VersionFactory.get(versions, version);
+  }
+
+  @Override
+  public Product updateProduct(String id, UpdateProductRequest request) {
+    Product product = productRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+        "Product not found for id: " + id));
+    if (request.getInternal() != null) {
+      product.setInternal(request.getInternal());
+    }
+
+    return productRepo.save(product);
   }
 
   public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {

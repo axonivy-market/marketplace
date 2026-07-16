@@ -1,4 +1,4 @@
-package com.axonivy.market.enums;
+package com.axonivy.market.core.enums;
 
 /**
  * Enum representing the categories of application settings.

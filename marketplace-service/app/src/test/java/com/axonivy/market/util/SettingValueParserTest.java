@@ -1,6 +1,7 @@
 package com.axonivy.market.util;
 
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.utils.SettingValueParser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

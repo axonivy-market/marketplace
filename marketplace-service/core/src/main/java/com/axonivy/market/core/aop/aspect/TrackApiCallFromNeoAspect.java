@@ -1,10 +1,9 @@
-package com.axonivy.market.aop.aspect;
+package com.axonivy.market.core.aop.aspect;
 
-import static com.axonivy.market.constants.CommonConstants.*;
 
-import com.axonivy.market.service.MatomoService;
+import com.axonivy.market.core.constants.CoreCommonConstants;
+import com.axonivy.market.core.service.MatomoService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -21,13 +20,13 @@ public class TrackApiCallFromNeoAspect {
     this.matomoService = matomoService;
   }
 
-  @AfterReturning("@annotation(com.axonivy.market.aop.annotation.TrackApiCallFromNeo)")
-  public void afterTrackedApiCall(JoinPoint joinPoint) {
+  @AfterReturning("@annotation(com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo)")
+  public void afterTrackedApiCall() {
     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attributes != null) {
       HttpServletRequest request = attributes.getRequest();
-      String requestedByHeader = request.getHeader(REQUESTED_BY);
-      if (IVY_HEADER.equals(requestedByHeader)) {
+      String requestedByHeader = request.getHeader(CoreCommonConstants.REQUESTED_BY);
+      if (CoreCommonConstants.IVY_HEADER.equals(requestedByHeader)) {
         matomoService.trackEventAsync(request);
       }
     }

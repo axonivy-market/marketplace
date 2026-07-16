@@ -1,9 +1,9 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.model.ProductModel;
@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -54,7 +55,7 @@ public class ProductController {
   private final ProductDependencyService productDependencyService;
 
   @GetMapping()
-  @TrackApiCallFromNeo
+  @TrackApiCallFromNeo()
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
@@ -181,5 +182,21 @@ public class ProductController {
           "Nothing to sync");
       return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
     }
+  }
+
+  @Authorized
+  @Operation(hidden = true)
+  @PutMapping(BY_ID)
+  public ResponseEntity<Message> updateProduct(@PathVariable String id,
+      @RequestBody com.axonivy.market.model.UpdateProductRequest request) {
+    var updated = productService.updateProduct(id, request);
+    if (updated == null) {
+      var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), ErrorCode.PRODUCT_NOT_FOUND.getHelpText(),
+          "Product with id " + id + " not found");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
+        "Product with id " + id + " updated successfully");
+    return ResponseEntity.status(HttpStatus.OK).body(message);
   }
 }

@@ -1,6 +1,6 @@
-package com.axonivy.market.util;
+package com.axonivy.market.core.utils;
 
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.enums.AppSettingKey;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
