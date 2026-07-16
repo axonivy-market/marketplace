@@ -3,7 +3,7 @@ import { ProductListingPage } from './page-objects/ProductListingPage';
 
 test.describe('@real-endpoint Product listing page', () => {
   test.skip(
-    !process.env.E2E_REAL_ENDPOINT,
+    !process.env['E2E_REAL_ENDPOINT'],
     'Set E2E_REAL_ENDPOINT=true to run against a real endpoint.'
   );
 
