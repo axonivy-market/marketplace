@@ -185,6 +185,32 @@ describe('ProductCardComponent', () => {
     expect(component.smallBadgeLightUrl).toBe('');
   });
 
+  it('should apply the image container class only for internal or badged products', () => {
+    fixture.componentRef.setInput('product', {
+      ...products[0],
+      internal: false,
+      badgeUrl: '',
+      badgeDarkUrl: ''
+    });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('.product-image-container')
+    ).toBeNull();
+
+    fixture.componentRef.setInput('product', {
+      ...products[0],
+      internal: true,
+      badgeUrl: '',
+      badgeDarkUrl: ''
+    });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('.product-image-container')
+    ).not.toBeNull();
+  });
+
   it('should show internal badge in REST client mode when product is internal', () => {
     component.product = { ...products[0], internal: true };
     if ((component.isShowInRESTClientEditor as any)?.set) {
