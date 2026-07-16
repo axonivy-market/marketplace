@@ -3,6 +3,7 @@ package com.axonivy.market.github.service.impl;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.config.OkHttpClientBuilder;
 import com.axonivy.market.config.RestClientBuilder;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
 import com.axonivy.market.core.entity.Product;
@@ -17,6 +18,7 @@ import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.exceptions.model.UnarchiveFailedException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
 import com.axonivy.market.github.model.CodeScanning;
@@ -117,6 +119,7 @@ public class GitHubServiceImpl implements GitHubService {
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
   private final OkHttpClientBuilder okHttpClientBuilder;
   private final MultiTaskUtils multiTaskUtils;
+  private final SyncTaskCancellationRegistry cancellationRegistry;
 
   @Override
   public GitHub getGitHub() throws IOException {
@@ -258,7 +261,12 @@ public class GitHubServiceImpl implements GitHubService {
 
     String token = getConfiguredToken();
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
-        repo -> fetchSecurityInfoSafe(repo, organization, token);
+        (GHRepository repo) -> {
+          if (cancellationRegistry.isCancelled(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)) {
+            throw new TaskCancelledException();
+          }
+          return fetchSecurityInfoSafe(repo, organization, token);
+        };
 
     List<ProductSecurityInfo> productSecurityInfos = multiTaskUtils.parallelProcessWithLimit(
         organization.listRepositories().toList().stream().filter(repo -> !repo.isArchived()).toList(),

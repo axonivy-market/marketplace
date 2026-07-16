@@ -79,12 +79,12 @@ export class RepoTestResultComponent {
   }
 
   hasAnyTestResults(): boolean {
-    return (this.repository?.testResults || []).some(b => this.isNonEmptyResults(b?.results));
+    return (this.repository.testResults || []).some(b => this.isNonEmptyResults(b?.results));
   }
 
   hasWorkflowTestResults(): boolean {
     const wf = this.workflowInfo?.workflowType;
-    return (this.repository?.testResults || []).some(
+    return (this.repository.testResults || []).some(
       b => b.workflow === wf && this.isNonEmptyResults(b?.results)
     );
   }

@@ -9,7 +9,9 @@ import {
   PLATFORM_ID,
   signal,
   ViewChild,
-  WritableSignal
+  WritableSignal,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -57,6 +59,8 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
   newsManagementService = inject(NewsManagementService);
   router = inject(Router);
   route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   subscriptions: Subscription[] = [];
   releaseLetterList: WritableSignal<ReleaseLetter[]> = signal([]);
   appModalService = inject(AppModalService);
@@ -117,7 +121,10 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
         this.newsManagementService
           .getReleaseLetters(this.releaseLetterCriteria, LoadingComponentId.NEWS_MANAGEMENT)
           .subscribe(res => {
-            this.releaseLetterList.set(res._embedded.releaseLetterModelList);
+            this.ngZone.run(() => {
+              this.releaseLetterList.set(res._embedded.releaseLetterModelList);
+              this.cdr.markForCheck();
+            });
           });
       })
       .catch(() => {});
@@ -134,9 +141,12 @@ export class NewsManagementComponent implements OnInit, OnDestroy {
           const newReleaseLetters =
             response._embedded?.releaseLetterModelList ?? [];
           if (newReleaseLetters.length > 0) {
-            this.releaseLetterList.update(existingReleaseLetters =>
-              existingReleaseLetters.concat(newReleaseLetters)
-            );
+            this.ngZone.run(() => {
+              this.releaseLetterList.update(existingReleaseLetters =>
+                existingReleaseLetters.concat(newReleaseLetters)
+              );
+              this.cdr.markForCheck();
+            });
           }
         }
       });

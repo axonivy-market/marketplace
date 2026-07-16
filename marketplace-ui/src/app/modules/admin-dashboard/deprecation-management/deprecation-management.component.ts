@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -43,6 +43,8 @@ export class DeprecationManagementComponent implements OnInit {
   themeService = inject(ThemeService);
   adminAuthService = inject(AdminAuthService);
   translateService = inject(TranslateService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   // Deprecate form dialog state
   showDeprecatedProductDialog = false;
@@ -118,22 +120,28 @@ export class DeprecationManagementComponent implements OnInit {
   closeDialog() {
     this.isClosing = true;
     setTimeout(() => {
-      this.showDeprecatedProductDialog = false;
-      this.isClosing = false;
-      this.isDeprecating = false;
-      this.isCopySuccessVisible = false;
-      this.productId = '';
-      this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
-      this.validationErrors = {};
+      this.ngZone.run(() => {
+        this.showDeprecatedProductDialog = false;
+        this.isClosing = false;
+        this.isDeprecating = false;
+        this.isCopySuccessVisible = false;
+        this.productId = '';
+        this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
+        this.validationErrors = {};
+        this.cdr.markForCheck();
+      });
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
 
   async openExtensionDropdown() {
     const allProducts = await this.loadAllProductIds();
     const alreadyDeprecatedIds = new Set(this.deprecatedItems.map(item => item.id));
-    this.selectableProductIds = allProducts.map(product => product.id).filter(id => !alreadyDeprecatedIds.has(id));
-    this.filterProducts(this.productId);
-    this.dropdownOpen = true;
+    this.ngZone.run(() => {
+      this.selectableProductIds = allProducts.map(product => product.id).filter(id => !alreadyDeprecatedIds.has(id));
+      this.filterProducts(this.productId);
+      this.dropdownOpen = true;
+      this.cdr.markForCheck();
+    });
   }
 
   async deprecatedProduct() {
@@ -161,7 +169,7 @@ export class DeprecationManagementComponent implements OnInit {
       this.showSuccessDialog = true;
       this.isCopySuccessVisible = false;
     } finally {
-      this.isDeprecating = false;
+      this.ngZone.run(() => { this.isDeprecating = false; this.cdr.markForCheck(); });
     }
   }
 
@@ -187,17 +195,20 @@ export class DeprecationManagementComponent implements OnInit {
     }
 
     this.successDialogCloseTimer = setTimeout(() => {
-      this.showSuccessDialog = false;
-      this.isClosingSuccessDialog = false;
-      this.successPullRequestUrl = null;
-      this.isCopySuccessVisible = false;
-      this.successMode = null;
+      this.ngZone.run(() => {
+        this.showSuccessDialog = false;
+        this.isClosingSuccessDialog = false;
+        this.successPullRequestUrl = null;
+        this.isCopySuccessVisible = false;
+        this.successMode = null;
 
-      if (shouldResetDeprecateForm) {
-        // Reset deprecate form after closing deprecate success dialog
-        this.productId = '';
-        this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
-      }
+        if (shouldResetDeprecateForm) {
+          // Reset deprecate form after closing deprecate success dialog
+          this.productId = '';
+          this.deprecationRequest = this.createEmptyDeprecationRequest(null, this.moderatorName);
+        }
+        this.cdr.markForCheck();
+      });
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
 
@@ -212,9 +223,12 @@ export class DeprecationManagementComponent implements OnInit {
     }
 
     await navigator.clipboard.writeText(url);
-    this.isCopySuccessVisible = true;
+    this.ngZone.run(() => {
+      this.isCopySuccessVisible = true;
+      this.cdr.markForCheck();
+    });
     setTimeout(() => {
-      this.isCopySuccessVisible = false;
+      this.ngZone.run(() => { this.isCopySuccessVisible = false; this.cdr.markForCheck(); });
     }, this.COPY_SUCCESS_VISIBLE_DURATION_MS);
   }
 
@@ -313,20 +327,23 @@ export class DeprecationManagementComponent implements OnInit {
       await firstValueFrom(
         this.productService.updateArchiveStatus(row.id, action)
       );
-      this.showArchiveConfirmDialog = false;
-      this.isClosingArchiveDialog = false;
-      this.archiveTargetRow = null;
-      row.isArchived = !row.isArchived;
+      this.ngZone.run(() => {
+        this.showArchiveConfirmDialog = false;
+        this.isClosingArchiveDialog = false;
+        this.archiveTargetRow = null;
+        row.isArchived = !row.isArchived;
 
-      // Show success dialog
-      this.successMode = action === ArchiveAction.ARCHIVE ? DeprecationMode.ARCHIVE : DeprecationMode.UNARCHIVE;
-      this.successPullRequestUrl = null;
-      this.isCopySuccessVisible = false;
-      this.showSuccessDialog = true;
+        // Show success dialog
+        this.successMode = action === ArchiveAction.ARCHIVE ? DeprecationMode.ARCHIVE : DeprecationMode.UNARCHIVE;
+        this.successPullRequestUrl = null;
+        this.isCopySuccessVisible = false;
+        this.showSuccessDialog = true;
+        this.cdr.markForCheck();
+      });
     } catch (error) {
-      this.archiveErrorMessage = this.extractErrorMessage(error);
+      this.ngZone.run(() => { this.archiveErrorMessage = this.extractErrorMessage(error); this.cdr.markForCheck(); });
     } finally {
-      this.isArchiving = false;
+      this.ngZone.run(() => { this.isArchiving = false; this.cdr.markForCheck(); });
     }
   }
 
@@ -349,9 +366,12 @@ export class DeprecationManagementComponent implements OnInit {
     }
     this.isClosingRemoveDeprecationDialog = true;
     setTimeout(() => {
-      this.showRemoveDeprecationConfirmDialog = false;
-      this.isClosingRemoveDeprecationDialog = false;
-      this.productId = '';
+      this.ngZone.run(() => {
+        this.showRemoveDeprecationConfirmDialog = false;
+        this.isClosingRemoveDeprecationDialog = false;
+        this.productId = '';
+        this.cdr.markForCheck();
+      });
     }, this.DIALOG_CLOSE_DELAY_MS);
   }
 
@@ -376,14 +396,17 @@ export class DeprecationManagementComponent implements OnInit {
       await this.applyRowsFromUpdateResponse(this.buildDeprecatedItem(), PullRequestAction.REMOVE);
 
       // Close confirm dialog and show success dialog
-      this.showRemoveDeprecationConfirmDialog = false;
-      this.isClosingRemoveDeprecationDialog = false;
-      this.productId = '';
-      this.successMode = DeprecationMode.UNDEPRECATE;
-      this.showSuccessDialog = true;
-      this.isCopySuccessVisible = false;
+      this.ngZone.run(() => {
+        this.showRemoveDeprecationConfirmDialog = false;
+        this.isClosingRemoveDeprecationDialog = false;
+        this.productId = '';
+        this.successMode = DeprecationMode.UNDEPRECATE;
+        this.showSuccessDialog = true;
+        this.isCopySuccessVisible = false;
+        this.cdr.markForCheck();
+      });
     } finally {
-      this.isRemoving = false;
+      this.ngZone.run(() => { this.isRemoving = false; this.cdr.markForCheck(); });
     }
   }
 
@@ -438,8 +461,10 @@ export class DeprecationManagementComponent implements OnInit {
         this.deprecatedItems = this.deprecatedItems.filter(item => item.id !== deprecatedProductInfo.id);
       }
       this.filterTable(this.tableSearchTerm);
+      this.cdr.markForCheck();
       return;
     }
     await this.refreshDeprecatedRows();
+    this.cdr.markForCheck();
   }
 }

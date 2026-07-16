@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.criteria.MonitoringSearchCriteria;
 import com.axonivy.market.entity.GithubRepo;
@@ -9,6 +10,7 @@ import com.axonivy.market.entity.TestStep;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.enums.WorkflowStatus;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.entity.WorkflowInformation;
@@ -67,6 +69,7 @@ public class GithubReposServiceImpl implements GithubReposService {
   private final TestStepsService testStepsService;
   private final GitHubService gitHubService;
   private final ProductRepository productRepository;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
 
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_MONITOR)
@@ -76,6 +79,9 @@ public class GithubReposServiceImpl implements GithubReposService {
             && product.getRepositoryName() != null).toList();
 
     for (Product product : products) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_GITHUB_MONITOR)) {
+        throw new TaskCancelledException();
+      }
       syncGithubRepos(product);
     }
   }

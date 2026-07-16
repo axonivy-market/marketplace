@@ -3,11 +3,14 @@ package com.axonivy.market.controller;
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.assembler.GithubReleaseModelAssembler;
 import com.axonivy.market.assembler.ProductDetailModelAssembler;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.core.constants.CoreRegexConstants;
 import com.axonivy.market.core.constants.CoreRequestMappingConstants;
 import com.axonivy.market.core.model.MavenArtifactVersionModel;
+import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
@@ -61,6 +64,7 @@ public class ProductDetailsController {
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
   private final PagedResourcesAssembler<GitHubReleaseModel> pagedResourcesAssembler;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
 
   @GetMapping(BY_ID_AND_VERSION)
   @Operation(summary = "Find product detail by product id and release version.",
@@ -212,9 +216,13 @@ public class ProductDetailsController {
   @Operation(summary = "Sync latest releases from GitHub for all products",
       description = "Sync latest releases from GitHub for all products")
   public void syncLatestReleasesForProducts() throws IOException {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_RELEASE_NOTES);
     Pageable pageable = PageRequest.of(0, CommonConstants.PAGE_SIZE_20, Sort.unsorted());
     List<String> productIds = this.productService.getProductIds();
     for (String productId : productIds) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_RELEASE_NOTES)) {
+        throw new TaskCancelledException();
+      }
       this.productService.syncGitHubReleaseModels(productId, pageable);
     }
   }
