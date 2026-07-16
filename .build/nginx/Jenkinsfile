@@ -1,6 +1,20 @@
 def nodesToDeploy = []
 def deployStages = null
 
+String resolveNginxTargetEnv(String deploymentTarget) {
+    switch (deploymentTarget) {
+        case 'DEV node':
+            return 'dev'
+        case 'PREVIEW node':
+            return 'preview'
+        case 'PROD_1 node':
+        case 'PROD_2 node':
+            return 'prod'
+        default:
+            error("Unsupported DEPLOYMENT_TARGET '${deploymentTarget}' for nginx TARGET_ENV mapping")
+    }
+}
+
 pipeline {
     agent any
 
@@ -79,6 +93,8 @@ pipeline {
         stage('Configure Nginx') {
             steps {
                 script {
+                    def nginxTargetEnv = resolveNginxTargetEnv(params.DEPLOYMENT_TARGET)
+
                     for (node in nodesToDeploy) {
                         echo "Configuring nginx for node: ${node.name} (${node.ip})"
 
@@ -97,6 +113,7 @@ pipeline {
                                 bash ./.build/scripts/nginx/prepare-release-nginx-config.sh \
                                     "\${EC2_NODE}" \
                                     "${params.NGINX_VERSION}" \
+                                    "${nginxTargetEnv}" \
                                     "${env.WORKSPACE}" \
                                     "${node.nginxConfigPath ?: ''}" \
                                     "${node.nginxPort ?: ''}"
@@ -110,6 +127,8 @@ pipeline {
         stage('Deploy And Switch Nginx') {
             steps {
                 script {
+                    def nginxTargetEnv = resolveNginxTargetEnv(params.DEPLOYMENT_TARGET)
+
                     for (node in nodesToDeploy) {
                         echo "Deploying and switching nginx for node: ${node.name} (${node.ip})"
 
@@ -127,7 +146,8 @@ pipeline {
                                 export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
                                 bash ./.build/scripts/nginx/deploy-and-switch-release-nginx.sh \
                                     "\${EC2_NODE}" \
-                                    "${params.NGINX_VERSION}"
+                                    "${params.NGINX_VERSION}" \
+                                    "${nginxTargetEnv}"
                             """
                         }
                     }
