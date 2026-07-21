@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { NgbToast } from '@ng-bootstrap/ng-bootstrap';
@@ -15,6 +15,8 @@ import { HttpToastService, HttpErrorEvent } from '../../../core/services/browser
 export class GlobalToastComponent implements OnInit, OnDestroy {
   toastService = inject(HttpToastService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   private readonly destroy$ = new Subject<void>();
 
   currentError: HttpErrorEvent | null = null;
@@ -29,14 +31,20 @@ export class GlobalToastComponent implements OnInit, OnDestroy {
     this.toastService.getError()
       .pipe(takeUntil(this.destroy$))
       .subscribe(error => {
-        this.currentError = error;
-        this.isVisible = true;
+        this.ngZone.run(() => {
+          this.currentError = error;
+          this.isVisible = true;
+          this.cdr.markForCheck();
+        });
       });
 
     this.toastService.getClear()
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.dismiss();
+        this.ngZone.run(() => {
+          this.dismiss();
+          this.cdr.markForCheck();
+        });
       });
   }
 

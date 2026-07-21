@@ -1,9 +1,11 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.ProductSecuritySortOption;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GitHubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,11 +35,13 @@ import static com.axonivy.market.constants.RequestParamConstants.*;
 public class SecurityMonitorController {
 
   private final GitHubService gitHubService;
+  private final SyncTaskCancellationRegistry cancellationRegistry;
 
   @Authorized
   @PostMapping
   @Operation(hidden = true)
   public ResponseEntity<List<ProductSecurityInfo>> syncGitHubMarketplaceSecurity() throws IOException {
+    cancellationRegistry.reset(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR);
     List<ProductSecurityInfo> securityInfoList = gitHubService.syncSecurityDetailsForProduct();
     return ResponseEntity.ok(securityInfoList);
   }

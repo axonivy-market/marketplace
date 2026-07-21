@@ -1,8 +1,13 @@
 package com.axonivy.market.service;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.controller.ProductDetailsController;
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
+import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
+import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +44,18 @@ class SystemTasksTest {
   @Mock
   GithubReposService githubReposService;
 
+  @Mock
+  SyncTaskCancellationRegistry cancellationRegistry;
+
+  @Mock
+  GitHubService gitHubService;
+
+  @Mock
+  ProductSecurityInfoRepository productSecurityInfoRepository;
+
+  @Mock
+  NotificationService notificationService;
+
   @InjectMocks
   ScheduledTasks tasks;
 
@@ -49,6 +66,19 @@ class SystemTasksTest {
     tasks.syncDataForProductDocuments();
     verify(productRepo, times(1)).findAllProductsHaveDocument();
     verify(externalDocumentService, times(1)).syncDocumentForProduct(PORTAL, false, null);
+  }
+
+  @Test
+  void testSyncDocCancelled() {
+    var mockProduct = Product.builder().id(PORTAL).build();
+    when(productRepo.findAllProductsHaveDocument()).thenReturn(List.of(mockProduct));
+    when(cancellationRegistry.isCancelled(SyncTaskType.SYNC_ONE_PRODUCT)).thenReturn(true);
+
+    assertThrows(TaskCancelledException.class, () -> tasks.syncDataForProductDocuments(),
+        "Should throw TaskCancelledException when cancellation registry signals cancellation for single product sync");
+
+    verify(productRepo, times(1)).findAllProductsHaveDocument();
+    verify(externalDocumentService, never()).syncDocumentForProduct(anyString(), anyBoolean(), any());
   }
 
   @Test
@@ -83,5 +113,27 @@ class SystemTasksTest {
   void testSyncDataForGithubRepos() throws IOException {
     tasks.syncDataForGithubRepos();
     verify(githubReposService, times(1)).loadAndStoreTestReports();
+  }
+
+  @Test
+  void testSyncSecurityMonitorInvokesGitHubService() throws IOException {
+    tasks.syncSecurityMonitor();
+    verify(cancellationRegistry).reset(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR);
+    verify(gitHubService, times(1)).syncSecurityDetailsForProduct();
+  }
+
+  @Test
+  void testSyncSecurityMonitorHandlesIOException() throws IOException {
+    doThrow(new IOException()).when(gitHubService).syncSecurityDetailsForProduct();
+    tasks.syncSecurityMonitor();
+    verify(cancellationRegistry).reset(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR);
+    verify(gitHubService, times(1)).syncSecurityDetailsForProduct();
+  }
+
+  @Test
+  void testSendNotificationForSecurityMonitor() {
+    when(productSecurityInfoRepository.findAll()).thenReturn(List.of());
+    tasks.sendNotificationForSecurityMonitor();
+    verify(notificationService, times(1)).notify(anyList());
   }
 }

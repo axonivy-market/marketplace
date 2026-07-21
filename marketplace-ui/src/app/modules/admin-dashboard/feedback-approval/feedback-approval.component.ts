@@ -1,7 +1,7 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Component, computed, inject, OnInit, PLATFORM_ID, Signal, ViewEncapsulation } from '@angular/core';
+import { Component, computed, inject, OnInit, PLATFORM_ID, Signal, ViewEncapsulation, ChangeDetectorRef, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FeedbackTableComponent } from './feedback-table/feedback-table.component';
 import { finalize } from 'rxjs';
@@ -36,6 +36,8 @@ export class FeedbackApprovalComponent implements OnInit {
   pageTitleService = inject(PageTitleService);
   router = inject(Router);
   adminAuthService = inject(AdminAuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   activeTab = 'review';
   isLoading = false;
   platformId = inject(PLATFORM_ID);
@@ -56,16 +58,17 @@ export class FeedbackApprovalComponent implements OnInit {
     this.productFeedbackService
       .findProductFeedbacks()
       .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
+        finalize(() => this.ngZone.run(() => { this.isLoading = false; this.cdr.markForCheck(); }))
       )
       .subscribe({
         error: error => {
-          if (UNAUTHORIZED === error.status) {
-            this.adminAuthService.logout();
-            this.router.navigate([REQUEST_ACCESS_PATH]);
-          }
+          this.ngZone.run(() => {
+            if (UNAUTHORIZED === error.status) {
+              this.adminAuthService.logout();
+              this.router.navigate([REQUEST_ACCESS_PATH]);
+            }
+            this.cdr.markForCheck();
+          });
         }
       });
   }
@@ -82,12 +85,10 @@ export class FeedbackApprovalComponent implements OnInit {
       this.isLoading = true;
       this.productFeedbackService
         .updateFeedbackStatus(approvalRequest)
-        .pipe(
-          finalize(() => {
-            this.isLoading = false;
-          })
-        )
-        .subscribe();
+          .pipe(
+            finalize(() => this.ngZone.run(() => { this.isLoading = false; this.cdr.markForCheck(); }))
+          )
+          .subscribe();
     }
   }
 

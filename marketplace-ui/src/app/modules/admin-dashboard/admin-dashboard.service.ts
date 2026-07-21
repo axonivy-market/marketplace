@@ -115,6 +115,16 @@ export class AdminDashboardService {
     });
   }
 
+  cancelSyncTask(jobKey: string): Observable<void> {
+  return this.http.post<void>(
+    `${API_URI.SYNC_TASK_EXECUTION}/${jobKey}/cancel`,
+      {},
+      {
+        headers: this.adminAuth.getAuthHeaders()
+      }
+    );
+  }
+
   sortMarketExtensions(
     orderedList: string[],
     remainderRule = 'alphabetically'

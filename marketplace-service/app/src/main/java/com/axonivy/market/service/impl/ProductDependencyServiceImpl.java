@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
 import com.axonivy.market.core.entity.Product;
@@ -8,6 +9,7 @@ import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.entity.ProductDependency;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.MarketException;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductDependencyRepository;
@@ -50,6 +52,7 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
   private final FileDownloadService fileDownloadService;
   private final MavenArtifactVersionRepository mavenArtifactVersionRepository;
   private final MetadataService metadataService;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
 
   private static Model convertPomToModel(byte[] data) throws IOException, XmlPullParserException, NullPointerException {
     try (var inputStream = new ByteArrayInputStream(data)) {
@@ -89,6 +92,9 @@ public class ProductDependencyServiceImpl implements ProductDependencyService {
 
     var totalSyncedProductIds = 0;
     for (var artifact : getIARMavenArtifactVersionsByProductId(id)) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_ZIP_ARTIFACTS)) {
+        throw new TaskCancelledException();
+      }
       String productId = artifact.getProductId();
       String artifactId = artifact.getId().getArtifactId();
       String version = artifact.getId().getProductVersion();

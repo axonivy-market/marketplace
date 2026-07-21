@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
@@ -46,6 +47,9 @@ class SchedulingTasksTest {
 
   @Mock
   private ProductDependencyService productDependencyService;
+
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @Mock
   private GithubReposService gitHubReposService;

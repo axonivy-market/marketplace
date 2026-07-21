@@ -1,20 +1,22 @@
-import { Directive, ElementRef, Input } from '@angular/core';
+import { Directive, ElementRef, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 @Directive({
   selector: '[starRatingHighlight]',
   standalone: true
 })
-export class StarRatingHighlightDirective {
+export class StarRatingHighlightDirective implements OnChanges {
 
-  @Input() percent!: number;
+  @Input() percent = 0;
 
-  constructor(private readonly el: ElementRef) { }
+  constructor(private readonly el: ElementRef<HTMLElement>) {}
 
-  ngOnChanges() {
-    this.width(this.percent);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['percent']) {
+      this.width(this.percent);
+    }
   }
 
-  private width(percent: number) {
-    this.el.nativeElement.style.width = percent + "%";
+  private width(percent: number): void {
+    this.el.nativeElement.style.width = `${percent}%`;
   }
 }

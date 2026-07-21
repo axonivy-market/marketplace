@@ -35,7 +35,7 @@ describe('ProductCardComponent', () => {
         provideHttpClientTesting(),
         TranslateService,
         ProductService,
-        ProductComponent,
+        { provide: ProductComponent, useValue: { isRESTClient: () => false } },
         { provide: ActivatedRoute, useValue: mockActivatedRoute }
       ]
     }).compileComponents();
@@ -71,33 +71,19 @@ describe('ProductCardComponent', () => {
   });
 
   it('should display product version in REST client', () => {
-    if ((component.isShowInRESTClientEditor as any)?.set) {
-      (component.isShowInRESTClientEditor as any).set(true);
-    } else {
-      component.isShowInRESTClientEditor = true as any;
-    }
-    const translate = TestBed.inject(TranslateService);
-    vi.spyOn(translate, 'instant').mockImplementation(
-      (k: string | string[], interpolateParams?: any) =>
-        typeof k === 'string' && k === 'common.filter.value.connector'
-          ? 'AI'
-          : k
-    );
+    component.isShowInRESTClientEditor = true;
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
 
     const tagElement = fixture.debugElement.query(By.css('.card__tag'));
     expect(tagElement).toBeTruthy();
-    const text = tagElement.nativeElement.textContent;
-    expect(text.includes('AI') || text.includes('common.filter.value.connector')).toBeTruthy();
+    const text = tagElement.nativeElement.textContent?.trim() ?? '';
+    // In jsdom / translate pipe variations the text may be the raw translation key
+    expect(text.includes('AI') || text.includes('common.filter.value.connector')).toBe(true);
   });
 
   it('should display product type in marketplace website', () => {
-    if ((component.isShowInRESTClientEditor as any)?.set) {
-      (component.isShowInRESTClientEditor as any).set(false);
-    } else {
-      component.isShowInRESTClientEditor = false as any;
-    }
+    component.isShowInRESTClientEditor = false;
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
 
