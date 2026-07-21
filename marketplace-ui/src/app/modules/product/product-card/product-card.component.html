@@ -2,16 +2,21 @@
   class="card product-card w-100"
   [style.height]="!isShowInRESTClientEditor ? '250px' : '164px'">
   <div class="d-flex justify-content-between align-items-start">
-    <img
-      class="card-img-top rounded"
-      width="70"
-      height="70"
-      [ngSrc]="themeService.isDarkMode() ? logoDarkUrl : logoUrl"
-      (error)="onLogoError()"
-      [alt]="
-        product.names | multilingualism: languageService.selectedLanguage()
-      "
-      [lang]="languageService.selectedLanguage()" />
+    <div
+      [class.product-image-container]="
+        product.internal || smallBadgeLightUrl !== '' || smallBadgeDarkUrl !== ''
+      ">
+      <img
+        class="card-img-top rounded"
+        width="70"
+        height="70"
+        [ngSrc]="themeService.isDarkMode() ? logoDarkUrl : logoUrl"
+        (error)="onLogoError()"
+        [alt]="
+          product.names | multilingualism: languageService.selectedLanguage()
+        "
+        [lang]="languageService.selectedLanguage()" />
+    </div>
     @if (isShowInRESTClientEditor) {
       <div class="internal-badge-container d-flex align-items-center gap-1">
         @if (product.internal || smallBadgeLightUrl !== '' || smallBadgeDarkUrl !== '') {
