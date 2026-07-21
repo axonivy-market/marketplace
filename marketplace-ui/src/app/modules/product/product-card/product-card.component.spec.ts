@@ -71,6 +71,7 @@ describe('ProductCardComponent', () => {
   });
 
   it('should display product version in REST client', () => {
+    component.isShowInRESTClientEditor = true;
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
 
@@ -82,6 +83,7 @@ describe('ProductCardComponent', () => {
   });
 
   it('should display product type in marketplace website', () => {
+    component.isShowInRESTClientEditor = false;
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
 
@@ -154,6 +156,48 @@ describe('ProductCardComponent', () => {
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     expect(component.smallBadgeLightUrl || component.smallBadgeDarkUrl).toBeTruthy();
+  });
+
+  it('should toggle product image wrapper class based on internal or badge state', async () => {
+    const productImageWrapper = () =>
+      (
+        fixture.nativeElement.querySelector(
+          'img.card-img-top'
+        ) as HTMLImageElement
+      ).parentElement as HTMLElement;
+
+    fixture.componentRef.setInput('product', {
+      ...products[0],
+      internal: false,
+      badgeUrl: '',
+      badgeDarkUrl: ''
+    });
+    await fixture.whenStable();
+    expect(
+      productImageWrapper().classList.contains('product-image-container')
+    ).toBe(false);
+
+    fixture.componentRef.setInput('product', {
+      ...products[0],
+      internal: true,
+      badgeUrl: '',
+      badgeDarkUrl: ''
+    });
+    await fixture.whenStable();
+    expect(
+      productImageWrapper().classList.contains('product-image-container')
+    ).toBe(true);
+
+    fixture.componentRef.setInput('product', {
+      ...products[0],
+      internal: false,
+      badgeUrl: 'http://localhost:1234/vendor-badge-light.png',
+      badgeDarkUrl: ''
+    });
+    await fixture.whenStable();
+    expect(
+      productImageWrapper().classList.contains('product-image-container')
+    ).toBe(true);
   });
 
   it('should not show internal badge when product is not internal', () => {
