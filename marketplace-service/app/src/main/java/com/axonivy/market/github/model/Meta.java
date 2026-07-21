@@ -28,6 +28,8 @@ public class Meta {
   private String version;
   private String vendor;
   private String vendorImage;
+  private String vendorLogo;
+  private String vendorLogoDarkMode;
   private String vendorImageDarkMode;
   private String vendorUrl;
   private List<String> tags;
