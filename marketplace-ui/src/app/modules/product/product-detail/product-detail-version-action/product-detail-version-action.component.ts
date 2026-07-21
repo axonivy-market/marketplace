@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectorRef,
   Component,
   computed,
   ElementRef,
@@ -14,7 +13,9 @@ import {
   PLATFORM_ID,
   Signal,
   signal,
-  WritableSignal
+  WritableSignal,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { ThemeService } from '../../../../core/services/theme/theme.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -44,6 +45,8 @@ import { API_URI } from '../../../../shared/constants/api.constant';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
+import { VersionData } from '../../../../shared/models/vesion-artifact.model';
+import { VersionAndUrl } from '../../../../shared/models/version-and-url';
 const showDevVersionCookieName = 'showDevVersions';
 const HTTP = 'http';
 const DOC = '-doc';
@@ -107,11 +110,13 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   elementRef = inject(ElementRef);
   languageService = inject(LanguageService);
   routingQueryParamService = inject(RoutingQueryParamService);
-  changeDetectorRef = inject(ChangeDetectorRef);
+  
   cookieService = inject(CookieService);
   router = inject(Router);
   route = inject(ActivatedRoute);
   httpClient = inject(HttpClient);
+  cdr = inject(ChangeDetectorRef);
+  ngZone = inject(NgZone);
 
   isDevVersionsDisplayed: WritableSignal<boolean> = signal(
     this.getShowDevVersionFromCookie()
@@ -222,24 +227,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
         this.getShowDevVersionFromCookie(),
         this.designerVersion
       )
-      .subscribe(data => {
-        data.forEach(item => {
-          const version = VERSION.displayPrefix.concat(item.version);
-          this.versions.update(currentVersions => [
-            ...currentVersions,
-            version
-          ]);
-
-          if (!this.versionMap.get(version)) {
-            this.versionMap.set(version, item.artifactsByVersion);
-          }
-        });
-        if (this.versions().length !== 0) {
-          this.onSelectVersion(
-            this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
-          );
-        }
-      });
+      .subscribe(data => this.handleVersionData(data, ignoreRouteVersion));
   }
 
   getVersionFromRoute(ignoreRouteVersion: boolean): string | null {
@@ -258,23 +246,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     this.versionDropdownInDesigner = [];
     this.productService
       .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
-      .subscribe(data => {
-        const versionMap = data
-          .map(dataVersionAndUrl => dataVersionAndUrl.version)
-          .map(version => VERSION.displayPrefix.concat(version));
-        data.forEach(dataVersionAndUrl => {
-          const currentVersion = VERSION.displayPrefix.concat(
-            dataVersionAndUrl.version
-          );
-          const versionAndUrl: ItemDropdown = {
-            value: currentVersion,
-            label: currentVersion,
-            metaDataJsonUrl: dataVersionAndUrl.url
-          };
-          this.versionDropdownInDesigner.push(versionAndUrl);
-        });
-        this.versions.set(versionMap);
-      });
+      .subscribe(data => this.handleDesignerVersionData(data));
   }
 
   sanitizeDataBeforeFetching(): void {
@@ -314,17 +286,71 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
   fetchAndDownloadArtifact(url: string, fileName: string): void {
     this.httpClient
       .get(url, {responseType: BLOB, observe: RESPONSE})
-      .pipe(finalize(() => this.isDownloading.set(false)))
+      .pipe(finalize(() => this.handleDownloadFinalize()))
       .subscribe({
-        next: (response: HttpResponse<Blob>) => {
-          if (response.body) {
-            this.triggerDownload(response.body, fileName);
-            this.onUpdateInstallationCount();
-          }
-        },
+        next: (response: HttpResponse<Blob>) => this.handleDownloadNext(response, fileName),
         error: () => {
         }
       });
+  }
+
+  private handleVersionData(data: VersionData[], ignoreRouteVersion: boolean): void {
+    this.ngZone.run(() => {
+      const newVersions = data.map(item => VERSION.displayPrefix.concat(item.version));
+      const mergedVersions = [...this.versions(), ...newVersions];
+      this.versions.set(mergedVersions);
+
+      data.forEach(item => {
+        const version = VERSION.displayPrefix.concat(item.version);
+        if (!this.versionMap.get(version)) {
+          this.versionMap.set(version, item.artifactsByVersion);
+        }
+      });
+      if (this.versions().length !== 0) {
+        this.onSelectVersion(
+          this.getVersionFromRoute(ignoreRouteVersion) ?? this.versions()[0]
+        );
+      }
+      this.cdr.markForCheck();
+    });
+  }
+
+  private handleDesignerVersionData(data: VersionAndUrl[]): void {
+    this.ngZone.run(() => {
+      const versionMap = data
+        .map(dataVersionAndUrl => dataVersionAndUrl.version)
+        .map(version => VERSION.displayPrefix.concat(version));
+      data.forEach(dataVersionAndUrl => {
+        const currentVersion = VERSION.displayPrefix.concat(
+          dataVersionAndUrl.version
+        );
+        const versionAndUrl: ItemDropdown = {
+          value: currentVersion,
+          label: currentVersion,
+          metaDataJsonUrl: dataVersionAndUrl.url
+        };
+        this.versionDropdownInDesigner.push(versionAndUrl);
+      });
+      this.versions.set(versionMap);
+      this.cdr.markForCheck();
+    });
+  }
+
+  private handleDownloadNext(response: HttpResponse<Blob>, fileName: string): void {
+    this.ngZone.run(() => {
+      if (response.body) {
+        this.triggerDownload(response.body, fileName);
+        this.onUpdateInstallationCount();
+      }
+      this.cdr.markForCheck();
+    });
+  }
+
+  private handleDownloadFinalize(): void {
+    this.ngZone.run(() => {
+      this.isDownloading.set(false);
+      this.cdr.markForCheck();
+    });
   }
 
   triggerDownload(blob: Blob, fileName: string): void {

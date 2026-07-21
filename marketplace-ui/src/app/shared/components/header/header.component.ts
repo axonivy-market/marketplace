@@ -4,7 +4,9 @@ import {
   HostListener,
   Renderer2,
   TemplateRef,
-  inject
+  inject,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
@@ -39,6 +41,8 @@ export class HeaderComponent {
   languageService = inject(LanguageService);
   headerOffcanvasService = inject(HeaderOffcanvasService);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   selectedNav = '/';
   isAdminRoute = false;
@@ -58,8 +62,11 @@ export class HeaderComponent {
         )
       )
       .subscribe(event => {
-        const url = event.urlAfterRedirects ?? event.url;
-        this.updateAdminState(url);
+        this.ngZone.run(() => {
+          const url = event.urlAfterRedirects ?? event.url;
+          this.updateAdminState(url);
+          this.cdr.markForCheck();
+        });
       });
   }
 

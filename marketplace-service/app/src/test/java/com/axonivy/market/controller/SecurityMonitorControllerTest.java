@@ -1,5 +1,6 @@
 package com.axonivy.market.controller;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.criteria.ProductSecurityCriteria;
 import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.enums.ProductSecuritySortOption;
@@ -33,6 +34,9 @@ class SecurityMonitorControllerTest {
 
   @InjectMocks
   private SecurityMonitorController controller;
+
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @Test
   void testSyncGitHubMarketplaceSecurityReturnsServiceResult() throws IOException {

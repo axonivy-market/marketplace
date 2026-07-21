@@ -17,6 +17,7 @@ import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
 import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,6 +97,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @MockitoBean
   AppSettingService appSettingService;
+
+  @MockitoBean
+  SyncTaskExecutionService syncTaskExecutionService;
 
   @MockitoSpyBean
   ExternalDocumentServiceImpl service;

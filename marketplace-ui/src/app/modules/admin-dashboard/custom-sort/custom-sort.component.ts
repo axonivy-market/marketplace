@@ -6,7 +6,9 @@ import {
   inject,
   OnInit,
   Renderer2,
-  ViewEncapsulation
+  ViewEncapsulation,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -61,6 +63,8 @@ export class CustomSortComponent implements OnInit {
   private readonly adminDashboardService = inject(AdminDashboardService);
   private readonly renderer = inject(Renderer2);
   private readonly document = inject(DOCUMENT);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   sortingExtensions: string[] = [];
   allExtensions: string[] = [];
@@ -234,22 +238,28 @@ export class CustomSortComponent implements OnInit {
 
     this.adminDashboardService
       .sortMarketExtensions(this.sortingExtensions, this.remainderRuleValue)
-      .pipe(finalize(() => (this.isSaving = false)))
+      .pipe(finalize(() => this.ngZone.run(() => { this.isSaving = false; this.cdr.markForCheck(); })))
       .subscribe({
         next: () => {
-          this.sortSuccessMessage = this.translateService.instant(
-            'common.admin.customSort.sortSuccessMessage'
-          );
+          this.ngZone.run(() => {
+            this.sortSuccessMessage = this.translateService.instant(
+              'common.admin.customSort.sortSuccessMessage'
+            );
+            this.cdr.markForCheck();
+          });
           setTimeout(() => {
-            this.sortSuccessMessage = '';
+            this.ngZone.run(() => { this.sortSuccessMessage = ''; this.cdr.markForCheck(); });
           }, MESSAGE_DISPLAY_TIME);
         },
         error: () => {
-          this.sortErrorMessage = this.translateService.instant(
-            'common.admin.customSort.sortErrorMessage'
-          );
+          this.ngZone.run(() => {
+            this.sortErrorMessage = this.translateService.instant(
+              'common.admin.customSort.sortErrorMessage'
+            );
+            this.cdr.markForCheck();
+          });
           setTimeout(() => {
-            this.sortErrorMessage = '';
+            this.ngZone.run(() => { this.sortErrorMessage = ''; this.cdr.markForCheck(); });
           }, MESSAGE_DISPLAY_TIME);
         }
       });
