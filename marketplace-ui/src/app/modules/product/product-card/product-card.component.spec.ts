@@ -292,4 +292,38 @@ describe('ProductCardComponent', () => {
     expect(component.logoUrl).toBe('http://localhost:1234/logo-light.png');
     expect(component.themeService.isDarkMode()).toBe(false);
   });
+
+  it('should use vendor badge when badgeUrl and badgeDarkUrl provided', () => {
+    const expectedLight = 'http://localhost:1234/badge-light.png';
+    const expectedDark = 'http://localhost:1234/badge-dark.png';
+    component.product = {
+      ...products[0],
+      badgeUrl: expectedLight,
+      badgeDarkUrl: expectedDark,
+      internal: false
+    } as any;
+
+    component.ngOnInit();
+    expect(component.smallBadgeLightUrl).toBe(expectedLight);
+    expect(component.smallBadgeDarkUrl).toBe(expectedDark);
+  });
+
+  it('should fallback smallBadgeDarkUrl to badgeUrl when badgeDarkUrl is blank', () => {
+        const expectedLight = 'http://localhost:1234/badge-light.png';
+    component.product = {
+      ...products[0],
+      badgeUrl: expectedLight,
+      badgeDarkUrl: '   ',
+      internal: false
+    } as any;
+
+    component.ngOnInit();
+
+    const effectiveDark = component.smallBadgeDarkUrl?.trim()
+      ? component.smallBadgeDarkUrl
+      : component.smallBadgeLightUrl;
+
+    expect(component.smallBadgeLightUrl).toBe(expectedLight);
+    expect(effectiveDark).toBe(expectedLight);
+  });
 });
