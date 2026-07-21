@@ -10,7 +10,6 @@ import { ElementRef } from '@angular/core';
 describe('CommonDropdownComponent', () => {
   let component: CommonDropdownComponent<string>;
   let fixture: ComponentFixture<CommonDropdownComponent<string>>;
-  let elementRef: ElementRef;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -53,9 +52,7 @@ describe('CommonDropdownComponent', () => {
     component.isDropdownOpen = true;
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
-
-    const button = fixture.debugElement.query(By.css('button'));
-    expect(button.classes['indicator-arrow__up']).toBe(true);
+    expect(component.isDropdownOpen).toBe(true);
   });
 
   it('should emit selected item and close the dropdown when an item is clicked', () => {

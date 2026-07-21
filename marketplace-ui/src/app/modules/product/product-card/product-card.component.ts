@@ -72,8 +72,6 @@ export class ProductCardComponent implements OnInit, OnChanges {
         this.smallBadgeDarkUrl = '';
       }
     }
-    console.log('ProductCardComponent: smallBadgeLightUrl:', this.smallBadgeLightUrl);
-    console.log('ProductCardComponent: smallBadgeDarkUrl:', this.smallBadgeDarkUrl);
   }
 
   onLogoError() {

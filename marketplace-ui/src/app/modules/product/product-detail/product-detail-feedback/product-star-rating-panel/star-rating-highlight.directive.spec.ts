@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { Component } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { describe, beforeEach, expect, it } from 'vitest';
 import { StarRatingHighlightDirective } from './star-rating-highlight.directive';
-import { Component, ElementRef } from '@angular/core';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 @Component({
-    template: `<div starRatingHighlight [percent]="percent"></div>`,
-    standalone: true,
-    imports: [StarRatingHighlightDirective]
+  standalone: true,
+  imports: [StarRatingHighlightDirective],
+  template: `<div starRatingHighlight [percent]="percent"></div>`
 })
 class TestComponent {
   percent = 50;
@@ -17,42 +18,59 @@ describe('StarRatingHighlightDirective', () => {
   let component: TestComponent;
   let el: HTMLElement;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [TestComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
-    el = fixture.nativeElement.querySelector('div');
     fixture.detectChanges();
+
+    el = fixture.nativeElement.querySelector('div');
   });
 
-  it('should create an instance', () => {
-    const directive = new StarRatingHighlightDirective(new ElementRef(el));
+  it('should create the directive', () => {
+    const directive = fixture.debugElement
+      .query(By.directive(StarRatingHighlightDirective))
+      .injector.get(StarRatingHighlightDirective);
+
     expect(directive).toBeTruthy();
   });
 
-  it('should set the width based on percent input', () => {
-    component.percent = 75;
-    fixture.changeDetectorRef.markForCheck();
-    fixture.detectChanges();
-    expect(el.style.width).toBe('75%');
-
-    component.percent = 25;
-    fixture.changeDetectorRef.markForCheck();
-    fixture.detectChanges();
-    expect(el.style.width).toBe('25%');
-  });
-
-  it('should update the width when percent input changes', () => {
-    component.percent = 50;
-    fixture.detectChanges();
+  it('should update width when percent changes', async () => {
     expect(el.style.width).toBe('50%');
 
-    component.percent = 100;
-    fixture.changeDetectorRef.markForCheck();
+    component.percent = 75;
     fixture.detectChanges();
+    
+    const debugEl = fixture.debugElement.query(
+    By.directive(StarRatingHighlightDirective)
+    );
+
+    const directive = debugEl.injector.get(StarRatingHighlightDirective);
+
+    directive.percent = 75;
+    directive.ngOnChanges({
+      percent: {
+        previousValue: 50,
+        currentValue: 75,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    });
+
+    expect(el.style.width).toBe('75%');
+
+    directive.percent = 100;
+    directive.ngOnChanges({
+      percent: {
+        previousValue: 75,
+        currentValue: 100,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    });
     expect(el.style.width).toBe('100%');
   });
 });

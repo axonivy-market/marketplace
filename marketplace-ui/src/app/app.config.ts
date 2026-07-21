@@ -26,7 +26,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, inMemoryScrollingFeature),
     provideClientHydration(withI18nSupport()),
-    provideHttpClient(withFetch(), withInterceptors([apiInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([apiInterceptor, errorInterceptor])),
     provideMatomo(() => {
       const configService = inject(RuntimeConfigService);
       return {

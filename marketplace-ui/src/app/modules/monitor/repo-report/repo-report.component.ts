@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { GithubService, TestStep } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,6 +23,8 @@ export class RepoReportComponent implements OnInit {
   route = inject(ActivatedRoute);
   themeService = inject(ThemeService);
   router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   ngOnInit(): void {
     this.repo = this.route.snapshot.paramMap.get('repo') ?? '';
@@ -39,17 +41,23 @@ export class RepoReportComponent implements OnInit {
     this.errorMessage = '';
     this.githubService.getTestReport(repo, workflow).subscribe({
       next: data => {
-        if (Array.isArray(data)) {
-          this.report = data;
-        } else {
-          this.report = [data];
-        }
+        this.ngZone.run(() => {
+          if (Array.isArray(data)) {
+            this.report = data;
+          } else {
+            this.report = [data];
+          }
 
-        this.loading = false;
+          this.loading = false;
+          this.cdr.markForCheck();
+        });
       },
       error: () => {
-        this.errorMessage = 'Failed to load test report';
-        this.loading = false;
+        this.ngZone.run(() => {
+          this.errorMessage = 'Failed to load test report';
+          this.loading = false;
+          this.cdr.markForCheck();
+        });
       }
     });
   }
