@@ -23,12 +23,17 @@ class ProductModelAssemblerTest {
     product.setId("test-id");
     product.setLogoId("logo-id");
     product.setLogoDarkId("logo-dark-id");
+    product.setVendorLogo("vendor-logo-id");
+    product.setVendorLogoDarkMode("vendor-logo-dark-id");
 
     ProductModel model = productModelAssembler.toModel(product);
 
     assertNotNull(model.getLogoDarkUrl(), "Dark logo URL should be set when logoDarkId is present");
     assertTrue(model.getLogoDarkUrl().contains("logo-dark-id"),
         "Dark logo ID should be included in Url when logoDarkId is present");
+    assertNotNull(model.getBadgeUrl(), "Vendor dark logo URL should be set when vendorLogoDarkMode is present");
+    assertTrue(model.getBadgeDarkUrl().contains("vendor-logo-dark-id"),
+        "Vendor dark logo ID should be included in Url when vendorLogoDarkMode is present");
   }
 
   @Test

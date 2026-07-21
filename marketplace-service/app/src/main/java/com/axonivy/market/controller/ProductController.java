@@ -11,6 +11,7 @@ import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.model.Message;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -185,5 +187,21 @@ public class ProductController {
           "Nothing to sync");
       return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
     }
+  }
+
+  @Authorized
+  @Operation(hidden = true)
+  @PutMapping(BY_ID)
+  public ResponseEntity<Message> updateProduct(@PathVariable String id,
+      @RequestBody UpdateProductRequest request) {
+    var updated = productService.updateProduct(id, request);
+    if (updated == null) {
+      var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), ErrorCode.PRODUCT_NOT_FOUND.getHelpText(),
+          "Product with id " + id + " not found");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
+        "Product with id " + id + " updated successfully");
+    return ResponseEntity.status(HttpStatus.OK).body(message);
   }
 }
