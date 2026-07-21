@@ -158,46 +158,38 @@ describe('ProductCardComponent', () => {
     expect(component.smallBadgeLightUrl || component.smallBadgeDarkUrl).toBeTruthy();
   });
 
-  it('should toggle product image wrapper class based on internal or badge state', async () => {
-    const productImageWrapper = () =>
-      (
-        fixture.nativeElement.querySelector(
-          'img.card-img-top'
-        ) as HTMLImageElement
-      ).parentElement as HTMLElement;
-
-    fixture.componentRef.setInput('product', {
+  it('should not apply product image wrapper class when product has no badge', () => {
+    const testFixture = TestBed.createComponent(ProductCardComponent);
+    testFixture.componentInstance.product = {
       ...products[0],
       internal: false,
       badgeUrl: '',
       badgeDarkUrl: ''
-    });
-    await fixture.whenStable();
-    expect(
-      productImageWrapper().classList.contains('product-image-container')
-    ).toBe(false);
+    };
+    testFixture.detectChanges();
 
-    fixture.componentRef.setInput('product', {
+    const image = testFixture.nativeElement.querySelector(
+      'img.card-img-top'
+    ) as HTMLImageElement;
+
+    expect(image.parentElement?.classList.contains('product-image-container')).toBe(false);
+  });
+
+  it('should apply product image wrapper class when product is internal', () => {
+    const testFixture = TestBed.createComponent(ProductCardComponent);
+    testFixture.componentInstance.product = {
       ...products[0],
       internal: true,
       badgeUrl: '',
       badgeDarkUrl: ''
-    });
-    await fixture.whenStable();
-    expect(
-      productImageWrapper().classList.contains('product-image-container')
-    ).toBe(true);
+    };
+    testFixture.detectChanges();
 
-    fixture.componentRef.setInput('product', {
-      ...products[0],
-      internal: false,
-      badgeUrl: 'http://localhost:1234/vendor-badge-light.png',
-      badgeDarkUrl: ''
-    });
-    await fixture.whenStable();
-    expect(
-      productImageWrapper().classList.contains('product-image-container')
-    ).toBe(true);
+    const image = testFixture.nativeElement.querySelector(
+      'img.card-img-top'
+    ) as HTMLImageElement;
+
+    expect(image.parentElement?.classList.contains('product-image-container')).toBe(true);
   });
 
   it('should not show internal badge when product is not internal', () => {
