@@ -10,6 +10,7 @@ import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.model.Message;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -188,7 +189,7 @@ public class ProductController {
   @Operation(hidden = true)
   @PutMapping(BY_ID)
   public ResponseEntity<Message> updateProduct(@PathVariable String id,
-      @RequestBody com.axonivy.market.model.UpdateProductRequest request) {
+      @RequestBody UpdateProductRequest request) {
     var updated = productService.updateProduct(id, request);
     if (updated == null) {
       var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), ErrorCode.PRODUCT_NOT_FOUND.getHelpText(),
