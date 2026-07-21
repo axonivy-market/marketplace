@@ -1,4 +1,4 @@
-import { describe, it, vi, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MOCK_EMPTY_DE_VALUES_AND_NO_LOGO_URL_PRODUCTS, MOCK_PRODUCTS } from '../../../shared/mocks/mock-data';
@@ -71,18 +71,6 @@ describe('ProductCardComponent', () => {
   });
 
   it('should display product version in REST client', () => {
-    if ((component.isShowInRESTClientEditor as any)?.set) {
-      (component.isShowInRESTClientEditor as any).set(true);
-    } else {
-      component.isShowInRESTClientEditor = true as any;
-    }
-    const translate = TestBed.inject(TranslateService);
-    vi.spyOn(translate, 'instant').mockImplementation(
-      (k: string | string[], interpolateParams?: any) =>
-        typeof k === 'string' && k === 'common.filter.value.connector'
-          ? 'AI'
-          : k
-    );
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
 
@@ -94,11 +82,6 @@ describe('ProductCardComponent', () => {
   });
 
   it('should display product type in marketplace website', () => {
-    if ((component.isShowInRESTClientEditor as any)?.set) {
-      (component.isShowInRESTClientEditor as any).set(false);
-    } else {
-      component.isShowInRESTClientEditor = false as any;
-    }
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
 
