@@ -158,6 +158,40 @@ describe('ProductCardComponent', () => {
     expect(component.smallBadgeLightUrl || component.smallBadgeDarkUrl).toBeTruthy();
   });
 
+  it('should not apply product image wrapper class when product has no badge', () => {
+    const testFixture = TestBed.createComponent(ProductCardComponent);
+    testFixture.componentInstance.product = {
+      ...products[0],
+      internal: false,
+      badgeUrl: '',
+      badgeDarkUrl: ''
+    };
+    testFixture.detectChanges();
+
+    const image = testFixture.nativeElement.querySelector(
+      'img.card-img-top'
+    ) as HTMLImageElement;
+
+    expect(image.parentElement?.classList.contains('product-image-container')).toBe(false);
+  });
+
+  it('should apply product image wrapper class when product is internal', () => {
+    const testFixture = TestBed.createComponent(ProductCardComponent);
+    testFixture.componentInstance.product = {
+      ...products[0],
+      internal: true,
+      badgeUrl: '',
+      badgeDarkUrl: ''
+    };
+    testFixture.detectChanges();
+
+    const image = testFixture.nativeElement.querySelector(
+      'img.card-img-top'
+    ) as HTMLImageElement;
+
+    expect(image.parentElement?.classList.contains('product-image-container')).toBe(true);
+  });
+
   it('should not show internal badge when product is not internal', () => {
     component.product = { ...products[0], internal: false };
     if ((component.isShowInRESTClientEditor as any)?.set) {
