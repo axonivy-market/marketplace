@@ -10,7 +10,9 @@ import {
   PLATFORM_ID,
   signal,
   ViewChild,
-  WritableSignal
+  WritableSignal,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -51,6 +53,8 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   newsManagementService = inject(NewsManagementService);
   markdownService = inject(MarkdownService);
   loadingService = inject(LoadingService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   emptyReleaseLetterTitle = '';
   subscriptions: Subscription[] = [];
   releaseLetterSafeHtmlContentList: WritableSignal<ReleaseLetterSafeHtml[]> = signal([]);
@@ -114,20 +118,23 @@ export class NewsComponent implements OnInit, AfterViewInit, OnDestroy {
   loadReleaseLetters(): void {
     const sub = this.newsManagementService.getReleaseLetters(this.releaseLetterCriteria).subscribe({
       next: response => {
-        if (!response) {
-          return;
-        }
-        const newReleaseLetters = response._embedded?.releaseLetterModelList ?? [];
-        if (newReleaseLetters.length === 0) {
-          this.emptyReleaseLetterTitle = this.translateService.instant('common.admin.news.emptyLatestReleaseLetter');
-        } else {
-          this.releaseLetterSafeHtmlContentList.update(existingReleaseLetters =>
-            existingReleaseLetters.concat(this.toSafeHtmlModelList(newReleaseLetters))
-          );
-        }
-        this.newsLinks = response._links;
-        this.newsPages = response.page;
-        this.releaseLetterCriteria.nextPageHref = this.newsLinks?.next?.href;
+        this.ngZone.run(() => {
+          if (!response) {
+            return;
+          }
+          const newReleaseLetters = response._embedded?.releaseLetterModelList ?? [];
+          if (newReleaseLetters.length === 0) {
+            this.emptyReleaseLetterTitle = this.translateService.instant('common.admin.news.emptyLatestReleaseLetter');
+          } else {
+            this.releaseLetterSafeHtmlContentList.update(existingReleaseLetters =>
+              existingReleaseLetters.concat(this.toSafeHtmlModelList(newReleaseLetters))
+            );
+          }
+          this.newsLinks = response._links;
+          this.newsPages = response.page;
+          this.releaseLetterCriteria.nextPageHref = this.newsLinks?.next?.href;
+          this.cdr.markForCheck();
+        });
       },
       error: error => throwError(() => error)
     });

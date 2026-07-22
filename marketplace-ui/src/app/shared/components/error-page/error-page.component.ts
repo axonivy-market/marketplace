@@ -5,7 +5,9 @@ import {
   inject,
   OnInit,
   PLATFORM_ID,
-  signal
+  signal,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { ThemeService } from '../../../core/services/theme/theme.service';
 import { LanguageService } from '../../../core/services/language/language.service';
@@ -26,6 +28,8 @@ export class ErrorPageComponent implements OnInit {
   translateService = inject(TranslateService);
   isMobileMode = signal<boolean>(false);
   route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   errorMessageKey = '';
   errorId: string | undefined;
 
@@ -44,14 +48,17 @@ export class ErrorPageComponent implements OnInit {
     this.translateService
       .get(I18N_ERROR_CODE_PATH)
       .subscribe(errorTranslations => {
-        let i18nErrorKey = this.errorId;
-        if (
-          !i18nErrorKey ||
-          !Object.keys(errorTranslations).includes(i18nErrorKey)
-        ) {
-          i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
-        }
-        this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
+        this.ngZone.run(() => {
+          let i18nErrorKey = this.errorId;
+          if (
+            !i18nErrorKey ||
+            !Object.keys(errorTranslations).includes(i18nErrorKey)
+          ) {
+            i18nErrorKey = I18N_DEFAULT_ERROR_CODE;
+          }
+          this.errorMessageKey = this.buildI18nKey(i18nErrorKey);
+          this.cdr.markForCheck();
+        });
       });
   }
 

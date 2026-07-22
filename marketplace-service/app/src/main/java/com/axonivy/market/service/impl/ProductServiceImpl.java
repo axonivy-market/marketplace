@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CacheNameConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -26,6 +27,7 @@ import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -34,6 +36,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -65,8 +68,8 @@ import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import com.axonivy.market.service.AppSettingService;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
@@ -109,6 +112,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private final VersionService versionService;
   private final GithubRepoRepository githubRepo;
   private final AppSettingService appSettingService;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
@@ -121,7 +125,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ProductMarketplaceDataService productMarketplaceDataService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
-      VersionService versionService, GithubRepoRepository githubRepo, AppSettingService appSettingService) {
+      VersionService versionService, GithubRepoRepository githubRepo, AppSettingService appSettingService,
+      SyncTaskCancellationRegistry syncTaskCancellationRegistry) {
     super(coreProductRepo);
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -143,6 +148,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     this.versionService = versionService;
     this.githubRepo = githubRepo;
     this.appSettingService = appSettingService;
+    this.syncTaskCancellationRegistry = syncTaskCancellationRegistry;
   }
 
   private String getMarketRepoBranch() {
@@ -173,11 +179,15 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       syncProductMarketplaceData(syncedProductIds);
     }
     updateLatestReleaseVersionContentsFromProductRepo();
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_PRODUCTS);
     return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
   }
 
   private synchronized void syncProductMarketplaceData(List<String> syncedProductIds) {
     for (String productId : syncedProductIds) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
     }
   }
@@ -211,6 +221,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     List<GitHubFile> gitHubFileChanges = axonIvyMarketRepoService.fetchMarketItemsBySHA1Range(fromSHA1, toSHA1);
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       String filePath = file.getFileName();
       var parentPath = filePath.substring(0, filePath.lastIndexOf(CoreCommonConstants.SLASH) + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
@@ -234,14 +247,14 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
           EMPTY);
       List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
       if (ObjectUtils.isNotEmpty(productList)) {
-        productId = productList.get(0).getId();
+        productId = productList.getFirst().getId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
       }
     } else {
       List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(file.getFileName());
       if (ObjectUtils.isNotEmpty(images)) {
-        var currentImage = images.get(0);
+        var currentImage = images.getFirst();
         productId = currentImage.getProductId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
@@ -333,6 +346,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     for (Product product : products) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }
@@ -348,6 +364,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
 
       for (var content : ghContentEntity.getValue()) {
+        if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+          throw new TaskCancelledException();
+        }
         ProductFactory.mappingByGHContent(product, content);
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
@@ -383,6 +402,12 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     if (Strings.CS.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
       if (StringUtils.isNotBlank(product.getVendorImagePath())) {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorLogoPath())) {
+        product.setVendorLogo(mapVendorImage(product.getId(), ghContent, product.getVendorLogoPath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorLogoDarkModePath())) {
+        product.setVendorLogoDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorLogoDarkModePath()));
       }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
         product.setVendorImageDarkMode(
@@ -422,7 +447,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     try {
       if (!CollectionUtils.isEmpty(gitHubTags)) {
         List<GHTag> sortedTags = sortByTagCommitDate(gitHubTags);
-        GHCommit commit = sortedTags.get(0).getCommit();
+        GHCommit commit = sortedTags.getFirst().getCommit();
         if (commit != null) {
           firstTagPublishedDate = commit.getCommitDate();
         }
@@ -476,6 +501,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
     List<String> nonSyncReleasedVersions = new ArrayList<>();
     for (Artifact mavenArtifact : mavenArtifacts) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
@@ -619,6 +647,17 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
     return versions.contains(version) ? version : VersionFactory.get(versions, version);
+  }
+
+  @Override
+  public Product updateProduct(String id, UpdateProductRequest request) {
+    Product product = productRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+        "Product not found for id: " + id));
+    if (request.getInternal() != null) {
+      product.setInternal(request.getInternal());
+    }
+
+    return productRepo.save(product);
   }
 
   public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {

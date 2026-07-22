@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.axonivy.market.constants.HttpHeaderConstants.X_FORWARDED_FOR;
-import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
+import static com.axonivy.market.core.constants.CoreHttpHeaderConstants.X_FORWARDED_FOR;
+import static com.axonivy.market.core.constants.CoreHttpHeaderConstants.X_REAL_IP;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

@@ -1,7 +1,7 @@
 package com.axonivy.market.config;
 
-import com.axonivy.market.enums.AppSettingKey;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static com.axonivy.market.constants.HttpHeaderConstants.X_REAL_IP;
+import static com.axonivy.market.core.constants.CoreHttpHeaderConstants.X_REAL_IP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 

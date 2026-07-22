@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
@@ -14,7 +15,6 @@ import java.io.Serial;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
 
 @Getter
 @Setter
@@ -22,7 +22,7 @@ import static com.axonivy.market.constants.EntityConstants.PRODUCT_DEPENDENCY;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = PRODUCT_DEPENDENCY)
+@Table(name = EntityConstants.PRODUCT_DEPENDENCY)
 public class ProductDependency extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1;

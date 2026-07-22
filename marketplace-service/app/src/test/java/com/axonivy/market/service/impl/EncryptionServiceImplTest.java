@@ -1,5 +1,6 @@
 package com.axonivy.market.service.impl;
 
+import com.axonivy.market.core.service.impl.EncryptionServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

@@ -8,15 +8,16 @@ import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.entity.ExternalDocumentMeta;
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.repository.ArtifactRepository;
 import com.axonivy.market.repository.ExternalDocumentMetaRepository;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.rest.axonivy.AxonIvyClient;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.service.FileDownloadService;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,6 +97,9 @@ class ExternalDocumentServiceImplTest extends BaseSetup {
 
   @MockitoBean
   AppSettingService appSettingService;
+
+  @MockitoBean
+  SyncTaskExecutionService syncTaskExecutionService;
 
   @MockitoSpyBean
   ExternalDocumentServiceImpl service;

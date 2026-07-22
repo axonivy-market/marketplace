@@ -1,6 +1,9 @@
 package com.axonivy.market.schedulingtask;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
 import com.axonivy.market.github.service.GitHubService;
@@ -33,8 +36,10 @@ public class ScheduledTasks {
   private final GitHubService gitHubService;
   private final NotificationService notificationService;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
 
   public void syncDataForProductFromGitHubRepo() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_PRODUCTS);
     run(() -> productService.syncLatestDataFromMarketRepo(false),
         "Product from GitHub repo");
   }
@@ -42,17 +47,22 @@ public class ScheduledTasks {
   public void syncDataForProductDocuments() {
     run(() -> {
       for (var product : productRepo.findAllProductsHaveDocument()) {
+        if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_ONE_PRODUCT)) {
+          throw new TaskCancelledException();
+        }
         externalDocumentService.syncDocumentForProduct(product.getId(), false, null);
       }
     }, "Product document");
   }
 
   public void syncDataForProductMavenDependencies() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_ZIP_ARTIFACTS);
     run(() -> productDependencyService.syncIARDependenciesForProducts(false, null),
         "Product maven dependencies");
   }
 
   public void syncDataForProductReleases() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_RELEASE_NOTES);
     run(() -> {
       try {
         productDetailsController.syncLatestReleasesForProducts();
@@ -63,6 +73,7 @@ public class ScheduledTasks {
   }
 
   public void syncDataForGithubRepos() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_GITHUB_MONITOR);
     run(() -> {
       try {
         githubReposService.loadAndStoreTestReports();
@@ -84,6 +95,7 @@ public class ScheduledTasks {
   }
 
   public void syncSecurityMonitor() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR);
     run(() ->
     {
       try {

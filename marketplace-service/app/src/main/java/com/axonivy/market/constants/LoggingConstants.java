@@ -25,6 +25,5 @@ public class LoggingConstants {
   public static final String ARGUMENTS = "arguments";
   public static final String TIMESTAMP = "timestamp";
   public static final String NO_ARGUMENTS = "No arguments";
-  public static final String MARKET_WEBSITE = "marketplace-website";
   public static final String TASK_KEY = "taskKey";
 }

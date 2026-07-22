@@ -1,4 +1,4 @@
-import { Component, inject, Input, signal } from '@angular/core';
+import { Component, inject, Input, signal, ChangeDetectorRef, NgZone } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
@@ -25,6 +25,8 @@ export class DeleteReleaseLetterConfirmModalComponent {
   translateService = inject(TranslateService);
   newsManagementService = inject(NewsManagementService);
   isHandlingApiCall = signal<boolean>(false);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   constructor(public activeModal: NgbActiveModal) {}
 
@@ -35,7 +37,10 @@ export class DeleteReleaseLetterConfirmModalComponent {
       .pipe(finalize(() => this.isHandlingApiCall.set(false)))
       .subscribe({
         next: () => {
-          this.activeModal.close();
+          this.ngZone.run(() => {
+            this.activeModal.close();
+            this.cdr.markForCheck();
+          });
         }
       });
   }

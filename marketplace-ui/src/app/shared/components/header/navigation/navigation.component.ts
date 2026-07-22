@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, signal } from '@angular/core';
+import { Component, inject, Input, signal, ChangeDetectorRef, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language/language.service';
@@ -11,6 +11,7 @@ import { HeaderOffcanvasService } from '../../../services/header-offcanvas.servi
   selector: 'app-navigation',
   imports: [CommonModule, TranslateModule, RouterLink, RouterLinkActive],
   templateUrl: './navigation.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navigation.component.scss'
 })
 export class NavigationComponent {
@@ -22,6 +23,8 @@ export class NavigationComponent {
   translateService = inject(TranslateService);
   languageService = inject(LanguageService);
   headerOffcanvasService = inject(HeaderOffcanvasService);
+  cdr = inject(ChangeDetectorRef);
+  ngZone = inject(NgZone);
   isMobileMode = signal<boolean>(false);
   searchUrl = SEARCH_URL;
 
@@ -30,6 +33,9 @@ export class NavigationComponent {
   }
 
   closeHeaderOffcanvas() {
-    this.headerOffcanvasService.close();
+    this.ngZone.run(() => {
+      this.headerOffcanvasService.close();
+      this.cdr.markForCheck();
+    });
   }
 }

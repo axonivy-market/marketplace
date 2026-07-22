@@ -1,10 +1,11 @@
 package com.axonivy.market.config;
 
-import com.axonivy.market.enums.AppSettingKey;
+import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.schedulingtask.ScheduledTasks;
-import com.axonivy.market.service.AppSettingService;
+import com.axonivy.market.core.service.AppSettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 
-import java.time.Duration;
 import java.time.Instant;
 
 @Log4j2
@@ -27,7 +27,6 @@ public class SchedulingConfig implements SchedulingConfigurer {
 
   private static final String THREAD_NAME_PREFIX = "SC-Thread-";
   private static final int POOL_SIZE = 10;
-  private static final Duration MULTI_NODES_OFFSET = Duration.ofMinutes(15);
   private static final int NODE_DIVISOR = 2;
 
   private final ObjectProvider<AppSettingService> appSettingService;
@@ -42,12 +41,21 @@ public class SchedulingConfig implements SchedulingConfigurer {
     var taskScheduler = new ThreadPoolTaskScheduler();
     taskScheduler.setPoolSize(POOL_SIZE);
     taskScheduler.setThreadNamePrefix(THREAD_NAME_PREFIX);
+
+    // Don't wait for running tasks during shutdown
+    taskScheduler.setWaitForTasksToCompleteOnShutdown(false);
+    taskScheduler.setAwaitTerminationSeconds(0);
+
     taskScheduler.initialize();
     return taskScheduler;
   }
 
   @Override
-  public void configureTasks(ScheduledTaskRegistrar registrar) {
+  public void configureTasks(@NotNull ScheduledTaskRegistrar registrar) {
+    if (nodeNumber % NODE_DIVISOR == 0) {
+      log.info("Skipping scheduled tasks on node {}", nodeNumber);
+      return;
+    }
 
     registrar.setTaskScheduler(taskScheduler());
 
@@ -74,31 +82,17 @@ public class SchedulingConfig implements SchedulingConfigurer {
   }
 
   /**
-   * Calculates the next execution time based on the cron expression from AppSettingService and applies an offset for
-   * even-numbered nodes to reduce concurrent load in clustered deployments.
-   */
+    * Get the next execution time based on the cron expression from the app settings.
+    * If the cron expression is invalid, it will log a warning and use the default value.
+  */
   private Instant nextExecution(AppSettingKey key, TriggerContext context) {
     var cron = appSettingService.getObject().getStringValueByKey(key);
     try {
-      return calculateNextExecution(cron, context);
+      return new CronTrigger(cron).nextExecution(context);
     } catch (IllegalArgumentException ex) {
-      log.warn("Invalid cron expression for key '{}': {}. Using default value: {}", key.getKey(), cron,
-          key.getDefaultValue(), ex);
-      return calculateNextExecution(key.getDefaultValue(), context);
+      log.warn("Invalid cron expression for key '{}': {}. Using default value: {}",
+          key.getKey(), cron, key.getDefaultValue(), ex);
+      return new CronTrigger(key.getDefaultValue()).nextExecution(context);
     }
   }
-
-  private Instant calculateNextExecution(String cron, TriggerContext context) {
-    Instant next = new CronTrigger(cron).nextExecution(context);
-    return next == null ? null : next.plus(getOffset());
-  }
-
-  /**
-   * Delay execution on even-numbered nodes to reduce
-   * concurrent load in clustered deployments.
-   */
-  private Duration getOffset() {
-    return nodeNumber % NODE_DIVISOR == 0 ? MULTI_NODES_OFFSET : Duration.ZERO;
-  }
-
 }

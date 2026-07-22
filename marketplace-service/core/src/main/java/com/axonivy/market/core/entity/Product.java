@@ -84,12 +84,15 @@ public class Product extends AbstractAuditableEntity<String> {
   private String logoUrl;
   private Boolean listed;
   private Boolean deprecated;
+  private Boolean internal;
   private Boolean isArchived;
   private String type;
   private String vendor;
   private String vendorUrl;
   private String version;  
   private String vendorImage;
+  private String vendorLogo;
+  private String vendorLogoDarkMode;
   private String vendorImageDarkMode;
   private String platformReview;
   private String cost;
@@ -109,6 +112,10 @@ public class Product extends AbstractAuditableEntity<String> {
   
   @Transient
   private String vendorImagePath;
+  @Transient
+  private String vendorLogoPath;
+  @Transient
+  private String vendorLogoDarkModePath;
   @Transient
   private String vendorImageDarkModePath;
   @Transient

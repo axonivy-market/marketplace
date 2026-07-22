@@ -1,4 +1,4 @@
-import { Component, Inject, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, inject, OnInit, PLATFORM_ID, ChangeDetectorRef, NgZone } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ROUTER } from '../../constants/router.constant';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,6 +13,8 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class RedirectPageComponent implements OnInit {
   productService = inject(ProductService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   constructor(
     private readonly activeRoute: ActivatedRoute,
@@ -33,7 +35,10 @@ export class RedirectPageComponent implements OnInit {
   fetchLatestLibVersionDownloadUrl(product: string, version: string, artifact: string): void {
     this.productService.getLatestArtifactDownloadUrl(product, version, artifact)
       .subscribe(downloadUrl => {
-        window.location.href = downloadUrl;
+        this.ngZone.run(() => {
+          window.location.href = downloadUrl;
+          this.cdr.markForCheck();
+        });
       });
   }
 }

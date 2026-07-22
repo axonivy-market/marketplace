@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, computed, DestroyRef, Inject, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, DestroyRef, Inject, inject, OnInit, PLATFORM_ID, signal, ChangeDetectorRef, NgZone } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -45,6 +45,8 @@ export class ReleaseLetterEditComponent implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
   destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   easyMDE!: EasyMDE;
   selectedId = '';
   selectedSprint = '';
@@ -76,14 +78,17 @@ export class ReleaseLetterEditComponent implements OnInit {
       this.pageTitleService.setTitleOnLangChange('common.admin.newsManagement.pageTitle');
     }
     this.route.paramMap.subscribe(params => {
-      const idParam = params.get('id');
-      if (idParam) {
-        this.isCreateMode = false;
-        this.selectedId = idParam;
-        this.loadReleaseLetterWithDraftCheck(this.selectedId);
-      } else {
-        this.isCreateMode = true;
-      }
+      this.ngZone.run(() => {
+        const idParam = params.get('id');
+        if (idParam) {
+          this.isCreateMode = false;
+          this.selectedId = idParam;
+          this.loadReleaseLetterWithDraftCheck(this.selectedId);
+        } else {
+          this.isCreateMode = true;
+        }
+        this.cdr.markForCheck();
+      });
     });
   }
 
@@ -106,13 +111,13 @@ export class ReleaseLetterEditComponent implements OnInit {
   createReleaseLetter(releaseLetter: ReleaseLetter) {
     this.newsManagementService
       .createReleaseLetter(releaseLetter)
-      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .pipe(finalize(() => this.ngZone.run(() => { this.isSubmitting.set(false); this.cdr.markForCheck(); })))
       .subscribe({
         next: _res => {
-          this.router.navigate([this.newsManangementUrl]);
+          this.ngZone.run(() => { this.router.navigate([this.newsManangementUrl]); this.cdr.markForCheck(); });
         },
         error: err => {
-          this.handleError(err.error.helpCode);
+          this.ngZone.run(() => { this.handleError(err.error.helpCode); this.cdr.markForCheck(); });
         }
       });
   }
@@ -120,13 +125,13 @@ export class ReleaseLetterEditComponent implements OnInit {
   updateReleaseLetter(releaseLetter: ReleaseLetter) {
     this.newsManagementService
       .updateReleaseLetter(releaseLetter.id, releaseLetter)
-      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .pipe(finalize(() => this.ngZone.run(() => { this.isSubmitting.set(false); this.cdr.markForCheck(); })))
       .subscribe({
         next: _res => {
-          this.router.navigate([this.newsManangementUrl]);
+          this.ngZone.run(() => { this.router.navigate([this.newsManangementUrl]); this.cdr.markForCheck(); });
         },
         error: err => {
-          this.handleError(err.error.helpCode);
+          this.ngZone.run(() => { this.handleError(err.error.helpCode); this.cdr.markForCheck(); });
         }
       });
   }
@@ -140,13 +145,13 @@ export class ReleaseLetterEditComponent implements OnInit {
     this.releaseLetter.draftContent = this.releaseLetter.content;
     this.newsManagementService
       .saveAsDraft(this.prepareDraftReleaseLetter())
-      .pipe(finalize(() => this.isSavingAsDraft.set(false)))
+      .pipe(finalize(() => this.ngZone.run(() => { this.isSavingAsDraft.set(false); this.cdr.markForCheck(); })))
       .subscribe({
         next: _res => {
-          this.router.navigate([this.newsManangementUrl]);
+          this.ngZone.run(() => { this.router.navigate([this.newsManangementUrl]); this.cdr.markForCheck(); });
         },
         error: err => {
-          this.handleError(err.error.helpCode);
+          this.ngZone.run(() => { this.handleError(err.error.helpCode); this.cdr.markForCheck(); });
         }
       });
   }
@@ -201,7 +206,7 @@ export class ReleaseLetterEditComponent implements OnInit {
 
           return this.newsManagementService.getReleaseLetterDraftByGitHubUserIdAndReleaseLetterId(id);
         }),
-        finalize(() => this.isInitializing.set(false)),
+        finalize(() => this.ngZone.run(() => { this.isInitializing.set(false); this.cdr.markForCheck(); })),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(draft => {
@@ -210,7 +215,7 @@ export class ReleaseLetterEditComponent implements OnInit {
             .openDraftAlertModal()
             .then(useDraft => {
               if (useDraft) {
-                this.releaseLetter.content = draft.draftContent;
+                this.ngZone.run(() => { this.releaseLetter.content = draft.draftContent; this.cdr.markForCheck(); });
               }
             })
             .catch(() => {});

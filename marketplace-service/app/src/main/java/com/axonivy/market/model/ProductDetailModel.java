@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.util.function.UnaryOperator;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -109,25 +111,25 @@ public class ProductDetailModel extends ProductModel {
     model.setIndustry(product.getIndustry());
     model.setContactUs(product.getContactUs());
     model.setDeprecated(product.getDeprecated());
+    model.setInternal(product.getInternal());
     model.setCost(product.getCost());
     model.setInstallationCount(product.getInstallationCount());
     model.setCompatibilityRange(product.getCompatibilityRange());
     model.setProductModuleContent(
         ImageUtils.mappingImageForProductModuleContent(product.getProductModuleContent(), isProduction));
+
+    UnaryOperator<String> imageUrlMapper = isProduction
+        ? ImageUtils::createImageUrlForProduction
+        : ImageUtils::createImageUrl;
     if (StringUtils.isNotBlank(product.getVendorImage())) {
-      if (isProduction) {
-        model.setVendorImage(ImageUtils.createImageUrlForProduction(product.getVendorImage()));
-      } else {
-        model.setVendorImage(ImageUtils.createImageUrl(product.getVendorImage()));
-      }
+      model.setVendorImage(imageUrlMapper.apply(product.getVendorImage()));
     }
+
     if (StringUtils.isNotBlank(product.getVendorImageDarkMode())) {
-      if (isProduction) {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrlForProduction(product.getVendorImageDarkMode()));
-      } else {
-        model.setVendorImageDarkMode(ImageUtils.createImageUrl(product.getVendorImageDarkMode()));
-      }
+      model.setVendorImageDarkMode(
+          imageUrlMapper.apply(product.getVendorImageDarkMode()));
     }
+
     model.setMavenDropins(product.isMavenDropins());
     model.setIsFocusedProduct(product.getIsFocused());
     model.setSuccessor(product.getSuccessor());
