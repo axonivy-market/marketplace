@@ -14,5 +14,4 @@ if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}"
 fi
 
 echo "Starting ${NEW_RELEASE_NAME}..."
-docker volume rm -f marketplace_marketbrowser
 docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" up -d --pull always
