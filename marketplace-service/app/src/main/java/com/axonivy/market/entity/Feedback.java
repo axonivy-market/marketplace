@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
@@ -18,7 +19,6 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 
 @Getter
 @Setter
@@ -26,7 +26,7 @@ import static com.axonivy.market.constants.EntityConstants.FEEDBACK;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = FEEDBACK)
+@Table(name = EntityConstants.FEEDBACK)
 public class Feedback extends AuditableIdEntity {
 
   @Serial

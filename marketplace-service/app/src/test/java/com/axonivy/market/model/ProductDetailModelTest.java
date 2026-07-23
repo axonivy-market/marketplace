@@ -64,6 +64,7 @@ class ProductDetailModelTest {
     product.setIndustry("IT");
     product.setContactUs(true);
     product.setDeprecated(false);
+    product.setInternal(false);
     product.setCost("Free");
     product.setInstallationCount(42);
     product.setCompatibilityRange("10.0+");
@@ -84,11 +85,11 @@ class ProductDetailModelTest {
     assertEquals("IT", model.getIndustry(), "Industry should be copied");
     assertTrue(model.getContactUs(), "ContactUs should be copied");
     assertFalse(model.getDeprecated(), "Deprecated should be copied");
+    assertFalse(model.getInternal(), "Internal should be copied");
     assertEquals("Free", model.getCost(), "Cost should be copied");
     assertEquals(42, model.getInstallationCount(), "Installation count should be copied");
     assertEquals("10.0+", model.getCompatibilityRange(), "Compatibility range should be copied");
     assertTrue(model.isMavenDropins(), "MavenDropins should be copied");
-
     assertNotNull(model.getVendorImage(), "Vendor image should be set for non-production");
     assertNotNull(model.getVendorImageDarkMode(), "Vendor dark image should be set for non-production");
   }

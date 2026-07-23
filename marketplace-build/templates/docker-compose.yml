@@ -1,26 +1,6 @@
 name: marketplace
 
 services:
-  nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    volumes:
-      - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
-      - ${NGINX_CACHE_PATH}:/usr/share/nginx/html/cache
-      - ${NGINX_LOG_PATH}:/var/log/nginx
-      - marketcache:/usr/share/nginx/html/market-cache
-      - marketbrowser:/usr/share/nginx/html/browser
-    ports:
-      - "${NGINX_PORT}:80"
-    depends_on:
-      - ui
-      - app
-      - stable
-    networks:
-      - marketplace-network
-
   ui:
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
     env_file:
@@ -30,7 +10,7 @@ services:
     restart: always
     command: sh -c "cp -r /app/dist/browser/* /browser_share && node dist/server/server.mjs"
     expose:
-      - "4000"
+      - 4000
     networks:
       - marketplace-network
 
@@ -38,13 +18,12 @@ services:
     image: ghcr.io/axonivy-market/marketplace-app:${RELEASE_VERSION}
     restart: always
     volumes:
-      - ${MARKET_INSTALLATIONS_PATH}:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
       - ${APP_LOG_PATH}:/app/logs
     env_file:
       - .env
     expose:
-      - "8080"
+      - 8080
     networks:
       - marketplace-network
 
@@ -69,3 +48,5 @@ volumes:
     name: marketplace_marketcache
     external: true
   marketbrowser:
+    name: marketplace_marketbrowser
+    external: true

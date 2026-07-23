@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
@@ -8,7 +9,6 @@ import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
-import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kohsuke.github.GHMyself;
@@ -43,10 +43,10 @@ class MonitorDashBoardControllerTest extends BaseSetup {
   private TestStepsService testStepsService;
 
   @Mock
-  private GitHub gitHub;
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @Mock
-  private OkHttpClient okHttpClient;
+  private GitHub gitHub;
 
   @InjectMocks
   private MonitorDashBoardController controller;

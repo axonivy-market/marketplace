@@ -1,10 +1,11 @@
 package com.axonivy.market.schedulingtask;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.controller.ProductDetailsController;
+import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.factory.DisabledSecurityEventFactory;
 import com.axonivy.market.github.model.DisabledSecurityEvent;
-import com.axonivy.market.github.model.GitHubProperty;
-import com.axonivy.market.entity.ProductSecurityInfo;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.repository.ProductSecurityInfoRepository;
@@ -16,7 +17,6 @@ import com.axonivy.market.service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -27,15 +27,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ScheduledTasks {
 
-  private static final String SYNC_PRODUCTS_CRON = "${market.scheduling.products-cron}";
-  private static final String SYNC_PRODUCTS_DEPENDENCY_CRON = "${market.scheduling.products-dependency-cron}";
-  private static final String SYNC_DOCUMENTS_CRON = "${market.scheduling.documents-cron}";
-  private static final String SYNC_PRODUCT_RELEASE_NOTES_CRON = "${market.scheduling.products-release-notes-cron}";
-  private static final String SYNC_GITHUB_REPOS = "${market.scheduling.github-repos-cron}";
-  private static final String SEND_NOTIFICATION_SECURITY_MONITOR_CRON =
-      "${market.scheduling.send-notification-security-monitor-cron}";
-  private static final String SYNC_SECURITY_MONITOR_CRON  = "${market.scheduling.security-monitor-cron}";
-
   private final ProductRepository productRepo;
   private final ProductService productService;
   private final ProductDetailsController productDetailsController;
@@ -45,30 +36,33 @@ public class ScheduledTasks {
   private final GitHubService gitHubService;
   private final NotificationService notificationService;
   private final ProductSecurityInfoRepository productSecurityInfoRepository;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
 
-  @Scheduled(cron = SYNC_PRODUCTS_CRON)
   public void syncDataForProductFromGitHubRepo() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_PRODUCTS);
     run(() -> productService.syncLatestDataFromMarketRepo(false),
         "Product from GitHub repo");
   }
 
-  @Scheduled(cron = SYNC_DOCUMENTS_CRON)
   public void syncDataForProductDocuments() {
     run(() -> {
       for (var product : productRepo.findAllProductsHaveDocument()) {
+        if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_ONE_PRODUCT)) {
+          throw new TaskCancelledException();
+        }
         externalDocumentService.syncDocumentForProduct(product.getId(), false, null);
       }
     }, "Product document");
   }
 
-  @Scheduled(cron = SYNC_PRODUCTS_DEPENDENCY_CRON)
   public void syncDataForProductMavenDependencies() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_ZIP_ARTIFACTS);
     run(() -> productDependencyService.syncIARDependenciesForProducts(false, null),
         "Product maven dependencies");
   }
 
-  @Scheduled(cron = SYNC_PRODUCT_RELEASE_NOTES_CRON)
   public void syncDataForProductReleases() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_RELEASE_NOTES);
     run(() -> {
       try {
         productDetailsController.syncLatestReleasesForProducts();
@@ -78,8 +72,8 @@ public class ScheduledTasks {
     }, "Product release notes");
   }
 
-  @Scheduled(cron = SYNC_GITHUB_REPOS)
   public void syncDataForGithubRepos() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_GITHUB_MONITOR);
     run(() -> {
       try {
         githubReposService.loadAndStoreTestReports();
@@ -89,7 +83,6 @@ public class ScheduledTasks {
     }, "Github repositories");
   }
 
-  @Scheduled(cron = SEND_NOTIFICATION_SECURITY_MONITOR_CRON)
   public void sendNotificationForSecurityMonitor() {
     run(() ->
     {
@@ -101,8 +94,8 @@ public class ScheduledTasks {
     }, "Send Notification for security monitor");
   }
 
-  @Scheduled(cron = SYNC_SECURITY_MONITOR_CRON)
   public void syncSecurityMonitor() {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR);
     run(() ->
     {
       try {

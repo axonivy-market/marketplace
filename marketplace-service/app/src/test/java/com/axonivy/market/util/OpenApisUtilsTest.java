@@ -1,13 +1,20 @@
 package com.axonivy.market.util;
 
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
+import com.axonivy.market.service.SyncTaskExecutionService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,15 +29,20 @@ import static com.axonivy.market.BaseSetup.DEFAULT_HOST;
 import static com.axonivy.market.BaseSetup.OPEN_API_SPEC_PATH;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@TestPropertySource("classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OpenApisUtilsTest {
     @LocalServerPort
     private int port;
-    
+
     @Value("${server.servlet.context-path:}")
     private String contextPath;
-    
+
+    @MockitoBean
+    private SyncTaskExecutionService syncTaskExecutionService;
+    @MockitoBean
+    private SyncTaskCancellationRegistry cancellationRegistry;
+
     private static final String VALIDATOR_URL = "https://validator.swagger.io/validator/debug";
     private static final RestTemplate restTemplate = new RestTemplate();
 
@@ -47,7 +59,6 @@ class OpenApisUtilsTest {
         }
         assertTrue(isValid, "Expected remote Swagger validator to pass");
     }
-
 
     private String fetchOpenApiYaml() {
         try {

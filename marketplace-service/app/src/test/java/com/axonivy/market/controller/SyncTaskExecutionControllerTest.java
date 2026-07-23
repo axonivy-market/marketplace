@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 class SyncTaskExecutionControllerTest extends BaseSetup {
 
@@ -75,5 +77,29 @@ class SyncTaskExecutionControllerTest extends BaseSetup {
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
         "Status should be NOT_FOUND for missing SyncTaskExecution");
     assertNull(response.getBody(), "Response body should be null when not found");
+  }
+
+  @Test
+  void testCancelSyncTaskReturnsAcceptedWhenCancelled() {
+    when(syncTaskExecutionService.cancel(JOB_KEY)).thenReturn(true);
+
+    ResponseEntity<Void> response = controller.cancelSyncTask(JOB_KEY);
+
+    assertEquals(HttpStatus.ACCEPTED, response.getStatusCode(),
+        "Status should be ACCEPTED when cancel returns true");
+    assertNull(response.getBody(), "Response body should be null for accepted cancel response");
+    verify(syncTaskExecutionService, times(1)).cancel(JOB_KEY);
+  }
+
+  @Test
+  void testCancelSyncTaskReturnsNotFoundWhenNotCancelled() {
+    when(syncTaskExecutionService.cancel(JOB_KEY)).thenReturn(false);
+
+    ResponseEntity<Void> response = controller.cancelSyncTask(JOB_KEY);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
+        "Status should be NOT_FOUND when cancel returns false");
+    assertNull(response.getBody(), "Response body should be null for not-found cancel response");
+    verify(syncTaskExecutionService, times(1)).cancel(JOB_KEY);
   }
 }

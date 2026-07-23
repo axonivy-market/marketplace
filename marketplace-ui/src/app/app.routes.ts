@@ -7,7 +7,6 @@ import { SecurityMonitorComponent } from './modules/admin-dashboard/security-mon
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
-import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
 import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
 import { QuickAccessComponent } from './modules/admin-dashboard/quick-access/quick-access.component';
@@ -21,6 +20,8 @@ import { ReleaseLetterEditComponent } from './modules/admin-dashboard/news-manag
 import {
   DeprecationManagementComponent
 } from './modules/admin-dashboard/deprecation-management/deprecation-management.component';
+import { AdminSettingsComponent } from './modules/admin-dashboard/settings/settings.component';
+import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   // OAuth callback
@@ -98,6 +99,10 @@ export const routes: Routes = [
       {
         path: 'logs',
         component: LogViewerComponent
+      },
+      {
+        path: 'settings',
+        component: AdminSettingsComponent
       }
     ]
   },

@@ -1,15 +1,17 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
-import com.axonivy.market.aop.annotation.TrackApiCallFromNeo;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
+import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.model.Message;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -52,6 +55,7 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final ProductDependencyService productDependencyService;
+  private final SyncTaskCancellationRegistry cancellationRegistry;
 
   @GetMapping()
   @TrackApiCallFromNeo
@@ -97,6 +101,7 @@ public class ProductController {
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+    cancellationRegistry.reset(SyncTaskType.SYNC_PRODUCTS);
     var stopWatch = new StopWatch();
     stopWatch.start();
     List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
@@ -159,7 +164,6 @@ public class ProductController {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private ResponseEntity<PagedModel<ProductModel>> generateEmptyPagedModel() {
     var emptyPagedModel = (PagedModel<ProductModel>) pagedResourcesAssembler.toEmptyModel(Page.empty(),
         ProductModel.class);
@@ -171,6 +175,7 @@ public class ProductController {
   @PutMapping(SYNC_ZIP_ARTIFACTS)
   public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false)
       Boolean resetSync, @RequestParam(value = ID, required = false) String productId) {
+    cancellationRegistry.reset(SyncTaskType.SYNC_ZIP_ARTIFACTS);
     int syncedCount = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);
 
     if (syncedCount > 0) {
@@ -182,5 +187,21 @@ public class ProductController {
           "Nothing to sync");
       return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
     }
+  }
+
+  @Authorized
+  @Operation(hidden = true)
+  @PutMapping(BY_ID)
+  public ResponseEntity<Message> updateProduct(@PathVariable String id,
+      @RequestBody UpdateProductRequest request) {
+    var updated = productService.updateProduct(id, request);
+    if (updated == null) {
+      var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), ErrorCode.PRODUCT_NOT_FOUND.getHelpText(),
+          "Product with id " + id + " not found");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
+        "Product with id " + id + " updated successfully");
+    return ResponseEntity.status(HttpStatus.OK).body(message);
   }
 }

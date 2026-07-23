@@ -7,7 +7,9 @@ import {
   computed,
   signal,
   OnInit,
-  effect
+  effect,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -58,6 +60,8 @@ export class ReleasePreviewComponent implements OnInit {
   themeService = inject(ThemeService);
   translateService = inject(TranslateService);
   pageTitleService = inject(PageTitleService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   detailTabs = PRODUCT_DETAIL_TABS;
   private scrollPositions: { [tabId: string]: number } = {};
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
@@ -170,14 +174,20 @@ export class ReleasePreviewComponent implements OnInit {
 
     this.releasePreviewService.extractZipDetails(this.selectedFile).subscribe({
       next: response => {
-        this.readmeContent.set(response);
-        this.renderReadmeContent();
-        this.isUploaded = true;
-        this.shouldShowHint = false;
+        this.ngZone.run(() => {
+          this.readmeContent.set(response);
+          this.renderReadmeContent();
+          this.isUploaded = true;
+          this.shouldShowHint = false;
+          this.cdr.markForCheck();
+        });
       },
       error: err => {
-        this.isUploaded = true;
-        this.errorMessage = err.error?.message;
+        this.ngZone.run(() => {
+          this.isUploaded = true;
+          this.errorMessage = err.error?.message;
+          this.cdr.markForCheck();
+        });
       }
     });
   }

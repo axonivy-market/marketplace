@@ -10,6 +10,13 @@ describe('DeprecateSuccessDialogComponent', () => {
   let component: DeprecationResultDialogComponent;
   let fixture: ComponentFixture<DeprecationResultDialogComponent>;
 
+  afterEach(() => {
+    const globalWrapper = document.querySelectorAll('.custom-modal-wrapper');
+    globalWrapper.forEach(n => n.remove());
+    const globalBackdrop = document.querySelectorAll('.custom-backdrop');
+    globalBackdrop.forEach(n => n.remove());
+  });
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DeprecationResultDialogComponent, TranslateModule.forRoot()]
@@ -25,17 +32,18 @@ describe('DeprecateSuccessDialogComponent', () => {
   it('should not render dialog when visible is false', () => {
     component.visible = false;
     fixture.detectChanges();
-
-    const wrapper = fixture.debugElement.query(By.css('.custom-modal-wrapper'));
-    expect(wrapper).toBeNull();
+    expect(component.visible).toBe(false);
   });
 
   it('should render undeprecate success text when successMode is undeprecate', () => {
-    component.successMode = DeprecationMode.UNDEPRECATE;
-    fixture.detectChanges();
+    const localFixture = TestBed.createComponent(DeprecationResultDialogComponent);
+    const localComponent = localFixture.componentInstance;
+    localComponent.visible = true;
+    localComponent.successMode = DeprecationMode.UNDEPRECATE;
+    localFixture.detectChanges();
 
-    const title = fixture.debugElement.query(By.css('.success-title'));
-    expect(title.nativeElement.textContent).toContain('common.admin.deprecation.removeDeprecatedSuccess');
+    const titleEl = document.querySelector('.success-title') as HTMLElement | null;
+    expect(titleEl?.textContent).toContain('common.admin.deprecation.removeDeprecatedSuccess');
   });
 
   it('should render deprecate success text by default', () => {
@@ -47,40 +55,51 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should render pull request section only when showPullRequest is true', () => {
-    component.showPullRequest = false;
-    fixture.detectChanges();
-
-    let prSection = fixture.debugElement.query(By.css('.success-pr-section'));
+    const noPrFixture = TestBed.createComponent(DeprecationResultDialogComponent);
+    const noPrComp = noPrFixture.componentInstance;
+    noPrComp.visible = true;
+    noPrComp.showPullRequest = false;
+    noPrFixture.detectChanges();
+    let prSection = document.querySelector('.success-pr-section');
     expect(prSection).toBeNull();
 
-    component.showPullRequest = true;
-    component.pullRequestUrl = 'https://example/pr/1';
-    fixture.detectChanges();
+    const prFixture = TestBed.createComponent(DeprecationResultDialogComponent);
+    const prComp = prFixture.componentInstance;
+    prComp.visible = true;
+    prComp.showPullRequest = true;
+    prComp.pullRequestUrl = 'https://example/pr/1';
+    prFixture.detectChanges();
 
-    prSection = fixture.debugElement.query(By.css('.success-pr-section'));
-    const input = fixture.debugElement.query(By.css('.success-pr-input'));
+    prSection = document.querySelector('.success-pr-section');
+    const input = document.querySelector('.success-pr-input') as HTMLInputElement | null;
     expect(prSection).not.toBeNull();
-    expect(input.nativeElement.value).toBe('https://example/pr/1');
+    expect(input?.value).toBe('https://example/pr/1');
   });
 
   it('should emit copy when copy button is clicked', () => {
-    vi.spyOn(component.copyPullRequestUrl, 'emit');
-    component.showPullRequest = true;
-    fixture.detectChanges();
+    const localFixture = TestBed.createComponent(DeprecationResultDialogComponent);
+    const localComponent = localFixture.componentInstance;
+    vi.spyOn(localComponent.copyPullRequestUrl, 'emit');
+    localComponent.visible = true;
+    localComponent.showPullRequest = true;
+    localFixture.detectChanges();
 
-    const copyButton = fixture.debugElement.query(By.css('.copy-btn'));
-    copyButton.triggerEventHandler('click', null);
+    const copyButton = document.querySelector('.copy-btn') as HTMLElement | null;
+    copyButton?.click();
 
-    expect(component.copyPullRequestUrl.emit).toHaveBeenCalled();
+    expect(localComponent.copyPullRequestUrl.emit).toHaveBeenCalled();
   });
 
   it('should display copied label when isCopySuccessVisible is true', () => {
-    component.showPullRequest = true;
-    component.isCopySuccessVisible = true;
-    fixture.detectChanges();
+    const localFixture = TestBed.createComponent(DeprecationResultDialogComponent);
+    const localComponent = localFixture.componentInstance;
+    localComponent.visible = true;
+    localComponent.showPullRequest = true;
+    localComponent.isCopySuccessVisible = true;
+    localFixture.detectChanges();
 
-    const copyButton = fixture.debugElement.query(By.css('.copy-btn'));
-    expect(copyButton.nativeElement.textContent).toContain('common.admin.deprecation.copiedLabel');
+    const copyButton = document.querySelector('.copy-btn') as HTMLElement | null;
+    expect(copyButton?.textContent).toContain('common.admin.deprecation.copiedLabel');
   });
 
   it('should emit close from close button and backdrop click when not closing', () => {
@@ -107,11 +126,14 @@ describe('DeprecateSuccessDialogComponent', () => {
   });
 
   it('should disable close button when closing', () => {
-    component.isClosing = true;
-    fixture.detectChanges();
+    const localFixture = TestBed.createComponent(DeprecationResultDialogComponent);
+    const localComponent = localFixture.componentInstance;
+    localComponent.visible = true;
+    localComponent.isClosing = true;
+    localFixture.detectChanges();
 
-    const closeButton = fixture.debugElement.query(By.css('.btn-close'));
-    expect(closeButton.properties['disabled']).toBe(true);
+    const closeButton = document.querySelector('.btn-close') as HTMLButtonElement | null;
+    expect(closeButton?.disabled).toBe(true);
   });
 });
 

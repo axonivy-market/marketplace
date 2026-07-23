@@ -1,7 +1,7 @@
 package com.axonivy.market.aop.aspect;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.LoggingConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
@@ -47,7 +47,7 @@ public class LoggableAspect {
       saveLogToDailyFile(headersMap);
 
       // block execution if request isn't from Market or Ivy Designer
-      if (!LoggingConstants.MARKET_WEBSITE.equals(headersMap.get(CommonConstants.REQUESTED_BY))) {
+      if (!CoreCommonConstants.MARKET_WEBSITE.equals(headersMap.get(CoreCommonConstants.REQUESTED_BY))) {
         throw new MissingHeaderException();
       }
     }
@@ -58,12 +58,12 @@ public class LoggableAspect {
     return Map.of(
         LoggingConstants.METHOD, escapeXml(String.valueOf(method)),
         LoggingConstants.TIMESTAMP, escapeXml(getCurrentTimestamp()),
-        CommonConstants.USER_AGENT, escapeXml(request.getHeader(CommonConstants.USER_AGENT)),
+        CoreCommonConstants.USER_AGENT, escapeXml(request.getHeader(CoreCommonConstants.USER_AGENT)),
         LoggingConstants.ARGUMENTS,
         escapeXml(getArgumentsString(
             Arrays.stream(method.getParameters()).map(Parameter::getName).toArray(String[]::new),
             joinPoint.getArgs())),
-        CommonConstants.REQUESTED_BY, escapeXml(request.getHeader(CommonConstants.REQUESTED_BY))
+        CoreCommonConstants.REQUESTED_BY, escapeXml(request.getHeader(CoreCommonConstants.REQUESTED_BY))
     );
   }
 

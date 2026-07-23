@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CacheNameConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
@@ -26,6 +27,7 @@ import com.axonivy.market.core.entity.ProductJsonContent;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.enums.SyncTaskType;
+import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.factory.ProductFactory;
 import com.axonivy.market.factory.VersionFactory;
 import com.axonivy.market.github.model.GitHubFile;
@@ -34,6 +36,7 @@ import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.model.VersionAndUrlModel;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.GithubRepoRepository;
@@ -59,13 +62,15 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.Strings;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRelease;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTag;
-import org.springframework.beans.factory.annotation.Value;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.enums.AppSettingKey;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -106,8 +111,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private final FileDownloadService fileDownloadService;
   private final VersionService versionService;
   private final GithubRepoRepository githubRepo;
-  @Value("${market.github.market.branch}")
-  private String marketRepoBranch;
+  private final AppSettingService appSettingService;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
   private GHCommit lastGHCommit;
   private GitHubRepoMeta marketRepoMeta;
 
@@ -120,7 +125,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ProductMarketplaceDataService productMarketplaceDataService,
       ProductMarketplaceDataRepository productMarketplaceDataRepo,
       MavenArtifactVersionRepository mavenArtifactVersionRepository, FileDownloadService fileDownloadService,
-      VersionService versionService, GithubRepoRepository githubRepo) {
+      VersionService versionService, GithubRepoRepository githubRepo, AppSettingService appSettingService,
+      SyncTaskCancellationRegistry syncTaskCancellationRegistry) {
     super(coreProductRepo);
     this.productRepo = productRepo;
     this.productModuleContentRepo = productModuleContentRepo;
@@ -141,6 +147,12 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     this.fileDownloadService = fileDownloadService;
     this.versionService = versionService;
     this.githubRepo = githubRepo;
+    this.appSettingService = appSettingService;
+    this.syncTaskCancellationRegistry = syncTaskCancellationRegistry;
+  }
+
+  private String getMarketRepoBranch() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 
   @Override
@@ -167,11 +179,15 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       syncProductMarketplaceData(syncedProductIds);
     }
     updateLatestReleaseVersionContentsFromProductRepo();
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_PRODUCTS);
     return syncedProductIds.stream().filter(StringUtils::isNotBlank).toList();
   }
 
   private synchronized void syncProductMarketplaceData(List<String> syncedProductIds) {
     for (String productId : syncedProductIds) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
     }
   }
@@ -205,6 +221,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     List<GitHubFile> gitHubFileChanges = axonIvyMarketRepoService.fetchMarketItemsBySHA1Range(fromSHA1, toSHA1);
     Map<String, List<GitHubFile>> groupGitHubFiles = new HashMap<>();
     for (var file : gitHubFileChanges) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       String filePath = file.getFileName();
       var parentPath = filePath.substring(0, filePath.lastIndexOf(CoreCommonConstants.SLASH) + 1);
       var files = groupGitHubFiles.getOrDefault(parentPath, new ArrayList<>());
@@ -228,14 +247,14 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
           EMPTY);
       List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
       if (ObjectUtils.isNotEmpty(productList)) {
-        productId = productList.get(0).getId();
+        productId = productList.getFirst().getId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
       }
     } else {
       List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(file.getFileName());
       if (ObjectUtils.isNotEmpty(images)) {
-        var currentImage = images.get(0);
+        var currentImage = images.getFirst();
         productId = currentImage.getProductId();
         productRepo.deleteById(productId);
         imageRepo.deleteAllByProductId(productId);
@@ -247,7 +266,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   private String modifyProductMetaOrLogo(GitHubFile file, String parentPath) {
     try {
       var fileContent = gitHubService.getGHContent(axonIvyMarketRepoService.getRepository(), file.getFileName(),
-          marketRepoBranch);
+          getMarketRepoBranch());
       return updateProductByMetaJsonAndLogo(fileContent, file, parentPath);
     } catch (IOException e) {
       log.error("Get GHContent failed: ", e);
@@ -276,7 +295,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     searchCriteria.setFields(List.of(DocumentField.MARKET_DIRECTORY));
     var product = productRepo.findByCriteria(searchCriteria);
     if (product != null) {
-      var isLogoDark = StringUtils.endsWith(fileContent.getName(), ProductJsonConstants.LOGO_DARK_FILE);
+      var isLogoDark = Strings.CS.endsWith(fileContent.getName(), ProductJsonConstants.LOGO_DARK_FILE);
       Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), fileContent)).ifPresent(
           (Image image) -> {
             updateLogoOfProduct(isLogoDark, product, image.getId());
@@ -300,7 +319,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void deleteOldLogo(String oldLogoImageId, String newLogoImageId) {
-    if (StringUtils.isNotBlank(oldLogoImageId) && !StringUtils.equals(oldLogoImageId, newLogoImageId)) {
+    if (StringUtils.isNotBlank(oldLogoImageId) && !Strings.CS.equals(oldLogoImageId, newLogoImageId)) {
       imageRepo.deleteById(oldLogoImageId);
     }
   }
@@ -312,7 +331,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       lastCommitTime = marketRepoMeta.getLastChange();
     }
     lastGHCommit = axonIvyMarketRepoService.getLastCommit(lastCommitTime);
-    if (lastGHCommit != null && marketRepoMeta != null && StringUtils.equals(lastGHCommit.getSHA1(),
+    if (lastGHCommit != null && marketRepoMeta != null && Strings.CS.equals(lastGHCommit.getSHA1(),
         marketRepoMeta.getLastSHA1())) {
       isLastCommitCovered = true;
     }
@@ -327,6 +346,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     }
 
     for (Product product : products) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       updateProductFromReleasedVersions(product);
       productRepo.save(product);
     }
@@ -342,6 +364,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       ghContentEntity.getValue().sort((f1, f2) -> GitHubUtils.sortMetaJsonFirst(f1.getName(), f2.getName()));
 
       for (var content : ghContentEntity.getValue()) {
+        if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+          throw new TaskCancelledException();
+        }
         ProductFactory.mappingByGHContent(product, content);
         mappingVendorImageFromGHContent(product, content);
         mappingLogoFromGHContent(product, content);
@@ -363,10 +388,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private void mappingLogoFromGHContent(Product product, GHContent ghContent) {
     if (ghContent != null) {
-      if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
+      if (Strings.CS.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_FILE)) {
         Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
             .ifPresent(image -> product.setLogoId(image.getId()));
-      } else if (StringUtils.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_DARK_FILE)) {
+      } else if (Strings.CS.endsWith(ghContent.getName(), ProductJsonConstants.LOGO_DARK_FILE)) {
         Optional.ofNullable(imageService.mappingImageFromGHContent(product.getId(), ghContent))
             .ifPresent(image -> product.setLogoDarkId(image.getId()));
       }
@@ -374,9 +399,15 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   private void mappingVendorImageFromGHContent(Product product, GHContent ghContent) {
-    if (StringUtils.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
+    if (Strings.CS.endsWith(ghContent.getName(), MetaConstants.META_FILE)) {
       if (StringUtils.isNotBlank(product.getVendorImagePath())) {
         product.setVendorImage(mapVendorImage(product.getId(), ghContent, product.getVendorImagePath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorLogoPath())) {
+        product.setVendorLogo(mapVendorImage(product.getId(), ghContent, product.getVendorLogoPath()));
+      }
+      if (StringUtils.isNotBlank(product.getVendorLogoDarkModePath())) {
+        product.setVendorLogoDarkMode(mapVendorImage(product.getId(), ghContent, product.getVendorLogoDarkModePath()));
       }
       if (StringUtils.isNotBlank(product.getVendorImageDarkModePath())) {
         product.setVendorImageDarkMode(
@@ -387,9 +418,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private String mapVendorImage(String productId, GHContent ghContent, String imageName) {
     if (StringUtils.isNotBlank(imageName)) {
-      var imagePath = StringUtils.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
+      var imagePath = Strings.CS.replace(ghContent.getPath(), MetaConstants.META_FILE, imageName);
       try {
-        var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, marketRepoBranch);
+        var imageContent = gitHubService.getGHContent(ghContent.getOwner(), imagePath, getMarketRepoBranch());
         return Optional.ofNullable(imageService.mappingImageFromGHContent(productId, imageContent))
             .map(Image::getId).orElse(EMPTY);
       } catch (IOException e) {
@@ -416,7 +447,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     try {
       if (!CollectionUtils.isEmpty(gitHubTags)) {
         List<GHTag> sortedTags = sortByTagCommitDate(gitHubTags);
-        GHCommit commit = sortedTags.get(0).getCommit();
+        GHCommit commit = sortedTags.getFirst().getCommit();
         if (commit != null) {
           firstTagPublishedDate = commit.getCommitDate();
         }
@@ -470,6 +501,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
     List<String> nonSyncReleasedVersions = new ArrayList<>();
     for (Artifact mavenArtifact : mavenArtifacts) {
+      if (syncTaskCancellationRegistry.isCancelled(SyncTaskType.SYNC_PRODUCTS)) {
+        throw new TaskCancelledException();
+      }
       getMetadataContent(mavenArtifact, product, nonSyncReleasedVersions);
     }
     metadataService.updateArtifactAndMetadata(product.getId(), nonSyncReleasedVersions, product.getArtifacts());
@@ -539,7 +573,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
       String productName) {
-    String snapshotVersionValue = Strings.EMPTY;
+    String snapshotVersionValue = StringUtils.EMPTY;
     if (version.contains(CoreMavenConstants.SNAPSHOT_VERSION)) {
       String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
           mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
@@ -613,6 +647,17 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     List<String> versions = CoreVersionUtils.getVersionsToDisplay(productRepo.getReleasedVersionsById(id),
         isShowDevVersion);
     return versions.contains(version) ? version : VersionFactory.get(versions, version);
+  }
+
+  @Override
+  public Product updateProduct(String id, UpdateProductRequest request) {
+    Product product = productRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND,
+        "Product not found for id: " + id));
+    if (request.getInternal() != null) {
+      product.setInternal(request.getInternal());
+    }
+
+    return productRepo.save(product);
   }
 
   public Product getProductByIdWithNewestReleaseVersion(String id, Boolean isShowDevVersion) {

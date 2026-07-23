@@ -1,0 +1,83 @@
+package com.axonivy.market.core.config;
+
+import com.axonivy.market.core.enums.AppSettingCategory;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
+import com.axonivy.market.core.utils.SettingValueParser;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.matomo.java.tracking.MatomoTracker;
+import org.matomo.java.tracking.TrackerConfiguration;
+import org.springframework.stereotype.Component;
+
+import java.net.URI;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * Builds and caches a MatomoTracker instance using runtime values from AppSettingService. * Rebuilds only when the
+ * relevant settings change.
+ */
+@Log4j2
+@Component
+@RequiredArgsConstructor
+public abstract class MatomoTrackerBuilder {
+
+  private final AppSettingService appSettingService;
+  private MatomoTracker tracker;
+
+  protected abstract AppSettingKey getEndpointKey();
+  protected abstract AppSettingKey getSiteIdKey();
+  protected abstract AppSettingKey getEnabledKey();
+
+  private String endpoint;
+  private Integer siteId;
+  private Boolean enabled;
+
+  public synchronized MatomoTracker build() {
+    Map<String, String> matomoSettings = appSettingService.getByCategory(AppSettingCategory.MATOMO);
+    String rawEndpoint = matomoSettings.get(getEndpointKey().getKey()).trim();
+    String rawSiteId = matomoSettings.get(getSiteIdKey().getKey()).trim();
+    boolean newEnabled = SettingValueParser.parseBoolean(matomoSettings.get(getEnabledKey().getKey()));
+
+    int newSiteId;
+    try {
+      newSiteId = Integer.parseInt(rawSiteId);
+    } catch (NumberFormatException ex) {
+      newSiteId = 1;
+    }
+
+    if (tracker != null && Objects.equals(endpoint, rawEndpoint) && Objects.equals(siteId, newSiteId) && Objects.equals(
+        enabled, newEnabled)) {
+      return tracker;
+    }
+
+    try {
+      TrackerConfiguration config = TrackerConfiguration.builder().apiEndpoint(URI.create(rawEndpoint)).defaultSiteId(
+          newSiteId).enabled(newEnabled).build();
+
+      var oldTracker = tracker;
+      closeTracker(oldTracker);
+
+      tracker = new MatomoTracker(config);
+      endpoint = rawEndpoint;
+      siteId = newSiteId;
+      enabled = newEnabled;
+
+      return tracker;
+    } catch (IllegalArgumentException ex) {
+      log.error("Invalid Matomo configuration. Use old tracker instance.", ex);
+      return tracker;
+    }
+  }
+
+  private void closeTracker(MatomoTracker tracker) {
+    if (tracker != null) {
+      try {
+        tracker.close();
+      } catch (Exception e) {
+        log.warn("Failed to close MatomoTracker instance", e);
+      }
+    }
+  }
+}

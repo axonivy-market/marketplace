@@ -1,9 +1,10 @@
 package com.axonivy.market.aspect;
 
 import com.axonivy.market.aop.aspect.LoggableAspect;
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.LoggingConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import com.axonivy.market.util.LoggingUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
@@ -13,8 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,12 +40,12 @@ class LoggableAspectTest {
 
   @AfterEach
   void tearDown() {
-    RequestContextHolder.resetRequestAttributes();
+    MockServletRequestUtils.resetRequestAttributes();
   }
 
   @Test
   void testLogFileCreation() throws Exception {
-    mockRequestAttributes(LoggingConstants.MARKET_WEBSITE, "test-agent");
+    mockRequestAttributes(CoreCommonConstants.MARKET_WEBSITE, "test-agent");
     MethodSignature signature = mockMethodSignature();
 
     loggableAspect.logMethodCall(mockJoinPoint(signature));
@@ -76,9 +75,9 @@ class LoggableAspectTest {
   }
 
   private void mockRequestAttributes(String requestedBy, String userAgent) {
-    when(request.getHeader(CommonConstants.REQUESTED_BY)).thenReturn(requestedBy);
-    when(request.getHeader(CommonConstants.USER_AGENT)).thenReturn(userAgent);
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    when(request.getHeader(CoreCommonConstants.REQUESTED_BY)).thenReturn(requestedBy);
+    when(request.getHeader(CoreCommonConstants.USER_AGENT)).thenReturn(userAgent);
+    MockServletRequestUtils.bindRequest(request);
   }
 
   private MethodSignature mockMethodSignature() {

@@ -1,5 +1,6 @@
 package com.axonivy.market.entity;
 
+import com.axonivy.market.core.entity.EntityConstants;
 import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import jakarta.persistence.Column;
@@ -7,7 +8,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,6 @@ import lombok.Setter;
 import java.io.Serial;
 import java.time.LocalDateTime;
 
-import static com.axonivy.market.constants.EntityConstants.SYNC_TASK;
 
 @Getter
 @Setter
@@ -26,7 +25,7 @@ import static com.axonivy.market.constants.EntityConstants.SYNC_TASK;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = SYNC_TASK)
+@Table(name = EntityConstants.SYNC_TASK)
 public class SyncTaskExecution extends AuditableIdEntity {
   @Serial
   private static final long serialVersionUID = 1L;
@@ -58,4 +57,6 @@ public class SyncTaskExecution extends AuditableIdEntity {
 
   @Version
   private Integer version;
+
+  private Integer nodeNumber;
 }

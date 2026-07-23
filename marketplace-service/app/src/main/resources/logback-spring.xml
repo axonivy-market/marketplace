@@ -35,7 +35,7 @@
     </logger>
 
     <!-- Hibernate parameter values -->
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+    <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" additivity="false">
         <appender-ref ref="ROLLING_FILE" />
     </logger>
 

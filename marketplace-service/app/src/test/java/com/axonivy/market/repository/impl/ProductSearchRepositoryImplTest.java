@@ -71,7 +71,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     Path<String> keyValue = mock(Path.class);
 
     MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(),any())).thenReturn(namesJoin);
+    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
     when(namesJoin.value()).thenReturn(nameValue);
     when(namesJoin.key()).thenReturn(keyValue);
 
@@ -85,7 +85,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
-    when(criteriaQuery.groupBy(productRoot, keyValue, nameValue)).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
@@ -114,13 +113,8 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
     Root<Product> productRoot = mock(Root.class);
 
-    Path<String> nameValue = mock(Path.class);
-    Path<String> keyValue = mock(Path.class);
-
     MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(),any())).thenReturn(namesJoin);
-    when(namesJoin.value()).thenReturn(nameValue);
-    when(namesJoin.key()).thenReturn(keyValue);
+    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
 
     Predicate predicate = mock(Predicate.class);
     when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
@@ -147,7 +141,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
-    when(criteriaQuery.groupBy(productRoot, keyValue, nameValue)).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(mockResultReturn.getContent()); // Mocking a result
 
@@ -157,7 +150,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     assertTrue(result.isFirst(), "Result is not on the first page");
     assertEquals(2, result.getContent().size(), "Unexpected number of products");
     assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
-            "Expected product name not found in the result");
+        "Expected product name not found in the result");
 
   }
 

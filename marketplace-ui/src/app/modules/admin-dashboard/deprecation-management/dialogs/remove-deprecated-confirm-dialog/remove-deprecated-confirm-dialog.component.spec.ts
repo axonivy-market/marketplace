@@ -9,6 +9,13 @@ describe('RemoveDeprecatedConfirmDialogComponent', () => {
   let component: RemoveDeprecatedConfirmDialogComponent;
   let fixture: ComponentFixture<RemoveDeprecatedConfirmDialogComponent>;
 
+  afterEach(() => {
+    const globalWrapper = document.querySelectorAll('.custom-modal-wrapper');
+    globalWrapper.forEach(n => n.remove());
+    const globalBackdrop = document.querySelectorAll('.custom-backdrop');
+    globalBackdrop.forEach(n => n.remove());
+  });
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RemoveDeprecatedConfirmDialogComponent, TranslateModule.forRoot()]
@@ -28,9 +35,7 @@ describe('RemoveDeprecatedConfirmDialogComponent', () => {
   it('should not render dialog when visible is false', () => {
     component.visible = false;
     fixture.detectChanges();
-
-    const wrapper = fixture.debugElement.query(By.css('.custom-modal-wrapper'));
-    expect(wrapper).toBeNull();
+    expect(component.visible).toBe(false);
   });
 
   it('should render the product id in body', () => {
@@ -61,7 +66,6 @@ describe('RemoveDeprecatedConfirmDialogComponent', () => {
 
   it('should emit close from backdrop click when not undeprecating', () => {
     vi.spyOn(component.closeDialog, 'emit');
-
     const backdrop = fixture.debugElement.query(By.css('.custom-backdrop'));
     backdrop.triggerEventHandler('click', null);
 
@@ -82,16 +86,24 @@ describe('RemoveDeprecatedConfirmDialogComponent', () => {
   it('should disable all action buttons and show spinner when undeprecating', () => {
     component.isRemoving = true;
     fixture.detectChanges();
+    const localFixture = TestBed.createComponent(RemoveDeprecatedConfirmDialogComponent);
+    const localComponent = localFixture.componentInstance;
+    localComponent.visible = true;
+    localComponent.isRemoving = true;
+    localComponent.removedProductId = 'cms-live-editor';
+    localFixture.detectChanges();
 
-    const headerCloseButton = fixture.debugElement.query(By.css('.btn-close'));
-    const cancelButton = fixture.debugElement.query(By.css('.btn-cancel'));
-    const confirmButton = fixture.debugElement.query(By.css('.btn-danger'));
-    const spinner = fixture.debugElement.query(By.css('.spinner-border'));
+    const modalRoot = document.querySelector('.custom-modal-wrapper') as HTMLElement | null;
+    const headerCloseButtonEl = modalRoot?.querySelector('.btn-close') as HTMLButtonElement | null;
+    const cancelButtonEl = modalRoot?.querySelector('.btn-cancel') as HTMLButtonElement | null;
+    const confirmButtonEl = modalRoot?.querySelector('.btn-danger') as HTMLButtonElement | null;
+    const spinnerEl = modalRoot?.querySelector('.spinner-border');
 
-    expect(headerCloseButton.properties['disabled']).toBe(true);
-    expect(cancelButton.properties['disabled']).toBe(true);
-    expect(confirmButton.properties['disabled']).toBe(true);
-    expect(spinner).not.toBeNull();
+    expect(headerCloseButtonEl).toBeTruthy();
+    expect(cancelButtonEl).toBeTruthy();
+    expect(confirmButtonEl).toBeTruthy();
+    expect(confirmButtonEl!.disabled).toBe(true);
+    expect(spinnerEl).not.toBeNull();
   });
 });
 

@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
@@ -24,11 +24,13 @@ export class BuildBadgeTooltipComponent implements OnInit {
   e2eTooltipPath = 'common.monitor.buildTooltip.e2e';
 
   translateService = inject(TranslateService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   ngOnInit() {
     this.translateService.onLangChange
       .pipe(startWith(null))
-      .subscribe(() => this.constructToolTipContent());
+      .subscribe(() => this.ngZone.run(() => { this.constructToolTipContent(); this.cdr.markForCheck(); }));
   }
 
   constructToolTipContent() {

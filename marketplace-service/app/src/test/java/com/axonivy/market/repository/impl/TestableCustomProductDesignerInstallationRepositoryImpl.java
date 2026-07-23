@@ -7,6 +7,10 @@ import lombok.Getter;
 public class TestableCustomProductDesignerInstallationRepositoryImpl extends CustomProductDesignerInstallationRepositoryImpl {
   private ProductDesignerInstallation captured;
 
+  public ProductDesignerInstallation getCaptured() {
+    return captured;
+  }
+
   @Override
   protected void save(ProductDesignerInstallation entity) {
     this.captured = entity; // capture instead of persisting
