@@ -24,6 +24,9 @@ HEALTH_CHECK_INTERVAL="${HEALTH_CHECK_INTERVAL:-10}"
 REMOTE_SCRIPT_DIR="/tmp/marketplace-deploy-$(date +%s)-$$"
 CREDS_TEMP_FILE="${REMOTE_SCRIPT_DIR}/ghcr-creds"
 
+: "${GHCR_USERNAME:?GHCR_USERNAME is required}"
+: "${GHCR_TOKEN:?GHCR_TOKEN is required}"
+
 GHCR_CREDS_FILE="$(mktemp)"
 chmod 600 "${GHCR_CREDS_FILE}"
 trap 'rm -f "${GHCR_CREDS_FILE}"' EXIT
@@ -40,9 +43,15 @@ scp "${SSH_OPTS[@]}" \
     "${SCRIPT_DIR}/step1-deploy-release.sh" \
     "${SCRIPT_DIR}/step2-verify-release-health.sh" \
     "${SCRIPT_DIR}/step3-promote-release.sh" \
-    "${GHCR_CREDS_FILE}" \
     "${SSH_USER}@${NODE_IP}:${REMOTE_SCRIPT_DIR}/" || {
     echo "Failed to transfer deployment assets"
+    exit 1
+}
+
+scp "${SSH_OPTS[@]}" \
+    "${GHCR_CREDS_FILE}" \
+    "${SSH_USER}@${NODE_IP}:${CREDS_TEMP_FILE}" || {
+    echo "Failed to transfer GHCR credentials"
     exit 1
 }
 
