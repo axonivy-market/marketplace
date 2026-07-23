@@ -29,9 +29,8 @@ fi
 TEMPLATE_ROOT="${WORKSPACE_ROOT}/target-source/marketplace-build/templates"
 LOCAL_TEMPLATE_ENV="${TEMPLATE_ROOT}/.env"
 LOCAL_TEMPLATE_COMPOSE="${TEMPLATE_ROOT}/docker-compose.yml"
-LOCAL_TEMPLATE_DOCKERFILE="${TEMPLATE_ROOT}/Dockerfile"
 
-for required_file in "${LOCAL_TEMPLATE_ENV}" "${LOCAL_TEMPLATE_COMPOSE}" "${LOCAL_TEMPLATE_DOCKERFILE}" "${ENV_SECRET_FILE}"; do
+for required_file in "${LOCAL_TEMPLATE_ENV}" "${LOCAL_TEMPLATE_COMPOSE}" "${ENV_SECRET_FILE}"; do
     if [[ ! -f "${required_file}" ]]; then
         echo "ERROR: Required file not found: ${required_file}"
         exit 1
@@ -44,5 +43,4 @@ ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" "mkdir -p '${REMOTE_TEMPLATE_DIR}'
 echo "Uploading template and secret files to ${NODE_IP}"
 scp "${SSH_OPTS[@]}" "${LOCAL_TEMPLATE_ENV}" "${SSH_USER}@${NODE_IP}:${REMOTE_TEMPLATE_DIR}/template.env"
 scp "${SSH_OPTS[@]}" "${LOCAL_TEMPLATE_COMPOSE}" "${SSH_USER}@${NODE_IP}:${REMOTE_TEMPLATE_DIR}/template.compose.yml"
-scp "${SSH_OPTS[@]}" "${LOCAL_TEMPLATE_DOCKERFILE}" "${SSH_USER}@${NODE_IP}:${REMOTE_TEMPLATE_DIR}/template.Dockerfile"
 scp "${SSH_OPTS[@]}" "${ENV_SECRET_FILE}" "${SSH_USER}@${NODE_IP}:${REMOTE_TEMPLATE_DIR}/secret.env"

@@ -40,7 +40,7 @@ pipeline {
                     dir('target-source') {
                         git branch: 'master', url: env.MARKETPLACE_GIT_URL
                     }
-                    deployStages = load 'target-source/.build/pipeline-lib/deployStages.groovy'
+                    deployStages = load '.build/pipeline-lib/deployStages.groovy'
                 }
             }
         }

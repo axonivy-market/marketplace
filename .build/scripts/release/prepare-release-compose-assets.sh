@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configures docker-compose and Dockerfile for the target release workspace.
+# Configures docker-compose for the target release workspace.
 set -euo pipefail
 
 NODE_IP="${1:-}"
@@ -31,5 +31,4 @@ NEW_PUBLISH_PATH="${NEW_RELEASE_PATH}/publish"
 
 echo "Configuring docker-compose for ${RELEASE_VERSION}"
 cp "${REMOTE_TEMPLATE_DIR}/template.compose.yml" "${NEW_PUBLISH_PATH}/docker-compose.yml"
-cp "${REMOTE_TEMPLATE_DIR}/template.Dockerfile" "${NEW_PUBLISH_PATH}/Dockerfile"
 REMOTE_EOF
