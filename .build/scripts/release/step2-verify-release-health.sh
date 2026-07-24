@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Rollout step 2: verify service health endpoints and roll back automatically if checks fail.
-set -euo pipefail
+set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/release-context-lib.sh"
@@ -26,8 +26,44 @@ if [[ "${#HEALTH_TARGETS_LIST[@]}" -eq 0 ]]; then
     exit 1
 fi
 
+ROLLBACK_DONE=false
+
+rollback_release() {
+    if [[ "${ROLLBACK_DONE}" == "true" ]]; then
+        return 0
+    fi
+
+    echo "Health check failed for ${NEW_RELEASE_NAME}. Rolling back..."
+    docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" down || true
+
+    if [[ -n "${OLD_RELEASE_NAME}" && -f "${OLD_PUBLISH_PATH}/docker-compose.yml" ]]; then
+        echo "Restarting old release ${OLD_RELEASE_NAME}..."
+        docker compose -f "${OLD_PUBLISH_PATH}/docker-compose.yml" -p "${OLD_COMPOSE_PROJECT}" --env-file "${OLD_PUBLISH_PATH}/.env" up -d || true
+    else
+        echo "WARN: Old release info not available; skipped old release restart"
+    fi
+
+    ROLLBACK_DONE=true
+}
+
+fail_step2() {
+    local message="$1"
+    echo "ERROR: ${message}"
+    rollback_release
+    exit 1
+}
+
+on_step2_error() {
+    local exit_code="$?"
+    local line_no="$1"
+    echo "ERROR: Step 2 failed unexpectedly at line ${line_no} (exit=${exit_code})"
+    rollback_release
+    exit "${exit_code}"
+}
+
 echo "--- Step 2: Health Check ---"
 echo "Checking /actuator/health for targets: ${HEALTH_TARGETS_LIST[*]}..."
+trap 'on_step2_error $LINENO' ERR
 
 check_health_from_container() {
     local container_id="$1"
@@ -95,16 +131,14 @@ while true; do
         container_id="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" ps -q "${service_name}" 2>/dev/null | head -n1 || true)"
 
         if [[ -z "${container_id}" ]]; then
-            echo "ERROR: target=${health_target} container-not-found for service '${service_name}' in compose project '${NEW_COMPOSE_PROJECT}'"
-            exit 1
+            fail_step2 "target=${health_target} container-not-found for service '${service_name}' in compose project '${NEW_COMPOSE_PROJECT}'"
         fi
 
         health_path="/${app_name}/actuator/health"
 
         HEALTH="$(check_health_from_container "${container_id}" "${health_path}" "$(date +%s%N)-$$" "${health_target}" "${target_port}")"
         if [[ "${HEALTH}" == "NO_IP" ]]; then
-            echo "ERROR: target=${health_target} no IP found for container '${container_id}'"
-            exit 1
+            fail_step2 "target=${health_target} no IP found for container '${container_id}'"
         fi
         if [[ "${HEALTH}" != "UP" ]]; then
             ALL_HEALTHY=false
@@ -123,14 +157,9 @@ while true; do
 done
 
 if [[ "${HEALTH_GOOD}" != "true" ]]; then
-    echo "Health check failed for ${NEW_RELEASE_NAME}. Rolling back..."
-    docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" down || true
-
-    if [[ -n "${OLD_RELEASE_NAME}" && -f "${OLD_PUBLISH_PATH}/docker-compose.yml" ]]; then
-        echo "Restarting old release ${OLD_RELEASE_NAME}..."
-        docker compose -f "${OLD_PUBLISH_PATH}/docker-compose.yml" -p "${OLD_COMPOSE_PROJECT}" --env-file "${OLD_PUBLISH_PATH}/.env" up -d || true
-    fi
+    rollback_release
     exit 1
 fi
 
+trap - ERR
 echo "Deployment health check passed"
