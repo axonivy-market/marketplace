@@ -4,6 +4,7 @@ import com.axonivy.market.core.entity.Image;
 import com.axonivy.market.core.repository.CoreImageRepository;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,5 +18,6 @@ public interface ImageRepository extends CoreImageRepository {
 
   List<Image> findByProductId(String productId);
 
+  @Modifying
   void deleteAllByProductId(String productId);
 }
