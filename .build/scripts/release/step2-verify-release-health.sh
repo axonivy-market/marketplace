@@ -94,6 +94,26 @@ check_health_from_container() {
     printf '%s' "${response}" | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' | head -n1 | cut -d'"' -f4
 }
 
+normalize_health_target_service() {
+    local raw_service_name="$1"
+    local raw_app_name="$2"
+
+    # Preferred format is {service-name}/{app-name}.
+    # Compatibility: accept legacy/prefixed values like 85/app by mapping to app.
+    if compose_has_service "${raw_service_name}"; then
+        printf '%s' "${raw_service_name}"
+        return 0
+    fi
+
+    if compose_has_service "${raw_app_name}"; then
+        echo "[health-check] remap target service ${raw_service_name}/${raw_app_name} -> ${raw_app_name}/${raw_app_name}" >&2
+        printf '%s' "${raw_app_name}"
+        return 0
+    fi
+
+    return 1
+}
+
 START_TIME="$(date +%s)"
 HEALTH_GOOD=false
 
@@ -106,13 +126,12 @@ while true; do
     ALL_HEALTHY=true
     PENDING_STATUS=()
     for health_target in "${HEALTH_TARGETS_LIST[@]}"; do
-        service_name="${health_target%%/*}"
+        raw_service_name="${health_target%%/*}"
         app_name="${health_target#*/}"
 
-        if ! compose_has_service "${service_name}"; then
-            ALL_HEALTHY=false
-            PENDING_STATUS+=("${health_target}:invalid-service-name")
-            continue
+        if ! service_name="$(normalize_health_target_service "${raw_service_name}" "${app_name}")"; then
+            echo "ERROR: Invalid health check target ${health_target}. Neither '${raw_service_name}' nor '${app_name}' is a compose service. Available services: ${COMPOSE_SERVICES[*]}"
+            exit 1
         fi
 
         container_id="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" ps -q "${service_name}" 2>/dev/null | head -n1 || true)"
