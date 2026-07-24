@@ -28,6 +28,26 @@ fi
 echo "--- Step 2: Health Check ---"
 echo "Checking /actuator/health for targets: ${HEALTH_TARGETS_LIST[*]}..."
 
+COMPOSE_SERVICES_RAW="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" config --services 2>/dev/null || true)"
+if [[ -z "${COMPOSE_SERVICES_RAW}" ]]; then
+    echo "ERROR: Could not read services from ${NEW_PUBLISH_PATH}/docker-compose.yml"
+    exit 1
+fi
+
+mapfile -t COMPOSE_SERVICES <<< "${COMPOSE_SERVICES_RAW}"
+echo "Available compose services: ${COMPOSE_SERVICES[*]}"
+
+compose_has_service() {
+    local wanted_service="$1"
+    local svc
+    for svc in "${COMPOSE_SERVICES[@]}"; do
+        if [[ "${svc}" == "${wanted_service}" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 check_health_from_container() {
     local container_id="$1"
     local health_path="$2"
@@ -88,7 +108,14 @@ while true; do
     for health_target in "${HEALTH_TARGETS_LIST[@]}"; do
         service_name="${health_target%%/*}"
         app_name="${health_target#*/}"
-        container_id="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" ps -q "${service_name}" | head -n1)"
+
+        if ! compose_has_service "${service_name}"; then
+            ALL_HEALTHY=false
+            PENDING_STATUS+=("${health_target}:invalid-service-name")
+            continue
+        fi
+
+        container_id="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" ps -q "${service_name}" 2>/dev/null | head -n1 || true)"
 
         if [[ -z "${container_id}" ]]; then
             ALL_HEALTHY=false
