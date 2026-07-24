@@ -61,7 +61,7 @@ merge_env_files() {
     load_env_file "${secret_env}"
 
     env_vars["RELEASE_VERSION"]="${RELEASE_VERSION}"
-    env_vars["MARKET_NODE_NUMBER"]="${MARKET_NODE_NUMBER:1}"
+    env_vars["MARKET_NODE_NUMBER"]="${MARKET_NODE_NUMBER}"
 
     {
         for key in "${!env_vars[@]}"; do
