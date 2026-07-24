@@ -32,20 +32,46 @@ check_health_from_container() {
     local container_id="$1"
     local health_path="$2"
     local nonce="$3"
+    local health_target_label="$4"
 
-    docker exec "${container_id}" sh -c "
-PORT=\
-\${ACTUATOR_PORT:-\${SERVER_PORT:-8080}}
-if command -v curl >/dev/null 2>&1; then
-    RESPONSE=\$(curl -sf \"http://localhost:\${PORT}${health_path}?_nocache=${nonce}\" 2>/dev/null || true)
-elif command -v wget >/dev/null 2>&1; then
-    RESPONSE=\$(wget -qO- \"http://localhost:\${PORT}${health_path}?_nocache=${nonce}\" 2>/dev/null || true)
-else
-    echo NO_HTTP_CLIENT
-    exit 0
-fi
-printf '%s' "\${RESPONSE}" | grep -o '\"status\"[[:space:]]*:[[:space:]]*\"[A-Z]*\"' | head -n1 | cut -d'\"' -f4
-" 2>/dev/null || true
+    local ip
+    local port
+    local port_source
+    local health_url
+    local response
+
+    ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_id}" 2>/dev/null || true)"
+    if [[ -z "${ip}" ]]; then
+        echo NO_IP
+        return 0
+    fi
+    echo "[health-check] target=${health_target_label} container_id=${container_id} ip=${ip}"
+
+    port="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${container_id}" 2>/dev/null | awk -F= '$1=="ACTUATOR_PORT"{print $2;exit}')"
+    port_source="ACTUATOR_PORT"
+    if [[ -z "${port}" ]]; then
+        port="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${container_id}" 2>/dev/null | awk -F= '$1=="SERVER_PORT"{print $2;exit}')"
+        port_source="SERVER_PORT"
+    fi
+    if [[ -z "${port}" ]]; then
+        port=8080
+        port_source="default"
+    fi
+    echo "[health-check] target=${health_target_label} port=${port} source=${port_source}"
+
+    health_url="http://${ip}:${port}${health_path}?_nocache=${nonce}"
+    echo "[health-check] target=${health_target_label} url=${health_url}"
+
+    if command -v curl >/dev/null 2>&1; then
+        response="$(curl -sf "${health_url}" 2>/dev/null || true)"
+    elif command -v wget >/dev/null 2>&1; then
+        response="$(wget -qO- "${health_url}" 2>/dev/null || true)"
+    else
+        echo NO_HTTP_CLIENT
+        return 0
+    fi
+
+    printf '%s' "${response}" | grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' | head -n1 | cut -d'"' -f4
 }
 
 START_TIME="$(date +%s)"
@@ -76,7 +102,7 @@ while true; do
             health_path="/${app_name}/actuator/health"
         fi
 
-        HEALTH="$(check_health_from_container "${container_id}" "${health_path}" "$(date +%s%N)-$$")"
+        HEALTH="$(check_health_from_container "${container_id}" "${health_path}" "$(date +%s%N)-$$" "${health_target}")"
         if [[ "${HEALTH}" != "UP" ]]; then
             ALL_HEALTHY=false
             PENDING_STATUS+=("${health_target}:${HEALTH:-unknown}")
