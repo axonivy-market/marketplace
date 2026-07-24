@@ -67,7 +67,7 @@ check_health_from_container() {
         echo NO_IP
         return 0
     fi
-    echo "[health-check] target=${health_target_label} container_id=${container_id} ip=${ip}"
+    echo "[health-check] target=${health_target_label} container_id=${container_id} ip=${ip}" >&2
 
     if [[ -n "${expected_port}" ]]; then
         port="${expected_port}"
@@ -84,10 +84,10 @@ check_health_from_container() {
             port_source="default"
         fi
     fi
-    echo "[health-check] target=${health_target_label} port=${port} source=${port_source}"
+    echo "[health-check] target=${health_target_label} port=${port} source=${port_source}" >&2
 
     health_url="http://${ip}:${port}${health_path}?_nocache=${nonce}"
-    echo "[health-check] target=${health_target_label} url=${health_url}"
+    echo "[health-check] target=${health_target_label} url=${health_url}" >&2
 
     if command -v curl >/dev/null 2>&1; then
         response="$(curl -sf "${health_url}" 2>/dev/null || true)"
