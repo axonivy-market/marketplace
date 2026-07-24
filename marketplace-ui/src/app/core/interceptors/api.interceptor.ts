@@ -61,7 +61,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const cloneReq = req.clone({
     url: requestURL,
     headers: addIvyHeaders(req.headers),
-    params: sanitizeParams(req.params, req.headers)
+    params: addTimestampParam(req.params, req.headers)
   });
 
   return next(cloneReq).pipe(
@@ -87,7 +87,7 @@ function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
   return headers.append(REQUEST_BY, IVY);
 }
 
-function sanitizeParams(params: HttpParams, headers: HttpHeaders): HttpParams {
+function addTimestampParam(params: HttpParams, headers: HttpHeaders): HttpParams {
   if (headers.has(AUTHORIZATION_HEADER)) {
     params = params.set(RequestParam.TIMESTAMP, Date.now().toString());
   }
