@@ -53,6 +53,8 @@ check_health_from_container() {
     local health_path="$2"
     local nonce="$3"
     local health_target_label="$4"
+    local app_name="$5"
+    local expected_port="$6"
 
     local ip
     local port
@@ -67,15 +69,20 @@ check_health_from_container() {
     fi
     echo "[health-check] target=${health_target_label} container_id=${container_id} ip=${ip}"
 
-    port="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${container_id}" 2>/dev/null | awk -F= '$1=="ACTUATOR_PORT"{print $2;exit}')"
-    port_source="ACTUATOR_PORT"
-    if [[ -z "${port}" ]]; then
-        port="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${container_id}" 2>/dev/null | awk -F= '$1=="SERVER_PORT"{print $2;exit}')"
-        port_source="SERVER_PORT"
-    fi
-    if [[ -z "${port}" ]]; then
-        port=8080
-        port_source="default"
+    if [[ -n "${expected_port}" ]]; then
+        port="${expected_port}"
+        port_source="health-target-config"
+    else
+        port="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${container_id}" 2>/dev/null | awk -F= '$1=="ACTUATOR_PORT"{print $2;exit}')"
+        port_source="ACTUATOR_PORT"
+        if [[ -z "${port}" ]]; then
+            port="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${container_id}" 2>/dev/null | awk -F= '$1=="SERVER_PORT"{print $2;exit}')"
+            port_source="SERVER_PORT"
+        fi
+        if [[ -z "${port}" ]]; then
+            port=8080
+            port_source="default"
+        fi
     fi
     echo "[health-check] target=${health_target_label} port=${port} source=${port_source}"
 
@@ -126,12 +133,23 @@ while true; do
     ALL_HEALTHY=true
     PENDING_STATUS=()
     for health_target in "${HEALTH_TARGETS_LIST[@]}"; do
-        raw_service_name="${health_target%%/*}"
+        raw_service_or_port="${health_target%%/*}"
         app_name="${health_target#*/}"
+        expected_port=""
 
-        if ! service_name="$(normalize_health_target_service "${raw_service_name}" "${app_name}")"; then
-            echo "ERROR: Invalid health check target ${health_target}. Neither '${raw_service_name}' nor '${app_name}' is a compose service. Available services: ${COMPOSE_SERVICES[*]}"
-            exit 1
+        if [[ "${raw_service_or_port}" =~ ^[0-9]+$ ]]; then
+            expected_port="${raw_service_or_port}"
+            service_name="${app_name}"
+            if ! compose_has_service "${service_name}"; then
+                echo "ERROR: Invalid health check target ${health_target}. App '${app_name}' is not a compose service. Available services: ${COMPOSE_SERVICES[*]}"
+                exit 1
+            fi
+            echo "[health-check] target=${health_target} using configured port=${expected_port} app=${app_name}"
+        else
+            if ! service_name="$(normalize_health_target_service "${raw_service_or_port}" "${app_name}")"; then
+                echo "ERROR: Invalid health check target ${health_target}. Neither '${raw_service_or_port}' nor '${app_name}' is a compose service. Available services: ${COMPOSE_SERVICES[*]}"
+                exit 1
+            fi
         fi
 
         container_id="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" ps -q "${service_name}" 2>/dev/null | head -n1 || true)"
@@ -148,7 +166,7 @@ while true; do
             health_path="/${app_name}/actuator/health"
         fi
 
-        HEALTH="$(check_health_from_container "${container_id}" "${health_path}" "$(date +%s%N)-$$" "${health_target}")"
+        HEALTH="$(check_health_from_container "${container_id}" "${health_path}" "$(date +%s%N)-$$" "${health_target}" "${app_name}" "${expected_port}")"
         if [[ "${HEALTH}" != "UP" ]]; then
             ALL_HEALTHY=false
             PENDING_STATUS+=("${health_target}:${HEALTH:-unknown}")
