@@ -5,6 +5,7 @@ import { AdminAuthService } from '../admin-auth.service';
 import { LoadingComponent } from '../../../core/interceptors/api.interceptor';
 import { LoadingComponentId } from '../../../shared/enums/loading-component-id';
 import { API_URI } from '../../../shared/constants/api.constant';
+import { RequestParam } from '../../../shared/enums/request-param';
 
 export interface AppSetting {
   settingKey: string;
@@ -27,6 +28,8 @@ export class AppSettingsService {
   getSettings(searchText = ''): Observable<AppSetting[]> {
 
     let params = new HttpParams();
+    const currentTimeStamp = Date.now().toString();
+    params = params.set(RequestParam.TIMESTAMP, currentTimeStamp);
 
     if (searchText?.trim()) {
       params = params.set('search', searchText);
