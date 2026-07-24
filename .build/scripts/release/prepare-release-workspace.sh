@@ -46,8 +46,12 @@ merge_env_files() {
     load_env_file() {
         local source_file="$1"
         [[ -f "${source_file}" ]] || return 0
-        while IFS='=' read -r key value; do
-            [[ -z "${key}" || "${key}" =~ ^# ]] && continue
+        while IFS= read -r line || [[ -n "${line}" ]]; do
+            [[ -z "${line}" || "${line}" =~ ^# ]] && continue
+            [[ "${line}" == *=* ]] || continue
+
+            local key="${line%%=*}"
+            local value="${line#*=}"
             env_vars["${key}"]="${value}"
         done < "${source_file}"
     }
