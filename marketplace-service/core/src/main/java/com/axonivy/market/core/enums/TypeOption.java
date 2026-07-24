@@ -16,8 +16,8 @@ import org.apache.commons.lang3.Strings;
 @Getter
 @AllArgsConstructor
 public enum TypeOption {
-  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "util"),
-  SOLUTIONS("solutions", "solution"), DEMOS("demos", "demo");
+  ALL("all", ""), CONNECTORS("connectors", "connector"), UTILITIES("utilities", "utils"),
+  DEMOS("demos", "demo");
 
   private final String option;
   private final String code;
