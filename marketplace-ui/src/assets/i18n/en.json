@@ -65,9 +65,8 @@
       "value": {
         "allTypes": "All Types",
         "connector": "Connectors",
-        "util": "Utilities",
+        "utils": "Utilities",
         "demos": "Demos",
-        "solution": "Solutions",
         "test": "Test"
       }
     },
@@ -203,11 +202,11 @@
       "detailedReviews": "Detailed reviews",
       "showMoreBtnLabel": "Show more",
       "noFeedbackForConnectorLabel": "There is no feedback for this connector yet.",
-      "noFeedbackForSolutionLabel": "There is no feedback for this solution yet.",
+      "noFeedbackForDemoLabel": "There is no feedback for this demo yet.",
       "noFeedbackForUtilityLabel": "There is no feedback for this utility yet.",
       "noFeedbackSecondLabel": "Be the first to share your opinion.",
       "rateFeedbackForConnectorBtnLabel": "Rate this connector",
-      "rateFeedbackForSolutionBtnLabel": "Rate this solution",
+      "rateFeedbackForDemoBtnLabel": "Rate this demo",
       "rateFeedbackForUtilityBtnLabel": "Rate this utility",
       "reviewLabelNoYet": "No reviews yet",
       "approvalPending": "Approval pending"
