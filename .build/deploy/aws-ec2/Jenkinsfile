@@ -83,7 +83,7 @@ pipeline {
                                 bash ./.build/scripts/release/prepare-release-config.sh \
                                     "\${EC2_NODE}" \
                                     "${params.RELEASE_VERSION}" \
-                                    "${node.nginxPort}" \
+                                    "${node.marketNodeNumber}" \
                                     "\${ENV_SECRET_FILE}"
                             """
                         }
