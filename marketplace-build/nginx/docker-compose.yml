@@ -12,8 +12,8 @@ services:
       - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf
       - ${NGINX_CACHE_PATH}:/usr/share/nginx/html/cache
       - ${NGINX_LOG_PATH}:/var/log/nginx
-      - marketcache:/usr/share/nginx/html/market-cache
-      - marketbrowser:/usr/share/nginx/html/browser
+      - marketcache:/usr/share/nginx/html/market-cache:ro
+      - marketbrowser:/usr/share/nginx/html/browser:ro
     ports:
       - "${NGINX_PORT}:80"
     networks:
