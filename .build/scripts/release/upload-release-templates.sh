@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copies local template and secret files to a temporary location on the target EC2 node.
+# Uploads template env/compose files and secret env to a temporary directory on the target node.
 set -euo pipefail
 
 NODE_IP="${1:-}"

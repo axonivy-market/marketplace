@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploys nginx from the dedicated nginx release path and switches current symlink.
+# Manages nginx release activation on a node by starting the target stack and switching current.
 set -euo pipefail
 
 NODE_IP="${1:-}"

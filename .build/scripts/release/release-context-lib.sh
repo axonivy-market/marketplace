@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Shared release rollout context and helpers for compose naming, rollback state, and GHCR login.
 set -euo pipefail
 
 : "${RELEASE_VERSION:?RELEASE_VERSION is required}"
@@ -31,6 +32,21 @@ compose_project_for_release() {
 
 load_release_context() {
     NEW_COMPOSE_PROJECT="$(compose_project_for_release "${NEW_RELEASE_NAME}")"
+
+    if [[ -n "${ROLLBACK_RELEASE_NAME:-}" ]]; then
+        OLD_RELEASE_NAME="${ROLLBACK_RELEASE_NAME}"
+        OLD_RELEASE_PATH="${ROLLBACK_RELEASE_PATH:-${RELEASES_PATH}/${OLD_RELEASE_NAME}}"
+        OLD_COMPOSE_PROJECT="${ROLLBACK_COMPOSE_PROJECT:-$(compose_project_for_release "${OLD_RELEASE_NAME}")}"
+
+        if [[ -n "${ROLLBACK_PUBLISH_PATH:-}" ]]; then
+            OLD_PUBLISH_PATH="${ROLLBACK_PUBLISH_PATH}"
+        elif [[ -f "${OLD_RELEASE_PATH}/publish/docker-compose.yml" ]]; then
+            OLD_PUBLISH_PATH="${OLD_RELEASE_PATH}/publish"
+        else
+            OLD_PUBLISH_PATH="${OLD_RELEASE_PATH}"
+        fi
+        return
+    fi
 
     if [[ -L "${CURRENT_LINK}" ]]; then
         OLD_RELEASE_PATH="$(readlink -f "${CURRENT_LINK}")"

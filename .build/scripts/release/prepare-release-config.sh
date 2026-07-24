@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This script orchestrates release config preparation by delegating each business logic to dedicated scripts.
+# Orchestrates release configuration setup by running template upload and workspace/compose preparation steps.
 set -euo pipefail
 
 NODE_IP="${1:-}"

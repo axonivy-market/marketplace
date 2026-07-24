@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This script uploads the remote deployment steps and runs them in sequence on the EC2 instance.
+# Uploads rollout step scripts to the node and executes deploy, health-check, and promote in order.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -72,6 +72,15 @@ cleanup_remote_assets() {
 }
 
 trap cleanup_remote_assets EXIT
+
+source "${REMOTE_SCRIPT_DIR}/release-context-lib.sh"
+
+export ROLLBACK_RELEASE_NAME="${OLD_RELEASE_NAME}"
+export ROLLBACK_RELEASE_PATH="${OLD_RELEASE_PATH}"
+export ROLLBACK_PUBLISH_PATH="${OLD_PUBLISH_PATH}"
+export ROLLBACK_COMPOSE_PROJECT="${OLD_COMPOSE_PROJECT}"
+
+echo "Pinned rollback release: ${ROLLBACK_RELEASE_NAME:-<none>}"
 
 if [[ "${SKIP_DEPLOY_RELEASE:-false}" != "true" ]]; then
     bash "${REMOTE_SCRIPT_DIR}/step1-deploy-release.sh"

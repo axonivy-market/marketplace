@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Creates release workspace folders and merges .env for the target release.
+# Creates release folders on the node and builds the release .env by merging current, template, and secret values.
 set -euo pipefail
 
 NODE_IP="${1:-}"

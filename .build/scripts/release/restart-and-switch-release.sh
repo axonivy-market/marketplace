@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This script connects to the EC2 instance and restarts the target release containers.
+# Restarts target release containers on the node and updates the current release symlink.
 set -euo pipefail
 
 NODE_IP="${1:-}"
