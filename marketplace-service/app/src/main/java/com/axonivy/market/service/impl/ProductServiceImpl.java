@@ -241,24 +241,33 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   private String removeProductAndImage(GitHubFile file) {
     String productId = EMPTY;
+    final String fileName = file.getFileName();
     if (FileType.META == file.getType()) {
-      String[] splitMetaJsonPath = file.getFileName().split(CoreCommonConstants.SLASH);
-      String extractMarketDirectory = file.getFileName().replace(splitMetaJsonPath[splitMetaJsonPath.length - 1],
-          EMPTY);
+      String[] splitMetaJsonPath = fileName.split(CoreCommonConstants.SLASH);
+      String extractMarketDirectory = fileName.replace(splitMetaJsonPath[splitMetaJsonPath.length - 1], EMPTY);
       List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
-      if (ObjectUtils.isNotEmpty(productList)) {
-        productId = productList.getFirst().getId();
-        productRepo.deleteById(productId);
-        imageRepo.deleteAllByProductId(productId);
-      }
+      productId = productList.stream()
+          .filter(Objects::nonNull)
+          .findFirst().map((Product product) -> {
+            String id = product.getId();
+            if (StringUtils.isNotBlank(id)) {
+              productRepo.deleteById(id);
+              imageRepo.deleteAllByProductId(id);
+            }
+            return id;
+          }).orElse(EMPTY);
     } else {
-      List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(file.getFileName());
-      if (ObjectUtils.isNotEmpty(images)) {
-        var currentImage = images.getFirst();
-        productId = currentImage.getProductId();
-        productRepo.deleteById(productId);
-        imageRepo.deleteAllByProductId(productId);
-      }
+      List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(fileName);
+      productId = images.stream()
+          .filter(Objects::nonNull)
+          .findFirst().map((Image image) -> {
+            String id = image.getProductId();
+            if (StringUtils.isNotBlank(id)) {
+              productRepo.deleteById(id);
+              imageRepo.deleteAllByProductId(id);
+            }
+            return id;
+          }).orElse(EMPTY);
     }
     return productId;
   }
