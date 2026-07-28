@@ -1,4 +1,4 @@
-import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpStatusCode } from '@angular/common/http';
+import { HttpHeaders, HttpContextToken, HttpInterceptorFn, HttpResponse, HttpStatusCode, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LoadingService } from '../services/loading/loading.service';
 import { inject, Injector, makeStateKey, PLATFORM_ID, TransferState } from '@angular/core';
@@ -7,6 +7,8 @@ import { isPlatformServer } from '@angular/common';
 import { RuntimeConfigService } from '../configs/runtime-config.service';
 import { API_INTERNAL_URL } from '../../shared/constants/api.constant';
 import { RUNTIME_CONFIG_KEYS } from '../models/runtime-config';
+import { AUTHORIZATION_HEADER } from '../../shared/constants/common.constant';
+import { RequestParam } from '../../shared/enums/request-param';
 
 export const REQUEST_BY = 'X-Requested-By';
 export const IVY = 'marketplace-website';
@@ -58,7 +60,8 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   const cloneReq = req.clone({
     url: requestURL,
-    headers: addIvyHeaders(req.headers)
+    headers: addIvyHeaders(req.headers),
+    params: addTimestampParam(req.params, req.headers)
   });
 
   return next(cloneReq).pipe(
@@ -84,3 +87,9 @@ function addIvyHeaders(headers: HttpHeaders): HttpHeaders {
   return headers.append(REQUEST_BY, IVY);
 }
 
+function addTimestampParam(params: HttpParams, headers: HttpHeaders): HttpParams {
+  if (headers.has(AUTHORIZATION_HEADER)) {
+    params = params.set(RequestParam.TIMESTAMP, Date.now().toString());
+  }
+  return params;
+}
