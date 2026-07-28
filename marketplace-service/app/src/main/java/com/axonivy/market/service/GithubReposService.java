@@ -45,10 +45,13 @@ public interface GithubReposService {
    *
    * @param  repos
    *              type {@link List<String>} - list of repository names to mark as focused
+   * @param  isFocused
+   *              type {@link Boolean} - If true, it will update "focused" for repositories,
+   *              if false, it will remove "focused" for repositories;
    * @return void - no return value; updates are persisted directly to the repository storage
    * @author ttan
    */
-  void updateFocusedRepo(List<String> repos);
+  void updateFocusedRepo(List<String> repos, Boolean isFocused);
 
   /**
    * <p>
