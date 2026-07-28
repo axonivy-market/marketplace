@@ -248,7 +248,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       List<Product> productList = productRepo.findByMarketDirectory(extractMarketDirectory);
       productId = productList.stream()
           .filter(Objects::nonNull)
-          .findFirst().map(product -> {
+          .findFirst().map((Product product) -> {
             String id = product.getId();
             if (StringUtils.isNotBlank(id)) {
               productRepo.deleteById(id);
@@ -260,7 +260,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       List<Image> images = imageRepo.findByImageUrlEndsWithIgnoreCase(fileName);
       productId = images.stream()
           .filter(Objects::nonNull)
-          .findFirst().map(image -> {
+          .findFirst().map((Image image) -> {
             String id = image.getProductId();
             if (StringUtils.isNotBlank(id)) {
               productRepo.deleteById(id);
