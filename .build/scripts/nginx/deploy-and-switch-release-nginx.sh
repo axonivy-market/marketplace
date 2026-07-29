@@ -26,13 +26,21 @@ fi
 echo "Node: ${NODE_IP}"
 echo "Release: ${NGINX_VERSION}"
 echo "Target env: ${TARGET_ENV}"
-echo "Deploying nginx from fixed remote path /home/axonivy/marketplace/nginx/${TARGET_ENV}/${NGINX_VERSION}"
+if [[ "${TARGET_ENV}" == "prod" ]]; then
+    echo "Deploying nginx from fixed remote path /home/axonivy/marketplace/nginx/${NGINX_VERSION}"
+else
+    echo "Deploying nginx from fixed remote path /home/axonivy/marketplace/nginx/${TARGET_ENV}/${NGINX_VERSION}"
+fi
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
     "NGINX_VERSION='${NGINX_VERSION}' TARGET_ENV='${TARGET_ENV}' bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
-REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx/${TARGET_ENV}"
+if [[ "${TARGET_ENV}" == "prod" ]]; then
+    REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx"
+else
+    REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx/${TARGET_ENV}"
+fi
 CURRENT_LINK="${REMOTE_NGINX_BASE}/current"
 NEW_RELEASE_NAME="${NGINX_VERSION}"
 NEW_RELEASE_PATH="${REMOTE_NGINX_BASE}/${NEW_RELEASE_NAME}"
@@ -42,11 +50,13 @@ NEW_NGINX_ENV_FILE="${NEW_RELEASE_PATH}/.env"
 
 compose_project_for_release() {
     local target_env="$1"
-    local release_name="$2"
     local env_value="$(printf '%s' "${target_env}" | tr '[:upper:].' '[:lower:]-')"
-    local release_value="$(printf '%s' "${release_name}" | tr '[:upper:].' '[:lower:]-')"
 
-    printf 'marketplace-%s-%s' "${env_value}" "${release_value}"
+    if [[ "${env_value}" == "prod" ]]; then
+        printf 'market-nginx'
+    else
+        printf 'market-nginx-%s' "${env_value}"
+    fi
 }
 
 upsert_env_value() {
@@ -71,13 +81,13 @@ OLD_NGINX_ENV_FILE=""
 if [[ -L "${CURRENT_LINK}" ]]; then
     OLD_RELEASE_PATH="$(readlink -f "${CURRENT_LINK}")"
     OLD_RELEASE_NAME="$(basename "${OLD_RELEASE_PATH}")"
-    OLD_COMPOSE_PROJECT="$(compose_project_for_release "${TARGET_ENV}" "${OLD_RELEASE_NAME}")"
+    OLD_COMPOSE_PROJECT="$(compose_project_for_release "${TARGET_ENV}")"
     OLD_NGINX_CONFIG_DIR="${OLD_RELEASE_PATH}"
     OLD_NGINX_DOCKER_COMPOSE_FILE="${OLD_NGINX_CONFIG_DIR}/docker-compose.yml"
     OLD_NGINX_ENV_FILE="${OLD_NGINX_CONFIG_DIR}/.env"
 fi
 
-NEW_COMPOSE_PROJECT="$(compose_project_for_release "${TARGET_ENV}" "${NEW_RELEASE_NAME}")"
+NEW_COMPOSE_PROJECT="$(compose_project_for_release "${TARGET_ENV}")"
 
 if [[ ! -f "${NEW_NGINX_CONFIG_FILE}" ]]; then
     echo "ERROR: Missing nginx config: ${NEW_NGINX_CONFIG_FILE}"

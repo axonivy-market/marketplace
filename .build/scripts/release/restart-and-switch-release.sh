@@ -69,6 +69,43 @@ compose_project_for_release() {
     printf '%s-release' "$(sanitize_compose_project_name "${release_name}")"
 }
 
+nginx_compose_project_for_env() {
+    local release_env_raw="${TARGET_ENV:-${RELEASE_ENV:-prod}}"
+    local release_env
+
+    release_env="$(printf '%s' "${release_env_raw}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+    [[ -n "${release_env}" ]] || release_env="prod"
+
+    if [[ "${release_env}" == "prod" ]]; then
+        printf 'market-nginx'
+    else
+        printf 'market-nginx-%s' "${release_env}"
+    fi
+}
+
+restart_nginx_for_env() {
+    local nginx_project
+    local container_ids
+
+    nginx_project="$(nginx_compose_project_for_env)"
+    container_ids="$(docker ps -q \
+        --filter "label=com.docker.compose.project=${nginx_project}" \
+        --filter "label=com.docker.compose.service=nginx" || true)"
+
+    if [[ -z "${container_ids}" ]]; then
+        container_ids="$(docker ps -q --filter "label=com.docker.compose.project=${nginx_project}" || true)"
+    fi
+
+    if [[ -z "${container_ids}" ]]; then
+        echo "Nginx container for project ${nginx_project} not found, skipping restart"
+        return 0
+    fi
+
+    echo "Restarting nginx container for project ${nginx_project}..."
+    docker restart ${container_ids} >/dev/null
+    echo "Nginx restarted"
+}
+
 NEW_COMPOSE_PROJECT="$(compose_project_for_release "${NEW_RELEASE_NAME}")"
 OLD_RELEASE_NAME=""
 OLD_PUBLISH_PATH=""
@@ -105,6 +142,8 @@ fi
 
 echo "Starting ${NEW_RELEASE_NAME}..."
 docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" up -d --pull always
+
+restart_nginx_for_env
 
 echo "Updating current release symlink to ${NEW_RELEASE_NAME}..."
 ln -sfn "${NEW_RELEASE_PATH}" "${CURRENT_LINK}"

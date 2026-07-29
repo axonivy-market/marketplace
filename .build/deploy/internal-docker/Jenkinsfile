@@ -102,6 +102,7 @@ pipeline {
                             export NGINX_CACHE_PATH=/home/axonivy/marketplace/dev/cache
                             export MARKET_INSTALLATIONS_PATH=/home/axonivy/marketplace/dev/data/market-installations.json
                             docker compose -p market-dev up --build --force-recreate -d
+                            docker compose -p market-dev restart nginx
                         '''
                     }
                 }
