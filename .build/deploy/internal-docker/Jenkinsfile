@@ -46,7 +46,7 @@ pipeline {
                 script {
                     try {
                         sh '''
-                            docker compose -p market-dev -f marketplace-build/templates/dev/docker-compose.yml --env-file marketplace-build/templates/.env down --rmi all
+                            docker compose -p market-dev down --rmi all -v
                         '''
                     } catch (Exception e) {
                         echo "Error during docker compose down, continuing: ${e}"
