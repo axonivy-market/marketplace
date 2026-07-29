@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configures nginx for the target release workspace.
+# Prepares nginx release assets on the node by uploading config, compose, Dockerfile, and env.
 set -euo pipefail
 
 NODE_IP="${1:-}"

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Creates release workspace folders and merges .env for the target release.
+# Creates release folders on the node and builds the release .env by merging current, template, and secret values.
 set -euo pipefail
 
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
-NGINX_PORT="${3:-}"
+MARKET_NODE_NUMBER="${3:-}"
 REMOTE_TEMPLATE_DIR="${4:-}"
 
 missing_args=()
@@ -13,7 +13,7 @@ missing_args=()
 [[ -z "${REMOTE_TEMPLATE_DIR}" ]] && missing_args+=("REMOTE_TEMPLATE_DIR")
 if [[ ${#missing_args[@]} -gt 0 ]]; then
     echo "ERROR: $0 Missing required arguments: ${missing_args[*]}"
-    echo "Usage: $0 <NODE_IP> <RELEASE_VERSION> [NGINX_PORT] <REMOTE_TEMPLATE_DIR>"
+    echo "Usage: $0 <NODE_IP> <RELEASE_VERSION> [MARKET_NODE_NUMBER] <REMOTE_TEMPLATE_DIR>"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
 fi
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
-    "RELEASE_VERSION='${RELEASE_VERSION}' NGINX_PORT='${NGINX_PORT}' REMOTE_TEMPLATE_DIR='${REMOTE_TEMPLATE_DIR}' bash -se" <<'REMOTE_EOF'
+    "RELEASE_VERSION='${RELEASE_VERSION}' MARKET_NODE_NUMBER='${MARKET_NODE_NUMBER}' REMOTE_TEMPLATE_DIR='${REMOTE_TEMPLATE_DIR}' bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
 REMOTE_BASE="/home/axonivy/marketplace"
@@ -46,8 +46,12 @@ merge_env_files() {
     load_env_file() {
         local source_file="$1"
         [[ -f "${source_file}" ]] || return 0
-        while IFS='=' read -r key value; do
-            [[ -z "${key}" || "${key}" =~ ^# ]] && continue
+        while IFS= read -r line || [[ -n "${line}" ]]; do
+            [[ -z "${line}" || "${line}" =~ ^# ]] && continue
+            [[ "${line}" == *=* ]] || continue
+
+            local key="${line%%=*}"
+            local value="${line#*=}"
             env_vars["${key}"]="${value}"
         done < "${source_file}"
     }
@@ -56,10 +60,8 @@ merge_env_files() {
     load_env_file "${template_env}"
     load_env_file "${secret_env}"
 
-    if [[ -n "${NGINX_PORT}" ]]; then
-        env_vars["NGINX_PORT"]="${NGINX_PORT}"
-    fi
     env_vars["RELEASE_VERSION"]="${RELEASE_VERSION}"
+    env_vars["MARKET_NODE_NUMBER"]="${MARKET_NODE_NUMBER}"
 
     {
         for key in "${!env_vars[@]}"; do

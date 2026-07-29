@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configures docker-compose for the target release workspace.
+# Creates release compose assets by copying the template compose file into the new publish path.
 set -euo pipefail
 
 NODE_IP="${1:-}"

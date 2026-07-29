@@ -1,4 +1,5 @@
 #!/bin/bash
+# Cleans old GHCR container image versions and keeps only the latest retained versions.
 set -euo pipefail
 
 echo "Fetching versions of $IMAGE_NAME from GHCR..."

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Rollout step 3: promote the release by switching current, reloading nginx, and cleaning old resources.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

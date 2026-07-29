@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Rollout step 1: authenticate to GHCR, stop old release containers, and start the new release.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
