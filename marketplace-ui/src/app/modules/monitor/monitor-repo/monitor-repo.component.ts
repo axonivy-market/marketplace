@@ -39,18 +39,7 @@ import {
   STANDARD_TAB
 } from '../../../shared/constants/common.constant';
 import { MonitoringCriteria } from '../../../shared/models/criteria.model';
-import {
-  catchError,
-  debounceTime,
-  map,
-  Observable,
-  of,
-  ReplaySubject,
-  shareReplay,
-  Subject,
-  Subscription,
-  switchMap
-} from 'rxjs';
+import { catchError, debounceTime, map, Observable, of, ReplaySubject, shareReplay, Subject, Subscription, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PAGE } from '../../../shared/constants/query.params.constant';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
