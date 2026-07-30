@@ -1,4 +1,4 @@
-img {
+.card-img-top {
   width: 70px;
   height: 70px;
 }
@@ -7,6 +7,10 @@ img {
   background-color: var(--ivy-secondary-bg);
   border: 1px solid var(--ivy-border-color);
   cursor: pointer;
+  .product-image-container{
+    box-shadow: 0px 0px 10px var(--image-border-color);
+    border-radius: 8px;
+  }
 }
 
 .card__title {
@@ -34,4 +38,15 @@ img {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.internal-badge-container {
+  padding: 0%;
+  display: flex;
+  align-items: center;
+}
+
+.internal-badge {
+  height: 27px;
+  width: auto;
 }

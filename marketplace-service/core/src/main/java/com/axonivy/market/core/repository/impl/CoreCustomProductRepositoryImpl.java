@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -184,7 +185,6 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
 
     var predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
     criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
-    criteriaContext.root().fetch(PRODUCT_NAMES, JoinType.LEFT);
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
     namesJoin.on(criteriaContext.builder().equal(namesJoin.key(), language.getValue()));
 
@@ -194,14 +194,17 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     }
 
     criteriaContext.query().select(criteriaContext.root()).where(predicate)
-        .orderBy(orders)
-        .distinct(true);
+        .orderBy(orders);
 
     TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());
     query.setFirstResult((int) pageRequest.getOffset());
     query.setMaxResults(pageRequest.getPageSize());
 
-    return query.getResultList();
+    List<Product> results = query.getResultList();
+    results.forEach(product -> {
+      Hibernate.initialize(product.getNames());
+    });
+    return results;
   }
 
   private List<Order> sortByOrders(CriteriaQueryContext<Product> criteriaContext,

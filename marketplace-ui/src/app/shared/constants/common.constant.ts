@@ -126,12 +126,12 @@ export const RATING_LABELS_BY_TYPE = [
     noFeedbackLabel: 'common.feedback.noFeedbackForConnectorLabel'
   },
   {
-    type: 'solution',
-    btnLabel: 'common.feedback.rateFeedbackForSolutionBtnLabel',
-    noFeedbackLabel: 'common.feedback.noFeedbackForSolutionLabel'
+    type: 'demo',
+    btnLabel: 'common.feedback.rateFeedbackForDemoBtnLabel',
+    noFeedbackLabel: 'common.feedback.noFeedbackForDemoLabel'
   },
   {
-    type: 'util',
+    type: 'utils',
     btnLabel: 'common.feedback.rateFeedbackForUtilityBtnLabel',
     noFeedbackLabel: 'common.feedback.noFeedbackForUtilityLabel'
   }
@@ -148,11 +148,11 @@ export const FILTER_TYPES: ItemDropdown<TypeOption>[] = [
   },
   {
     value: TypeOption.UTILITIES,
-    label: 'common.filter.value.util'
+    label: 'common.filter.value.utils'
   },
   {
-    value: TypeOption.SOLUTION,
-    label: 'common.filter.value.solution'
+    value: TypeOption.DEMOS,
+    label: 'common.filter.value.demos'
   }
 ];
 
@@ -300,6 +300,8 @@ export const BEARER = 'Bearer';
 export const AUTHORIZATION_HEADER = 'Authorization';
 
 export const DEFAULT_IMAGE_URL = '/assets/images/misc/axonivy-logo-round.png';
+export const DARK_INTERNAL_BADGE_URL = '/assets/images/misc/dark-internal-badge.png';
+export const LIGHT_INTERNAL_BADGE_URL = '/assets/images/misc/light-internal-badge.png';
 export const DOWNLOAD_URL = 'https://developer.axonivy.com/download';
 export const SEARCH_URL = 'https://developer.axonivy.com/search';
 export const GITHUB_MARKET_ORG_URL = 'https://github.com/axonivy-market';

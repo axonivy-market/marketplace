@@ -3,6 +3,7 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.OkHttpClientBuilder;
 import com.axonivy.market.config.RestClientBuilder;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.core.constants.CoreCommonConstants;
@@ -131,6 +132,9 @@ class GitHubServiceImplTest extends BaseSetup {
   @Mock
   private ThreadPoolTaskScheduler taskScheduler;
 
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
+
   @Spy
   @InjectMocks
   private GitHubServiceImpl gitHubService;
@@ -143,7 +147,7 @@ class GitHubServiceImplTest extends BaseSetup {
     lenient().when(restClientBuilder.build()).thenReturn(restClient);
     lenient().when(okHttpClientBuilder.build()).thenReturn(new OkHttpClient());
     gitHubService = spy(new GitHubServiceImpl(restClientBuilder, githubUserRepository, appSettingService,
-        productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils));
+        productSecurityInfoRepository, okHttpClientBuilder, multiTaskUtils, cancellationRegistry));
   }
 
   @AfterEach
@@ -1287,7 +1291,6 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testSyncSecurityDetailsForProductWhenEmptyOrgShouldReturnEmptyList() throws IOException {
-    // Arrange
     GHOrganization mockOrg = mock(GHOrganization.class);
     PagedIterable<GHRepository> pagedRepos = mock(PagedIterable.class);
 
@@ -1297,10 +1300,9 @@ class GitHubServiceImplTest extends BaseSetup {
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(Collections.emptyList());
     when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt())).thenReturn(Collections.emptyList());
-    // Act
+
     List<ProductSecurityInfo> result = gitHubService.syncSecurityDetailsForProduct();
 
-    // Assert
     assertNotNull(result, "Expected non-null result list even when organization has no repositories");
     assertTrue(result.isEmpty(), "Expected empty result list when no repositories are available");
     verify(productSecurityInfoRepository).saveAll(Collections.emptyList());
@@ -1308,17 +1310,14 @@ class GitHubServiceImplTest extends BaseSetup {
 
   @Test
   void testFetchSecurityInfoSafeWhenSuccessShouldReturnInfo() {
-    // Arrange
     GHOrganization mockOrg = mock(GHOrganization.class);
     GHRepository mockRepo = mock(GHRepository.class);
     ProductSecurityInfo mockInfo = buildMockProductSecurityInfo("repo-x");
 
     doReturn(mockInfo).when(gitHubService).fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
 
-    // Act
     ProductSecurityInfo result = gitHubService.fetchSecurityInfoSafe(mockRepo, mockOrg, "token");
 
-    // Assert
     assertNotNull(result, "Expected non-null ProductSecurityInfo when fetch succeeds");
     assertEquals("repo-x", result.getRepoName(), "Expected repo name to match mocked security info");
   }

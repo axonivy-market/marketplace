@@ -4,12 +4,14 @@ import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.core.aop.annotation.TrackApiCallFromNeo;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.model.Message;
+import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -52,9 +55,10 @@ public class ProductController {
   private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
   private final GHAxonIvyMarketRepoService axonIvyMarketRepoService;
   private final ProductDependencyService productDependencyService;
+  private final SyncTaskCancellationRegistry cancellationRegistry;
 
   @GetMapping()
-  @TrackApiCallFromNeo()
+  @TrackApiCallFromNeo
   @Operation(summary = "Retrieve a paginated list of all products, optionally filtered by type, keyword, and language",
       description = "By default, the system finds products with type 'all'", parameters = {
       @Parameter(name = "page", description = "Page number to retrieve", in = ParameterIn.QUERY, example = "0",
@@ -68,7 +72,7 @@ public class ProductController {
   public ResponseEntity<PagedModel<ProductModel>> findProducts(
       @RequestParam(name = TYPE) @Parameter(description = "Type of product.", in = ParameterIn.QUERY,
           schema = @Schema(type = "string",
-              allowableValues = {"all", "connectors", "utilities", "solutions", "demos"})) String type,
+              allowableValues = {"all", "connectors", "utilities", "demos"})) String type,
       @RequestParam(required = false, name = KEYWORD) @Parameter(
           description = "Keyword that exist in product's name or short description", example = "connector",
           in = ParameterIn.QUERY) String keyword,
@@ -97,6 +101,7 @@ public class ProductController {
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<Message> syncProducts(@RequestParam(value = RESET_SYNC, required = false) Boolean resetSync) {
+    cancellationRegistry.reset(SyncTaskType.SYNC_PRODUCTS);
     var stopWatch = new StopWatch();
     stopWatch.start();
     List<String> syncedProductIds = productService.syncLatestDataFromMarketRepo(resetSync);
@@ -170,6 +175,7 @@ public class ProductController {
   @PutMapping(SYNC_ZIP_ARTIFACTS)
   public ResponseEntity<Message> syncProductArtifacts(@RequestParam(value = RESET_SYNC, required = false)
       Boolean resetSync, @RequestParam(value = ID, required = false) String productId) {
+    cancellationRegistry.reset(SyncTaskType.SYNC_ZIP_ARTIFACTS);
     int syncedCount = productDependencyService.syncIARDependenciesForProducts(resetSync, productId);
 
     if (syncedCount > 0) {
@@ -181,5 +187,21 @@ public class ProductController {
           "Nothing to sync");
       return ResponseEntity.status(HttpStatus.NO_CONTENT).body(message);
     }
+  }
+
+  @Authorized
+  @Operation(hidden = true)
+  @PutMapping(BY_ID)
+  public ResponseEntity<Message> updateProduct(@PathVariable String id,
+      @RequestBody UpdateProductRequest request) {
+    var updated = productService.updateProduct(id, request);
+    if (updated == null) {
+      var message = new Message(ErrorCode.PRODUCT_NOT_FOUND.getCode(), ErrorCode.PRODUCT_NOT_FOUND.getHelpText(),
+          "Product with id " + id + " not found");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+    var message = new Message(ErrorCode.SUCCESSFUL.getCode(), ErrorCode.SUCCESSFUL.getHelpText(),
+        "Product with id " + id + " updated successfully");
+    return ResponseEntity.status(HttpStatus.OK).body(message);
   }
 }

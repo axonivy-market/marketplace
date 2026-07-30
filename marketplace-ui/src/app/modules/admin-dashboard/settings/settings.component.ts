@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from "@angular/core";
+import { Component, DestroyRef, inject, OnInit, ChangeDetectorRef, NgZone } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { AppSetting, AppSettingsService } from "./settings.component.service";
 import { CommonModule } from "@angular/common";
@@ -46,6 +46,8 @@ export class AdminSettingsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly languageService = inject(LanguageService);
   private readonly pageTitleService = inject(PageTitleService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   private settings: AppSetting[] = [];
   protected filteredSettings: AppSetting[] = [];
@@ -94,13 +96,19 @@ export class AdminSettingsComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: settings => {
-          this.settings = settings;
-          this.filteredSettings = [...settings];
-          this.applySorting();
+          this.ngZone.run(() => {
+            this.settings = settings;
+            this.filteredSettings = [...settings];
+            this.applySorting();
+            this.cdr.markForCheck();
+          });
          },
          error: () => {
-           this.settings = [];
-           this.filteredSettings = [];
+          this.ngZone.run(() => {
+            this.settings = [];
+            this.filteredSettings = [];
+            this.cdr.markForCheck();
+          });
          }
       });
   }
@@ -136,17 +144,26 @@ export class AdminSettingsComponent implements OnInit {
     this.savingKey = setting.settingKey;
     this.appSettingsService.updateSetting(setting).subscribe({
       next: () => {
-        this.savedKey = setting.settingKey;
+        this.ngZone.run(() => {
+          this.savedKey = setting.settingKey;
+          this.cdr.markForCheck();
+        });
         timer(SAVE_SUCCESS_DISPLAY_MS)
           .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe(() => { this.savedKey = null; });
+          .subscribe(() => { this.ngZone.run(() => { this.savedKey = null; this.cdr.markForCheck(); }); });
       },
       error: () => {
-        setting.settingValue = previousValue;
-        this.savingKey = null;
+        this.ngZone.run(() => {
+          setting.settingValue = previousValue;
+          this.savingKey = null;
+          this.cdr.markForCheck();
+        });
       },
       complete: () => {
-        this.savingKey = null;
+        this.ngZone.run(() => {
+          this.savingKey = null;
+          this.cdr.markForCheck();
+        });
       }
     });
   }

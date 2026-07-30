@@ -13,6 +13,8 @@ export interface Product {
   platformReview: string;
   vendor: string;
   vendorImage: string;
+  badgeUrl?: string;
+  badgeDarkUrl?: string;
   vendorUrl: string;
   sourceUrl: string;
   statusBadgeUrl: string;
@@ -27,6 +29,7 @@ export interface Product {
   mavenArtifacts: MavenArtifact[];
   contactUs: boolean;
   deprecated?: boolean;
+  internal?: boolean;
   _links?: {
     self: {
       href: string;

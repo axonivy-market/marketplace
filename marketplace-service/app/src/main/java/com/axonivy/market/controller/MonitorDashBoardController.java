@@ -1,7 +1,9 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.aop.annotation.Authorized;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.constants.CorePostgresDBConstants;
+import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
@@ -41,6 +43,7 @@ public class MonitorDashBoardController {
 
   private final GithubReposService githubReposService;
   private final TestStepsService testStepsService;
+  private final SyncTaskCancellationRegistry syncTaskCancellationRegistry;
 
   @GetMapping(REPOS_REPORT)
   @Operation(summary = "Get test report for a product and workflow",
@@ -58,6 +61,7 @@ public class MonitorDashBoardController {
   @PutMapping(SYNC)
   @Operation(hidden = true)
   public ResponseEntity<String> syncGithubMonitor() throws IOException {
+    syncTaskCancellationRegistry.reset(SyncTaskType.SYNC_GITHUB_MONITOR);
     githubReposService.loadAndStoreTestReports();
     return ResponseEntity.ok("Repositories loaded successfully.");
   }
@@ -76,8 +80,9 @@ public class MonitorDashBoardController {
   @Authorized
   @PutMapping(FOCUSED)
   @Operation(hidden = true)
-  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos) {
-    githubReposService.updateFocusedRepo(repos);
+  public ResponseEntity<String> updateFocusedRepo(@RequestParam(REPOS) List<String> repos,
+      @RequestParam Boolean isFocused) {
+    githubReposService.updateFocusedRepo(repos, isFocused);
     return ResponseEntity.ok("Focused repository updated successfully.");
   }
 

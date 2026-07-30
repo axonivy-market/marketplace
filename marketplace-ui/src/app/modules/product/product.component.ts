@@ -9,7 +9,9 @@ import {
   PLATFORM_ID,
   signal,
   ViewChild,
-  WritableSignal
+  WritableSignal,
+  ChangeDetectorRef,
+  NgZone
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
@@ -81,6 +83,8 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
   route = inject(ActivatedRoute);
   router = inject(Router);
   windowRef = inject(WindowRef);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   isBrowser: boolean;
 
   @ViewChild('observer', { static: true }) observerElement!: ElementRef;
@@ -90,52 +94,58 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       this.route.queryParams.subscribe(params => {
-        this.isRESTClient.set(
-          DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
-            this.isDesignerEnvironment
-        );
-        const newTypeParam = params['type'] ?? TypeOption.All_TYPES;
-        const newSortParam = params['sort'] ?? SortOption.STANDARD;
-        const newSearchParam =
-          params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '';
-        const isParamChanged =
-          this.criteria.sort !== newSortParam ||
-          this.criteria.type !== newTypeParam ||
-          this.criteria.search !== newSearchParam;
-        this.criteria = {
-          ...this.criteria,
-          search: newSearchParam,
-          type: newTypeParam,
-          sort: newSortParam
-        };
-        if (isParamChanged) {
+        this.ngZone.run(() => {
+          this.isRESTClient.set(
+            DESIGNER_SESSION_STORAGE_VARIABLE.restClientParamName in params &&
+              this.isDesignerEnvironment
+          );
+          const newTypeParam = params['type'] ?? TypeOption.All_TYPES;
+          const newSortParam = params['sort'] ?? SortOption.STANDARD;
+          const newSearchParam =
+            params[DESIGNER_SESSION_STORAGE_VARIABLE.searchParamName] ?? '';
+          const isParamChanged =
+            this.criteria.sort !== newSortParam ||
+            this.criteria.type !== newTypeParam ||
+            this.criteria.search !== newSearchParam;
           this.criteria = {
             ...this.criteria,
-            nextPageHref: ''
+            search: newSearchParam,
+            type: newTypeParam,
+            sort: newSortParam
           };
-          this.loadProductItems(true);
-        }
+          if (isParamChanged) {
+            this.criteria = {
+              ...this.criteria,
+              nextPageHref: ''
+            };
+            this.loadProductItems(true);
+          }
+          this.cdr.markForCheck();
+        });
       });
       this.subscriptions.push(
         this.searchTextChanged
           .pipe(debounceTime(SEARCH_DEBOUNCE_TIME))
           .subscribe(value => {
-            this.criteria = {
-              ...this.criteria,
-              nextPageHref: '',
-              search: value
-            };
-            this.loadProductItems(true);
+            this.ngZone.run(() => {
+              this.criteria = {
+                ...this.criteria,
+                nextPageHref: '',
+                search: value
+              };
+              this.loadProductItems(true);
 
-            let queryParams: { search: string | null } = { search: null };
-            if (value) {
-              queryParams = { search: this.criteria.search };
-            }
+              let queryParams: { search: string | null } = { search: null };
+              if (value) {
+                queryParams = { search: this.criteria.search };
+              }
 
-            this.router.navigate([], {
-              relativeTo: this.route,
-              queryParamsHandling: 'merge',
-              queryParams
+              this.router.navigate([], {
+                relativeTo: this.route,
+                queryParamsHandling: 'merge',
+                queryParams
+              });
+              this.cdr.markForCheck();
             });
           })
       );
@@ -222,16 +232,19 @@ export class ProductComponent implements AfterViewInit, OnDestroy {
       this.productService
         .findProductsByCriteria(this.criteria)
         .subscribe((response: ProductApiResponse) => {
-          const newProducts = response._embedded.products;
-          if (shouldCleanData) {
-            this.products.set(newProducts);
-          } else {
-            this.products.update(existingProducts =>
-              existingProducts.concat(newProducts)
-            );
-          }
-          this.responseLink = response._links;
-          this.responsePage = response.page;
+          this.ngZone.run(() => {
+            const newProducts = response._embedded.products;
+            if (shouldCleanData) {
+              this.products.set(newProducts);
+            } else {
+              this.products.update(existingProducts =>
+                existingProducts.concat(newProducts)
+              );
+            }
+            this.responseLink = response._links;
+            this.responsePage = response.page;
+            this.cdr.markForCheck();
+          });
         })
     );
   }

@@ -72,6 +72,8 @@ public class ProductFactory {
     product.setVendor(StringUtils.defaultIfEmpty(meta.getVendor(), MetaConstants.DEFAULT_VENDOR_NAME));
     product.setVendorUrl(StringUtils.defaultIfEmpty(meta.getVendorUrl(), MetaConstants.DEFAULT_VENDOR_URL));
     product.setVendorImagePath(meta.getVendorImage());
+    product.setVendorLogoPath(meta.getVendorLogo());
+    product.setVendorLogoDarkModePath(meta.getVendorLogoDarkMode());
     product.setVendorImageDarkModePath(meta.getVendorImageDarkMode());
     product.setPlatformReview(meta.getPlatformReview());
     product.setStatusBadgeUrl(meta.getStatusBadgeUrl());

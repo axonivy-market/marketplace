@@ -1,9 +1,11 @@
 import {
+  ChangeDetectorRef,
   Component,
   ChangeDetectorRef,
   EventEmitter,
   inject,
   Input,
+  NgZone,
   OnDestroy,
   OnInit,
   Output,
@@ -68,6 +70,8 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   readonly COLUMN_CI = CI_BUILD;
   readonly COLUMN_DEV = DEV_BUILD;
   readonly COLUMN_E2E = E2E_BUILD;
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   @Input() tabKey!: string;
   @Input() activeTab = '';
@@ -226,9 +230,11 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.githubService.getRepositories(this.criteria).subscribe({
         next: data => {
-          this.displayedRepositories = data?._embedded?.githubRepos || [];
-          this.totalElements = data.page?.totalElements ?? 0;
-          this.cdr.markForCheck();
+          this.ngZone.run(() => {
+            this.displayedRepositories = data?._embedded?.githubRepos || [];
+            this.totalElements = data.page?.totalElements ?? 0;
+            this.cdr.markForCheck();
+          });
         }
       })
     );

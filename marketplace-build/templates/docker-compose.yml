@@ -18,7 +18,6 @@ services:
     image: ghcr.io/axonivy-market/marketplace-app:${RELEASE_VERSION}
     restart: always
     volumes:
-      - ${MARKET_INSTALLATIONS_PATH}:/app/data/market-installation.json
       - marketcache:/app/data/market-cache
       - ${APP_LOG_PATH}:/app/logs
     env_file:

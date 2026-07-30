@@ -1,6 +1,7 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GitHubServiceImpl;
@@ -40,6 +41,9 @@ class MonitorDashBoardControllerTest extends BaseSetup {
 
   @Mock
   private TestStepsService testStepsService;
+
+  @Mock
+  private SyncTaskCancellationRegistry cancellationRegistry;
 
   @Mock
   private GitHub gitHub;
@@ -105,12 +109,12 @@ class MonitorDashBoardControllerTest extends BaseSetup {
     String team = "devTeam";
     GHMyself fakeMyself = getFakeGHMyself();
 
-    doNothing().when(githubReposService).updateFocusedRepo(updates);
+    doNothing().when(githubReposService).updateFocusedRepo(updates, true);
     doReturn(gitHub).when(githubService).getGitHub(TOKEN);
     when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
     when(gitHub.getMyself()).thenReturn(fakeMyself);
 
-    ResponseEntity<String> response = controller.updateFocusedRepo(updates);
+    ResponseEntity<String> response = controller.updateFocusedRepo(updates, true);
 
     assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
     assertEquals("Focused repository updated successfully.", response.getBody(),

@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -19,6 +19,8 @@ export class ReleaseLetterModalComponent implements OnInit {
   markdownService = inject(MarkdownService);
   translateService = inject(TranslateService);
   newsManagementService = inject(NewsManagementService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
 
   md: MarkdownIt = new MarkdownIt();
   sprintHeader = '';
@@ -31,8 +33,11 @@ export class ReleaseLetterModalComponent implements OnInit {
 
   ngOnInit() {
     this.newsManagementService.getReleaseLetterById(this.id).subscribe(response => {
-      this.sprintHeader = this.getSprintHeader(response.sprint);
-      this.releaseLetterContent = this.renderReleaseLetterContent(response.content!);
+      this.ngZone.run(() => {
+        this.sprintHeader = this.getSprintHeader(response.sprint);
+        this.releaseLetterContent = this.renderReleaseLetterContent(response.content!);
+        this.cdr.markForCheck();
+      });
     });
   }
 

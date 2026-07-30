@@ -27,6 +27,7 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
     resource.setTags(product.getTags());
     resource.setMarketDirectory(product.getMarketDirectory());
     resource.setDeprecated(product.getDeprecated());
+    resource.setInternal(product.getInternal());
 
     var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
     resource.setLogoUrl(logoLink.getHref());
@@ -34,6 +35,17 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
     if (StringUtils.isNotBlank(product.getLogoDarkId())) {
       var logoDarkLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoDarkId())).withSelfRel();
       resource.setLogoDarkUrl(logoDarkLink.getHref());
+    }
+
+    if (StringUtils.isNotBlank(product.getVendorLogo())) {
+      var badgeLink = linkTo(methodOn(ImageController.class).findImageById(product.getVendorLogo())).withSelfRel();
+      resource.setBadgeUrl(badgeLink.getHref());
+    }
+
+    if (StringUtils.isNotBlank(product.getVendorLogoDarkMode())) {
+      var badgeDarkLink =
+          linkTo(methodOn(ImageController.class).findImageById(product.getVendorLogoDarkMode())).withSelfRel();
+      resource.setBadgeDarkUrl(badgeDarkLink.getHref());
     }
 
     return resource;
