@@ -1,7 +1,6 @@
 import {
   ChangeDetectorRef,
   Component,
-  ChangeDetectorRef,
   EventEmitter,
   inject,
   Input,
@@ -98,7 +97,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
   languageService = inject(LanguageService);
   translateService = inject(TranslateService);
   githubService = inject(GithubService);
-  cdr = inject(ChangeDetectorRef);
   router = inject(Router);
   route = inject(ActivatedRoute);
   platformId = inject(PLATFORM_ID);
