@@ -69,6 +69,7 @@ ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
     "RELEASE_VERSION=${release_version_q} HEALTH_CHECK_TARGETS=${health_targets_q} CREDS_TEMP_FILE=${creds_temp_file_q} HEALTH_CHECK_TIMEOUT=${health_check_timeout_q} HEALTH_CHECK_INTERVAL=${health_check_interval_q} SKIP_DEPLOY_RELEASE=${skip_deploy_release_q} REMOTE_SCRIPT_DIR=${remote_script_dir_q} TARGET_ENV=${target_env_q} COMPOSE_SERVICE_NAME=${compose_service_name_q} bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
+# Removes rollout scripts and temporary credentials from remote host on exit.
 cleanup_remote_assets() {
     rm -rf "${REMOTE_SCRIPT_DIR}" 2>/dev/null || true
 }

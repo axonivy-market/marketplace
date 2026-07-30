@@ -49,6 +49,7 @@ NEW_NGINX_DOCKER_COMPOSE_FILE="${NEW_RELEASE_PATH}/docker-compose.yml"
 NEW_NGINX_ENV_FILE="${NEW_RELEASE_PATH}/.env"
 EXTERNAL_NETWORK_NAME="${NGINX_EXTERNAL_NETWORK:-marketplace-network}"
 
+# Normalizes values into compose-safe lowercase dash-separated segments.
 sanitize_compose_segment() {
     local value="$1"
 
@@ -56,6 +57,7 @@ sanitize_compose_segment() {
     printf '%s' "${value}"
 }
 
+# Builds the standardized compose project name for nginx releases.
 compose_project_name() {
     local target_env="$1"
     local service_name="$2"
@@ -79,6 +81,7 @@ compose_project_name() {
     fi
 }
 
+# Inserts or replaces a key in an env file.
 upsert_env_value() {
     local env_file="$1"
     local key="$2"
@@ -91,6 +94,7 @@ upsert_env_value() {
     fi
 }
 
+# Ensures required docker external network exists before compose up.
 ensure_external_network_exists() {
     local network_name="$1"
 
@@ -105,6 +109,7 @@ ensure_external_network_exists() {
     fi
 }
 
+# Checks whether a container is attached to a specific docker network.
 container_connected_to_network() {
     local container_id="$1"
     local network_name="$2"
@@ -112,6 +117,7 @@ container_connected_to_network() {
     docker inspect "${container_id}" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null | grep -q "\"${network_name}\":"
 }
 
+# Connects a container to network and validates the attachment.
 ensure_container_connected_to_network() {
     local container_id="$1"
     local network_name="$2"
@@ -130,7 +136,6 @@ ensure_container_connected_to_network() {
 OLD_RELEASE_NAME=""
 OLD_RELEASE_PATH=""
 OLD_COMPOSE_PROJECT=""
-OLD_NGINX_CONFIG_DIR=""
 OLD_NGINX_DOCKER_COMPOSE_FILE=""
 OLD_NGINX_ENV_FILE=""
 
@@ -138,9 +143,8 @@ if [[ -L "${CURRENT_LINK}" ]]; then
     OLD_RELEASE_PATH="$(readlink -f "${CURRENT_LINK}")"
     OLD_RELEASE_NAME="$(basename "${OLD_RELEASE_PATH}")"
     OLD_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${OLD_RELEASE_NAME}")"
-    OLD_NGINX_CONFIG_DIR="${OLD_RELEASE_PATH}"
-    OLD_NGINX_DOCKER_COMPOSE_FILE="${OLD_NGINX_CONFIG_DIR}/docker-compose.yml"
-    OLD_NGINX_ENV_FILE="${OLD_NGINX_CONFIG_DIR}/.env"
+    OLD_NGINX_DOCKER_COMPOSE_FILE="${OLD_RELEASE_PATH}/docker-compose.yml"
+    OLD_NGINX_ENV_FILE="${OLD_RELEASE_PATH}/.env"
 fi
 
 NEW_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${NEW_RELEASE_NAME}")"
@@ -167,6 +171,7 @@ upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_EXTERNAL_NETWORK" "${EXTERNAL_NE
 
 ensure_external_network_exists "${EXTERNAL_NETWORK_NAME}"
 
+# Best-effort rollback to previous nginx release when cutover fails.
 rollback_to_old_release() {
     # Best-effort rollback to the previously active release on startup failure.
     if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}" ]]; then
@@ -185,6 +190,7 @@ rollback_to_old_release() {
     fi
 }
 
+# Waits for temporary green container health before switching live traffic.
 wait_for_green_container() {
     local container_id="$1"
     local timeout_seconds="${2:-90}"

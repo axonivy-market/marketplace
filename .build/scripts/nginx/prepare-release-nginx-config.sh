@@ -52,6 +52,7 @@ if [[ ! -f "${LOCAL_FIXED_DOCKERFILE}" ]]; then
 fi
 
 LOCAL_NGINX_ENV_FILE="$(mktemp)"
+# Cleans temporary local env file used for transfer to the remote node.
 cleanup_local_env_file() {
     rm -f "${LOCAL_NGINX_ENV_FILE}" || true
 }

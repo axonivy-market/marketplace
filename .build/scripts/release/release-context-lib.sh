@@ -12,6 +12,7 @@ NEW_RELEASE_NAME="${RELEASE_VERSION}"
 NEW_RELEASE_PATH="${RELEASES_PATH}/${NEW_RELEASE_NAME}"
 NEW_PUBLISH_PATH="${NEW_RELEASE_PATH}/publish"
 
+# Normalizes strings so they are safe and stable for compose project segments.
 sanitize_compose_segment() {
     local value="$1"
 
@@ -26,6 +27,7 @@ COMPOSE_SERVICE_NAME_RAW="${COMPOSE_SERVICE_NAME:-app}"
 COMPOSE_SERVICE_NAME="$(sanitize_compose_segment "${COMPOSE_SERVICE_NAME_RAW}")"
 [[ -n "${COMPOSE_SERVICE_NAME}" ]] || COMPOSE_SERVICE_NAME="app"
 
+# Builds a compose project name in the shared market naming format.
 compose_project_name() {
     local target_env="$1"
     local service_name="$2"
@@ -49,6 +51,7 @@ compose_project_name() {
     fi
 }
 
+# Resolves the compose project name for a release and default service.
 compose_project_for_release() {
     local release_name="${1:-${NEW_RELEASE_NAME}}"
     local service_name="${2:-${COMPOSE_SERVICE_NAME}}"
@@ -56,6 +59,20 @@ compose_project_for_release() {
     compose_project_name "${RELEASE_ENV}" "${service_name}" "${release_name}"
 }
 
+# Returns a container name for a release-scoped service.
+container_name_for_release_service() {
+    local service_name="$1"
+    local release_name="${2:-${NEW_RELEASE_NAME}}"
+
+    compose_project_name "${RELEASE_ENV}" "${service_name}" "${release_name}"
+}
+
+UI_CONTAINER_NAME="$(container_name_for_release_service 'ui')"
+APP_CONTAINER_NAME="$(container_name_for_release_service 'app')"
+STABLE_CONTAINER_NAME="$(container_name_for_release_service 'stable')"
+export UI_CONTAINER_NAME APP_CONTAINER_NAME STABLE_CONTAINER_NAME
+
+# Loads old/new release paths and compose project values for rollout steps.
 load_release_context() {
     NEW_COMPOSE_PROJECT="$(compose_project_for_release "${NEW_RELEASE_NAME}")"
 
@@ -90,6 +107,7 @@ load_release_context() {
     fi
 }
 
+# Returns the nginx current symlink path for the active target environment.
 nginx_current_link_for_env() {
     if [[ "${RELEASE_ENV}" == "prod" ]]; then
         printf '%s/nginx/current' "${REMOTE_BASE}"
@@ -98,6 +116,7 @@ nginx_current_link_for_env() {
     fi
 }
 
+# Resolves the currently active nginx compose project in the target environment.
 current_nginx_project_for_env() {
     local nginx_current_link
     local nginx_release_path
@@ -113,6 +132,7 @@ current_nginx_project_for_env() {
     compose_project_name "${RELEASE_ENV}" 'nginx' "${nginx_release_name}"
 }
 
+# Reloads nginx via compose container when available, then falls back to host nginx.
 reload_nginx_for_env() {
     local nginx_project
     local container_id
@@ -138,6 +158,7 @@ reload_nginx_for_env() {
     fi
 }
 
+# Reads GHCR credentials from temp file and performs docker registry login.
 ghcr_login() {
     local ghcr_username
     local ghcr_token

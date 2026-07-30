@@ -28,6 +28,7 @@ fi
 
 ROLLBACK_DONE=false
 
+# Stops new release and restores previous release once per failed rollout.
 rollback_release() {
     if [[ "${ROLLBACK_DONE}" == "true" ]]; then
         return 0
@@ -46,6 +47,7 @@ rollback_release() {
     ROLLBACK_DONE=true
 }
 
+# Fails step 2 with a message after triggering rollback.
 fail_step2() {
     local message="$1"
     echo "ERROR: ${message}"
@@ -53,6 +55,7 @@ fail_step2() {
     exit 1
 }
 
+# Handles unexpected command errors and enforces rollback before exit.
 on_step2_error() {
     local exit_code="$?"
     local line_no="$1"
@@ -65,6 +68,7 @@ echo "--- Step 2: Health Check ---"
 echo "Checking /actuator/health for targets: ${HEALTH_TARGETS_LIST[*]}..."
 trap 'on_step2_error $LINENO' ERR
 
+# Checks health endpoint status from inside the container network namespace.
 check_health_from_container() {
     local container_id="$1"
     local health_path="$2"
@@ -125,13 +129,12 @@ while true; do
     for health_target in "${HEALTH_TARGETS_LIST[@]}"; do
         target_port="${health_target%%/*}"
         app_name="${health_target#*/}"
-        service_name="${app_name}"
         echo "[health-check] target=${health_target} using configured port=${target_port} app=${app_name}"
 
-        container_id="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" ps -q "${service_name}" 2>/dev/null | head -n1 || true)"
+        container_id="$(docker compose -f "${NEW_PUBLISH_PATH}/docker-compose.yml" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_PUBLISH_PATH}/.env" ps -q "${app_name}" 2>/dev/null | head -n1 || true)"
 
         if [[ -z "${container_id}" ]]; then
-            fail_step2 "target=${health_target} container-not-found for service '${service_name}' in compose project '${NEW_COMPOSE_PROJECT}'"
+            fail_step2 "target=${health_target} container-not-found for service '${app_name}' in compose project '${NEW_COMPOSE_PROJECT}'"
         fi
 
         health_path="/${app_name}/actuator/health"

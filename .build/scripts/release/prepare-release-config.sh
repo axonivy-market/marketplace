@@ -27,12 +27,12 @@ if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
     SSH_OPTS+=( -i "${SSH_PRIVATE_KEY_FILE}" )
 fi
 
+# Removes temporary template assets on the remote host when this script exits.
 cleanup_remote_templates() {
     ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" "rm -rf '${REMOTE_TEMPLATE_DIR}'" >/dev/null 2>&1 || true
 }
 trap cleanup_remote_templates EXIT
 
-echo "Nginx Port (optional): ${NGINX_PORT:-<not-set>}"
 echo "Release: ${RELEASE_VERSION}"
 
 "${SCRIPT_DIR}/upload-release-templates.sh" "${NODE_IP}" "${RELEASE_VERSION}" "${ENV_SECRET_FILE}" "${WORKSPACE_ROOT}" "${REMOTE_TEMPLATE_DIR}"

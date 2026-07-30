@@ -35,6 +35,7 @@ SHARED_ENV_FILE="${REMOTE_BASE}/shared/.env"
 
 mkdir -p "${NEW_RELEASE_PATH}/logs" "${NEW_RELEASE_PATH}/config/nginx" "${NEW_RELEASE_PATH}/publish"
 
+# Merges current/template/secret env files with latest values taking precedence.
 merge_env_files() {
     local current_env="$1"
     local template_env="$2"
@@ -43,6 +44,7 @@ merge_env_files() {
 
     declare -A env_vars
 
+    # Loads key/value pairs from an env file while preserving raw value suffixes.
     load_env_file() {
         local source_file="$1"
         [[ -f "${source_file}" ]] || return 0

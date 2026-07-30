@@ -45,65 +45,107 @@ NEW_RELEASE_NAME="${RELEASE_VERSION}"
 NEW_RELEASE_PATH="${RELEASES_PATH}/${NEW_RELEASE_NAME}"
 NEW_PUBLISH_PATH="${NEW_RELEASE_PATH}/publish"
 
+# Removes temporary remote GHCR credentials file before script exits.
 cleanup_remote_assets() {
     rm -f "${CREDS_TEMP_FILE}" 2>/dev/null || true
 }
 
 trap cleanup_remote_assets EXIT
 
-sanitize_compose_project_name() {
-    local input="$1"
-    local value
+# Normalizes values into compose-safe lowercase dash-separated segments.
+sanitize_compose_segment() {
+    local value="$1"
 
-    value="$(printf '%s' "${input}" | tr '[:upper:]' '[:lower:]')"
-    value="$(printf '%s' "${value}" | sed -E 's/[^a-z0-9_-]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')"
-    value="${value:0:63}"
-    value="$(printf '%s' "${value}" | sed -E 's/-+$//')"
-    [[ -n "${value}" ]] || value="release"
-
+    value="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')"
     printf '%s' "${value}"
 }
 
+RELEASE_ENV_RAW="${TARGET_ENV:-${RELEASE_ENV:-prod}}"
+RELEASE_ENV="$(sanitize_compose_segment "${RELEASE_ENV_RAW}")"
+[[ -n "${RELEASE_ENV}" ]] || RELEASE_ENV="prod"
+
+# Builds standardized compose project names for release resources.
+compose_project_name() {
+    local target_env="$1"
+    local service_name="$2"
+    local version="$3"
+    local env_value
+    local service_value
+    local version_value
+
+    env_value="$(sanitize_compose_segment "${target_env}")"
+    service_value="$(sanitize_compose_segment "${service_name}")"
+    version_value="$(sanitize_compose_segment "${version}")"
+
+    [[ -n "${env_value}" ]] || env_value="prod"
+    [[ -n "${service_value}" ]] || service_value="app"
+    [[ -n "${version_value}" ]] || version_value="latest"
+
+    if [[ "${env_value}" == "prod" ]]; then
+        printf 'market-%s-%s' "${service_value}" "${version_value}"
+    else
+        printf 'market-%s-%s-%s' "${env_value}" "${service_value}" "${version_value}"
+    fi
+}
+
+# Returns compose project name for app service in a specific release.
 compose_project_for_release() {
     local release_name="$1"
-    printf '%s-release' "$(sanitize_compose_project_name "${release_name}")"
+    compose_project_name "${RELEASE_ENV}" "app" "${release_name}"
 }
 
-nginx_compose_project_for_env() {
-    local release_env_raw="${TARGET_ENV:-${RELEASE_ENV:-prod}}"
-    local release_env
+# Returns the full container name for a release-scoped service.
+container_name_for_release_service() {
+    local service_name="$1"
+    local release_name="${2:-${NEW_RELEASE_NAME}}"
 
-    release_env="$(printf '%s' "${release_env_raw}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
-    [[ -n "${release_env}" ]] || release_env="prod"
+    compose_project_name "${RELEASE_ENV}" "${service_name}" "${release_name}"
+}
 
-    if [[ "${release_env}" == "prod" ]]; then
-        printf 'market-nginx'
+# Resolves nginx current symlink path for the active environment.
+nginx_current_link_for_env() {
+    if [[ "${RELEASE_ENV}" == "prod" ]]; then
+        printf '%s/nginx/current' "${REMOTE_BASE}"
     else
-        printf 'market-nginx-%s' "${release_env}"
+        printf '%s/nginx/%s/current' "${REMOTE_BASE}" "${RELEASE_ENV}"
     fi
 }
 
+# Resolves active nginx compose project name from current symlink.
+current_nginx_project_for_env() {
+    local nginx_current_link
+    local nginx_release_path
+    local nginx_release_name
+
+    nginx_current_link="$(nginx_current_link_for_env)"
+    [[ -L "${nginx_current_link}" ]] || return 1
+
+    nginx_release_path="$(readlink -f "${nginx_current_link}" 2>/dev/null || true)"
+    [[ -n "${nginx_release_path}" ]] || return 1
+
+    nginx_release_name="$(basename "${nginx_release_path}")"
+    compose_project_name "${RELEASE_ENV}" 'nginx' "${nginx_release_name}"
+}
+
+# Restarts active nginx compose container for this environment when found.
 restart_nginx_for_env() {
     local nginx_project
-    local container_ids
+    local container_id
 
-    nginx_project="$(nginx_compose_project_for_env)"
-    container_ids="$(docker ps -q \
-        --filter "label=com.docker.compose.project=${nginx_project}" \
-        --filter "label=com.docker.compose.service=nginx" || true)"
+    if nginx_project="$(current_nginx_project_for_env)"; then
+        container_id="$(docker ps -q \
+            --filter "label=com.docker.compose.project=${nginx_project}" \
+            --filter "label=com.docker.compose.service=nginx" | head -n1 || true)"
 
-    if [[ -z "${container_ids}" ]]; then
-        container_ids="$(docker ps -q --filter "label=com.docker.compose.project=${nginx_project}" || true)"
+        if [[ -n "${container_id}" ]]; then
+            echo "Restarting nginx container for project ${nginx_project}..."
+            docker restart "${container_id}" >/dev/null
+            echo "Nginx restarted"
+            return 0
+        fi
     fi
 
-    if [[ -z "${container_ids}" ]]; then
-        echo "Nginx container for project ${nginx_project} not found, skipping restart"
-        return 0
-    fi
-
-    echo "Restarting nginx container for project ${nginx_project}..."
-    docker restart ${container_ids} >/dev/null
-    echo "Nginx restarted"
+    echo "Nginx container for current env not found, skipping restart"
 }
 
 NEW_COMPOSE_PROJECT="$(compose_project_for_release "${NEW_RELEASE_NAME}")"
@@ -126,6 +168,11 @@ if [[ ! -f "${NEW_PUBLISH_PATH}/docker-compose.yml" ]]; then
     echo "ERROR: Missing docker-compose file: ${NEW_PUBLISH_PATH}/docker-compose.yml"
     exit 1
 fi
+
+UI_CONTAINER_NAME="$(container_name_for_release_service 'ui')"
+APP_CONTAINER_NAME="$(container_name_for_release_service 'app')"
+STABLE_CONTAINER_NAME="$(container_name_for_release_service 'stable')"
+export UI_CONTAINER_NAME APP_CONTAINER_NAME STABLE_CONTAINER_NAME
 
 echo "Logging into ghcr.io..."
 GHCR_USERNAME="$(head -n1 "${CREDS_TEMP_FILE}")"
