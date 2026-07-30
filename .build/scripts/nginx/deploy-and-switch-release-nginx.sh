@@ -47,6 +47,7 @@ NEW_RELEASE_PATH="${REMOTE_NGINX_BASE}/${NEW_RELEASE_NAME}"
 NEW_NGINX_CONFIG_FILE="${NEW_RELEASE_PATH}/nginx.conf"
 NEW_NGINX_DOCKER_COMPOSE_FILE="${NEW_RELEASE_PATH}/docker-compose.yml"
 NEW_NGINX_ENV_FILE="${NEW_RELEASE_PATH}/.env"
+EXTERNAL_NETWORK_NAME="${NGINX_EXTERNAL_NETWORK:-marketplace-network}"
 
 sanitize_compose_segment() {
     local value="$1"
@@ -90,6 +91,42 @@ upsert_env_value() {
     fi
 }
 
+ensure_external_network_exists() {
+    local network_name="$1"
+
+    if [[ -z "${network_name}" ]]; then
+        echo "ERROR: External network name is empty."
+        return 1
+    fi
+
+    if ! docker network inspect "${network_name}" >/dev/null 2>&1; then
+        echo "External network ${network_name} does not exist. Creating it..."
+        docker network create "${network_name}" >/dev/null
+    fi
+}
+
+container_connected_to_network() {
+    local container_id="$1"
+    local network_name="$2"
+
+    docker inspect "${container_id}" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null | grep -q "\"${network_name}\":"
+}
+
+ensure_container_connected_to_network() {
+    local container_id="$1"
+    local network_name="$2"
+
+    if ! container_connected_to_network "${container_id}" "${network_name}"; then
+        echo "Container ${container_id} is not attached to ${network_name}. Reconnecting..."
+        docker network connect "${network_name}" "${container_id}" >/dev/null
+    fi
+
+    if ! container_connected_to_network "${container_id}" "${network_name}"; then
+        echo "ERROR: Container ${container_id} is still not attached to ${network_name}."
+        return 1
+    fi
+}
+
 OLD_RELEASE_NAME=""
 OLD_RELEASE_PATH=""
 OLD_COMPOSE_PROJECT=""
@@ -126,6 +163,9 @@ fi
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CONFIG_PATH" "${NEW_NGINX_CONFIG_FILE}"
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_LOG_PATH" "${NEW_RELEASE_PATH}/logs"
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CACHE_PATH" "/home/axonivy/marketplace/data/cache"
+upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_EXTERNAL_NETWORK" "${EXTERNAL_NETWORK_NAME}"
+
+ensure_external_network_exists "${EXTERNAL_NETWORK_NAME}"
 
 rollback_to_old_release() {
     # Best-effort rollback to the previously active release on startup failure.
@@ -200,6 +240,15 @@ if [[ -z "${NEW_SERVICE_NAME}" ]]; then
     exit 1
 fi
 
+NEW_NGINX_CONTAINER_OVERRIDE_FILE="$(mktemp /tmp/market-nginx-container-name.XXXXXX.yml)"
+trap 'rm -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" 2>/dev/null || true' EXIT
+
+cat > "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" <<EOF
+services:
+    ${NEW_SERVICE_NAME}:
+        container_name: ${NEW_COMPOSE_PROJECT}
+EOF
+
 GREEN_CONTAINER_NAME="${NEW_COMPOSE_PROJECT}-green"
 
 echo "Building nginx image for release ${NEW_RELEASE_NAME}..."
@@ -228,8 +277,20 @@ if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}"
 fi
 
 echo "Starting nginx for release ${NEW_RELEASE_NAME} with configured external port..."
-if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
+if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
     echo "ERROR: Failed to start nginx for release ${NEW_RELEASE_NAME} after cutover."
+    rollback_to_old_release
+    exit 1
+fi
+
+NEW_CONTAINER_ID="$(docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" ps -q "${NEW_SERVICE_NAME}" | head -n1 | tr -d '[:space:]')"
+if [[ -z "${NEW_CONTAINER_ID}" ]]; then
+    echo "ERROR: Could not determine running nginx container id for release ${NEW_RELEASE_NAME}."
+    rollback_to_old_release
+    exit 1
+fi
+
+if ! ensure_container_connected_to_network "${NEW_CONTAINER_ID}" "${EXTERNAL_NETWORK_NAME}"; then
     rollback_to_old_release
     exit 1
 fi
