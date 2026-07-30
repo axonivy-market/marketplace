@@ -145,15 +145,78 @@ rollback_to_old_release() {
     fi
 }
 
-echo "Starting nginx for release ${NEW_RELEASE_NAME}..."
-if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
-    echo "ERROR: Failed to start nginx for release ${NEW_RELEASE_NAME}."
-    rollback_to_old_release
+wait_for_green_container() {
+    local container_id="$1"
+    local timeout_seconds="${2:-90}"
+    local started_at
+    local health_status
+
+    started_at="$(date +%s)"
+    while true; do
+        if ! docker inspect "${container_id}" >/dev/null 2>&1; then
+            echo "ERROR: Green container ${container_id} no longer exists."
+            return 1
+        fi
+
+        if [[ "$(docker inspect -f '{{.State.Running}}' "${container_id}" 2>/dev/null || echo false)" != "true" ]]; then
+            echo "ERROR: Green container ${container_id} is not running."
+            docker logs "${container_id}" 2>/dev/null || true
+            return 1
+        fi
+
+        health_status="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "${container_id}" 2>/dev/null || echo none)"
+        if [[ "${health_status}" == "healthy" ]]; then
+            echo "Green container reported healthy by Docker healthcheck."
+            return 0
+        fi
+
+        if [[ "${health_status}" == "unhealthy" ]]; then
+            echo "ERROR: Green container reported unhealthy by Docker healthcheck."
+            docker logs "${container_id}" 2>/dev/null || true
+            return 1
+        fi
+
+        # If no Docker healthcheck is defined, verify nginx answers internally.
+        if [[ "${health_status}" == "none" ]]; then
+            if docker exec "${container_id}" sh -c 'wget -q -O /dev/null http://127.0.0.1:80 >/dev/null 2>&1 || curl -sS -o /dev/null http://127.0.0.1:80 >/dev/null 2>&1'; then
+                echo "Green container responded on internal port 80."
+                return 0
+            fi
+        fi
+
+        if (( $(date +%s) - started_at >= timeout_seconds )); then
+            echo "ERROR: Timeout waiting for green container health (${timeout_seconds}s)."
+            docker logs "${container_id}" 2>/dev/null || true
+            return 1
+        fi
+
+        sleep 3
+    done
+}
+
+NEW_SERVICE_NAME="$(docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" config --services | head -n1 | tr -d '[:space:]')"
+if [[ -z "${NEW_SERVICE_NAME}" ]]; then
+    echo "ERROR: Could not determine nginx service name from compose file."
     exit 1
 fi
 
-echo "Switching nginx current symlink to ${NEW_RELEASE_NAME}..."
-ln -sfn "${NEW_RELEASE_PATH}" "${CURRENT_LINK}"
+GREEN_CONTAINER_NAME="${NEW_COMPOSE_PROJECT}-green"
+
+echo "Building nginx image for release ${NEW_RELEASE_NAME}..."
+docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" build
+
+echo "Starting green container ${GREEN_CONTAINER_NAME} without published ports..."
+docker rm -f "${GREEN_CONTAINER_NAME}" >/dev/null 2>&1 || true
+GREEN_CONTAINER_ID="$(docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" run -d --name "${GREEN_CONTAINER_NAME}" --no-deps "${NEW_SERVICE_NAME}")"
+
+if ! wait_for_green_container "${GREEN_CONTAINER_ID}" 90; then
+    echo "Healthcheck failed for green container. Keeping current release untouched."
+    docker rm -f "${GREEN_CONTAINER_NAME}" >/dev/null 2>&1 || true
+    exit 1
+fi
+
+echo "Green healthcheck passed. Removing green test container before cutover..."
+docker rm -f "${GREEN_CONTAINER_NAME}" >/dev/null 2>&1 || true
 
 if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}" && -f "${OLD_NGINX_DOCKER_COMPOSE_FILE}" ]]; then
     echo "Stopping old nginx release ${OLD_RELEASE_NAME}..."
@@ -164,5 +227,15 @@ if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}"
     fi
 fi
 
-echo "Nginx deploy and switch complete for ${NEW_RELEASE_NAME}"
+echo "Starting nginx for release ${NEW_RELEASE_NAME} with configured external port..."
+if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
+    echo "ERROR: Failed to start nginx for release ${NEW_RELEASE_NAME} after cutover."
+    rollback_to_old_release
+    exit 1
+fi
+
+echo "Switching nginx current symlink to ${NEW_RELEASE_NAME}..."
+ln -sfn "${NEW_RELEASE_PATH}" "${CURRENT_LINK}"
+
+echo "Nginx green-stop-restart deploy complete for ${NEW_RELEASE_NAME}"
 REMOTE_EOF
