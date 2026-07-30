@@ -62,9 +62,11 @@ health_check_timeout_q="$(printf '%q' "${HEALTH_CHECK_TIMEOUT}")"
 health_check_interval_q="$(printf '%q' "${HEALTH_CHECK_INTERVAL}")"
 skip_deploy_release_q="$(printf '%q' "${SKIP_DEPLOY_RELEASE:-false}")"
 remote_script_dir_q="$(printf '%q' "${REMOTE_SCRIPT_DIR}")"
+target_env_q="$(printf '%q' "${TARGET_ENV:-}")"
+compose_service_name_q="$(printf '%q' "${COMPOSE_SERVICE_NAME:-app}")"
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
-    "RELEASE_VERSION=${release_version_q} HEALTH_CHECK_TARGETS=${health_targets_q} CREDS_TEMP_FILE=${creds_temp_file_q} HEALTH_CHECK_TIMEOUT=${health_check_timeout_q} HEALTH_CHECK_INTERVAL=${health_check_interval_q} SKIP_DEPLOY_RELEASE=${skip_deploy_release_q} REMOTE_SCRIPT_DIR=${remote_script_dir_q} bash -se" <<'REMOTE_EOF'
+    "RELEASE_VERSION=${release_version_q} HEALTH_CHECK_TARGETS=${health_targets_q} CREDS_TEMP_FILE=${creds_temp_file_q} HEALTH_CHECK_TIMEOUT=${health_check_timeout_q} HEALTH_CHECK_INTERVAL=${health_check_interval_q} SKIP_DEPLOY_RELEASE=${skip_deploy_release_q} REMOTE_SCRIPT_DIR=${remote_script_dir_q} TARGET_ENV=${target_env_q} COMPOSE_SERVICE_NAME=${compose_service_name_q} bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
 cleanup_remote_assets() {

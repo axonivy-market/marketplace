@@ -48,14 +48,33 @@ NEW_NGINX_CONFIG_FILE="${NEW_RELEASE_PATH}/nginx.conf"
 NEW_NGINX_DOCKER_COMPOSE_FILE="${NEW_RELEASE_PATH}/docker-compose.yml"
 NEW_NGINX_ENV_FILE="${NEW_RELEASE_PATH}/.env"
 
-compose_project_for_release() {
+sanitize_compose_segment() {
+    local value="$1"
+
+    value="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')"
+    printf '%s' "${value}"
+}
+
+compose_project_name() {
     local target_env="$1"
-    local env_value="$(printf '%s' "${target_env}" | tr '[:upper:].' '[:lower:]-')"
+    local service_name="$2"
+    local version="$3"
+    local env_value
+    local service_value
+    local version_value
+
+    env_value="$(sanitize_compose_segment "${target_env}")"
+    service_value="$(sanitize_compose_segment "${service_name}")"
+    version_value="$(sanitize_compose_segment "${version}")"
+
+    [[ -n "${env_value}" ]] || env_value="prod"
+    [[ -n "${service_value}" ]] || service_value="nginx"
+    [[ -n "${version_value}" ]] || version_value="latest"
 
     if [[ "${env_value}" == "prod" ]]; then
-        printf 'market-nginx'
+        printf 'market-%s-%s' "${service_value}" "${version_value}"
     else
-        printf 'market-nginx-%s' "${env_value}"
+        printf 'market-%s-%s-%s' "${env_value}" "${service_value}" "${version_value}"
     fi
 }
 
@@ -81,13 +100,13 @@ OLD_NGINX_ENV_FILE=""
 if [[ -L "${CURRENT_LINK}" ]]; then
     OLD_RELEASE_PATH="$(readlink -f "${CURRENT_LINK}")"
     OLD_RELEASE_NAME="$(basename "${OLD_RELEASE_PATH}")"
-    OLD_COMPOSE_PROJECT="$(compose_project_for_release "${TARGET_ENV}")"
+    OLD_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${OLD_RELEASE_NAME}")"
     OLD_NGINX_CONFIG_DIR="${OLD_RELEASE_PATH}"
     OLD_NGINX_DOCKER_COMPOSE_FILE="${OLD_NGINX_CONFIG_DIR}/docker-compose.yml"
     OLD_NGINX_ENV_FILE="${OLD_NGINX_CONFIG_DIR}/.env"
 fi
 
-NEW_COMPOSE_PROJECT="$(compose_project_for_release "${TARGET_ENV}")"
+NEW_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${NEW_RELEASE_NAME}")"
 
 if [[ ! -f "${NEW_NGINX_CONFIG_FILE}" ]]; then
     echo "ERROR: Missing nginx config: ${NEW_NGINX_CONFIG_FILE}"
