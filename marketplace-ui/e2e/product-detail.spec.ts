@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { setupProductDetailMocks, SMART_WORKFLOW_LATEST_VERSION } from './mock/product-detail.mock';
+import {
+  setupProductDetailMocks,
+  SMART_WORKFLOW_BEST_MATCH_VERSION
+} from './mock/product-detail.mock';
 import { ProductDetailPage } from './page-objects/ProductDetailPage';
 
 test.describe('Product detail page', () => {
@@ -8,10 +11,11 @@ test.describe('Product detail page', () => {
 
     const detail = new ProductDetailPage(page);
     await detail.goto('smart-workflow');
-    await detail.assertRedirectedToLatestVersion(SMART_WORKFLOW_LATEST_VERSION);
+    await detail.assertRedirectedToVersion(SMART_WORKFLOW_BEST_MATCH_VERSION);
 
     await detail.assertDescriptionTabVisible();
-    await expect(detail.descriptionPane).toContainText(/smart workflow description/i);
+    await expect(detail.descriptionPane).toHaveClass(/active/);
+    await expect(detail.descriptionPane).toContainText(/brings ai directly into axon ivy/i);
     await detail.assertDownloadButtonVisible();
     await detail.assertInformationTabVisible();
   });

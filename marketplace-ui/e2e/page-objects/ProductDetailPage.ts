@@ -22,10 +22,14 @@ export class ProductDetailPage {
     await expect(this.root).toBeVisible();
   }
 
-  async assertRedirectedToLatestVersion(version: string) {
+  async assertRedirectedToVersion(version: string) {
     await expect(this.page).toHaveURL(
       new RegExp(`/smart-workflow\\?version=${version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}#description$`)
     );
+  }
+
+  async assertRedirectedToLatestVersion(version: string) {
+    await this.assertRedirectedToVersion(version);
   }
 
   async assertDescriptionTabVisible() {
