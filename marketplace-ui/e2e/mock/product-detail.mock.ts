@@ -16,6 +16,13 @@ const SMART_WORKFLOW_DESCRIPTION = [
   'The platform helps teams automate work across business systems and streamline process execution.'
 ].join('\n');
 
+export const SMART_WORKFLOW_DESCRIPTION_EXPECTED = [
+  'Smart Workflow',
+  'brings AI directly into Axon Ivy',
+  'developers can build, run, and improve AI agents',
+  'The platform helps teams automate work across business systems and streamline process execution.'
+];
+
 const SMART_WORKFLOW_DEMO = [
   '## Demo',
   '',
@@ -26,6 +33,14 @@ const SMART_WORKFLOW_DEMO = [
   '3. Continue the workflow with the result'
 ].join('\n');
 
+export const SMART_WORKFLOW_DEMO_EXPECTED = [
+  'Demo',
+  'Smart Workflow can orchestrate AI-powered process steps',
+  'Start the demo process',
+  'Review the generated output',
+  'Continue the workflow with the result'
+];
+
 const SMART_WORKFLOW_SETUP = [
   '## Installation Guide',
   '',
@@ -35,6 +50,14 @@ const SMART_WORKFLOW_SETUP = [
   '2. Add the required variables',
   '3. Run the project in Axon Ivy Designer'
 ].join('\n');
+
+export const SMART_WORKFLOW_SETUP_EXPECTED = [
+  'Installation Guide',
+  'Use the installation guide to configure the connector and start the demo.',
+  'Download the product package',
+  'Add the required variables',
+  'Run the project in Axon Ivy Designer'
+];
 
 function createProductDetail(version = SMART_WORKFLOW_BEST_MATCH_VERSION): ProductDetail {
   return {
@@ -254,7 +277,7 @@ export async function setupProductDetailMocks(page: Page): Promise<void> {
     const url = new URL(route.request().url());
     const pathname = url.pathname;
 
-    if (pathname === '/api/feedback/product/smart-workflow/rating') {
+    if (pathname.endsWith('/api/feedback/product/smart-workflow/rating')) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -263,7 +286,16 @@ export async function setupProductDetailMocks(page: Page): Promise<void> {
       return;
     }
 
-    if (pathname === '/api/feedback/product/smart-workflow') {
+    if (pathname.endsWith('/api/feedback/product/smart-workflow')) {
+      if (url.searchParams.has('productId') || url.searchParams.has('userId')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([])
+        });
+        return;
+      }
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -272,7 +304,7 @@ export async function setupProductDetailMocks(page: Page): Promise<void> {
       return;
     }
 
-    if (pathname === '/api/feedback') {
+    if (pathname.endsWith('/api/feedback')) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

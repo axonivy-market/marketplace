@@ -5,6 +5,10 @@ export class ProductDetailPage {
   readonly root: Locator;
   readonly descriptionPane: Locator;
   readonly descriptionTab: Locator;
+  readonly demoPane: Locator;
+  readonly demoTab: Locator;
+  readonly setupPane: Locator;
+  readonly setupTab: Locator;
   readonly downloadButton: Locator;
   readonly informationTab: Locator;
 
@@ -12,7 +16,11 @@ export class ProductDetailPage {
     this.page = page;
     this.root = page.locator('app-product-detail');
     this.descriptionPane = this.root.locator('#tab-pane-description');
-    this.descriptionTab = this.root.locator('.nav-link', { hasText: /description/i });
+    this.descriptionTab = this.root.getByRole('tab', { name: /^description$/i });
+    this.demoPane = this.root.locator('#tab-pane-demo');
+    this.demoTab = this.root.getByRole('tab', { name: /^demo$/i });
+    this.setupPane = this.root.locator('#tab-pane-setup');
+    this.setupTab = this.root.getByRole('tab', { name: /installation guide/i });
     this.downloadButton = this.root.locator('#download-button');
     this.informationTab = this.root.locator('.info-tab app-product-detail-information-tab');
   }
@@ -36,6 +44,20 @@ export class ProductDetailPage {
     await expect(this.descriptionTab).toBeVisible();
   }
 
+  async assertDemoTabVisible() {
+    await expect(this.demoTab).toBeVisible();
+  }
+
+  async assertSetupTabVisible() {
+    await expect(this.setupTab).toBeVisible();
+  }
+
+  async clickTab(tab: Locator, activePane: Locator) {
+    await tab.click({ force: true });
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+    await expect(activePane).toBeVisible();
+  }
+
   async assertDownloadButtonVisible() {
     await expect(this.downloadButton).toBeVisible();
     await expect(this.downloadButton).toContainText(/download/i);
@@ -44,5 +66,15 @@ export class ProductDetailPage {
   async assertInformationTabVisible() {
     await expect(this.informationTab).toBeVisible();
     await expect(this.informationTab).toContainText(/implemented by/i);
+  }
+
+  async waitForDetailLoaded() {
+    await this.page.waitForFunction(() => {
+      const host = document.querySelector('app-product-detail');
+      const component = (window as unknown as {
+        ng?: { getComponent?: (host: Element | null) => { isDataLoaded?: boolean } };
+      }).ng?.getComponent?.(host ?? null);
+      return Boolean(component?.isDataLoaded);
+    });
   }
 }
