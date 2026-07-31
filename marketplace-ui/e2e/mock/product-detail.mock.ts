@@ -2,11 +2,41 @@ import type { Page } from '@playwright/test';
 import type { FeedbackApiResponse } from '../../src/app/shared/models/apis/feedback-response.model';
 import type { ProductDetail } from '../../src/app/shared/models/product-detail.model';
 import type { ProductReleasesApiResponse } from '../../src/app/shared/models/apis/product-releases-response.model';
+import type { VersionData } from '../../src/app/shared/models/vesion-artifact.model';
 
 const PRODUCT_ID = 'smart-workflow';
 export const SMART_WORKFLOW_LATEST_VERSION = '14.0.0-SNAPSHOT';
+export const SMART_WORKFLOW_BEST_MATCH_VERSION = '13.2.0';
 
-function createProductDetail(version = SMART_WORKFLOW_LATEST_VERSION): ProductDetail {
+const SMART_WORKFLOW_DESCRIPTION = [
+  '# Smart Workflow',
+  '',
+  'Smart Workflow brings AI directly into Axon Ivy, so developers can build, run, and improve AI agents inside existing Axon processes.',
+  '',
+  'The platform helps teams automate work across business systems and streamline process execution.'
+].join('\n');
+
+const SMART_WORKFLOW_DEMO = [
+  '## Demo',
+  '',
+  'This demo shows how Smart Workflow can orchestrate AI-powered process steps inside Axon Ivy.',
+  '',
+  '1. Start the demo process',
+  '2. Review the generated output',
+  '3. Continue the workflow with the result'
+].join('\n');
+
+const SMART_WORKFLOW_SETUP = [
+  '## Installation Guide',
+  '',
+  'Use the installation guide to configure the connector and start the demo.',
+  '',
+  '1. Download the product package',
+  '2. Add the required variables',
+  '3. Run the project in Axon Ivy Designer'
+].join('\n');
+
+function createProductDetail(version = SMART_WORKFLOW_BEST_MATCH_VERSION): ProductDetail {
   return {
     id: PRODUCT_ID,
     names: {
@@ -36,11 +66,17 @@ function createProductDetail(version = SMART_WORKFLOW_LATEST_VERSION): ProductDe
     productModuleContent: {
       version,
       description: {
-        en: 'Smart Workflow description',
-        de: 'Smart Workflow description'
+        en: SMART_WORKFLOW_DESCRIPTION,
+        de: SMART_WORKFLOW_DESCRIPTION
       },
-      demo: null,
-      setup: null,
+      demo: {
+        en: SMART_WORKFLOW_DEMO,
+        de: SMART_WORKFLOW_DEMO
+      },
+      setup: {
+        en: SMART_WORKFLOW_SETUP,
+        de: SMART_WORKFLOW_SETUP
+      },
       component: null,
       isDependency: false,
       name: 'Smart Workflow',
@@ -49,7 +85,7 @@ function createProductDetail(version = SMART_WORKFLOW_LATEST_VERSION): ProductDe
       type: 'iar',
       productId: PRODUCT_ID
     },
-    installationCount: 0,
+    installationCount: 42,
     mavenDropins: false,
     _links: {
       self: {
@@ -98,6 +134,21 @@ function createEmptyReleasesPage(): ProductReleasesApiResponse {
   };
 }
 
+function createVersionData(version: string): VersionData {
+  return {
+    version,
+    artifactsByVersion: [
+      {
+        value: 'smart-workflow-guide',
+        label: 'Smart Workflow Guide',
+        name: 'Smart Workflow Guide',
+        downloadUrl: `https://example.test/${PRODUCT_ID}/${version}/smart-workflow-guide.zip`,
+        isProductArtifact: true
+      }
+    ]
+  };
+}
+
 export async function setupProductDetailMocks(page: Page): Promise<void> {
   await page.route(`**/api/product-details/${PRODUCT_ID}**`, async route => {
     const url = new URL(route.request().url());
@@ -107,7 +158,16 @@ export async function setupProductDetailMocks(page: Page): Promise<void> {
       await route.fulfill({
         status: 200,
         contentType: 'text/plain',
-        body: SMART_WORKFLOW_LATEST_VERSION
+        body: SMART_WORKFLOW_BEST_MATCH_VERSION
+      });
+      return;
+    }
+
+    if (pathname.endsWith('/bestmatch')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(createProductDetail(SMART_WORKFLOW_BEST_MATCH_VERSION))
       });
       return;
     }
@@ -125,7 +185,10 @@ export async function setupProductDetailMocks(page: Page): Promise<void> {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([])
+        body: JSON.stringify([
+          createVersionData(SMART_WORKFLOW_BEST_MATCH_VERSION),
+          createVersionData(SMART_WORKFLOW_LATEST_VERSION)
+        ])
       });
       return;
     }
@@ -171,11 +234,19 @@ export async function setupProductDetailMocks(page: Page): Promise<void> {
       contentType: 'application/json',
       body: JSON.stringify({
         productId: PRODUCT_ID,
-        version: SMART_WORKFLOW_LATEST_VERSION,
+        version: SMART_WORKFLOW_BEST_MATCH_VERSION,
         artifactId: 'smart-workflow-guide',
         artifactName: 'Smart Workflow Guide',
-        relativeLink: '/market-cache/smart-workflow/smart-workflow-guide/14.0.0-SNAPSHOT/doc/index.html'
+        relativeLink: '/market-cache/smart-workflow/smart-workflow-guide/13.2.0/doc/index.html'
       })
+    });
+  });
+
+  await page.route(`**/api/product-marketplace-data/installation-count/${PRODUCT_ID}`, async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(42)
     });
   });
 
