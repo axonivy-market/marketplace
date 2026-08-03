@@ -102,7 +102,19 @@ pipeline {
                             export NGINX_CACHE_PATH=/home/axonivy/marketplace/dev/cache
                             export MARKET_INSTALLATIONS_PATH=/home/axonivy/marketplace/dev/data/market-installations.json
                             docker compose -p market-dev up --build --force-recreate -d
-                            docker compose -p market-dev restart nginx
+
+                            # Restart live nginx containers by name prefix across environments.
+                            # This avoids relying on template compose files or exact versioned names.
+                            for prefix in market-dev-nginx- market-preview-nginx- market-nginx-; do
+                                names=$(docker ps --format '{{.Names}}' | grep -E "^${prefix}" || true)
+                                if [ -n "$names" ]; then
+                                    echo "Restarting nginx container(s) with prefix ${prefix}:"
+                                    echo "$names"
+                                    echo "$names" | xargs -r docker restart
+                                else
+                                    echo "No running nginx container found with prefix ${prefix}"
+                                fi
+                            done
                         '''
                     }
                 }
