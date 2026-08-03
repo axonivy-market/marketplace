@@ -1,54 +1,84 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cleans old GHCR container image versions and keeps only the latest retained versions.
 set -euo pipefail
 
-echo "Fetching versions of $IMAGE_NAME from GHCR..."
+# Validates required environment variables and dependencies.
+validate_inputs() {
+    : "${IMAGE_NAME:?IMAGE_NAME is required}"
+    : "${GH_TOKEN:?GH_TOKEN is required}"
+    : "${GITHUB_REPOSITORY_OWNER:?GITHUB_REPOSITORY_OWNER is required}"
+    : "${VERSION_RETENTION_COUNT:?VERSION_RETENTION_COUNT is required}"
 
-response=$(curl -s -w "%{http_code}" \
-  -H "Authorization: Bearer $GH_TOKEN" \
-  "https://api.github.com/orgs/$GITHUB_REPOSITORY_OWNER/packages/container/$IMAGE_NAME/versions?per_page=100")
+    if ! [[ "${VERSION_RETENTION_COUNT}" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: VERSION_RETENTION_COUNT must be a non-negative integer"
+        exit 1
+    fi
 
-# Extract HTTP status code (last 3 chars of response)
-STATUS="${response: -3}"
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "ERROR: jq is required but not installed"
+        exit 1
+    fi
+}
 
-# Extract JSON body (everything except the last 3 chars)
-VERSIONS="${response::-3}"
+# Retrieves all image versions and returns the response body plus HTTP code suffix.
+fetch_versions_response() {
+    local versions_url
+    versions_url="https://api.github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${IMAGE_NAME}/versions?per_page=100"
 
-# Check for success
-if [[ "$STATUS" != "200" ]]; then
-  echo "GitHub API request failed (HTTP $STATUS)."
-  exit 0
+    curl -sS -w "%{http_code}" \
+        -H "Authorization: Bearer ${GH_TOKEN}" \
+        "${versions_url}"
+}
+
+# Deletes a single GHCR package version id.
+delete_version_by_id() {
+    local version_id="$1"
+    local delete_url
+    local http_code
+
+    delete_url="https://api.github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${IMAGE_NAME}/versions/${version_id}"
+    http_code="$(curl -sS -o /dev/null -w "%{http_code}" -X DELETE -H "Authorization: Bearer ${GH_TOKEN}" "${delete_url}")"
+
+    if [[ "${http_code}" != "204" ]]; then
+        echo "WARN: Failed to delete version ID ${version_id} (HTTP ${http_code})"
+    fi
+}
+
+validate_inputs
+
+echo "Fetching versions of ${IMAGE_NAME} from GHCR..."
+response="$(fetch_versions_response)"
+
+status="${response: -3}"
+versions_json="${response::-3}"
+
+if [[ "${status}" != "200" ]]; then
+    echo "GitHub API request failed (HTTP ${status})."
+    exit 1
 fi
 
-# Sort versions by created_at descending and extract IDs
-VERSION_IDS=$(echo "$VERSIONS" | jq -r 'sort_by(.created_at) | reverse | .[].id')
-
-if [[ $(echo "$VERSIONS" | jq 'length') -eq 0 ]]; then
-  echo "No versions found for $IMAGE_NAME."
-  exit 0
+if [[ "$(echo "${versions_json}" | jq 'length')" -eq 0 ]]; then
+    echo "No versions found for ${IMAGE_NAME}."
+    exit 0
 fi
 
-TOTAL=$(echo "$VERSION_IDS" | wc -l)
-DELETE_COUNT=$((TOTAL - VERSION_RETENTION_COUNT))
-echo "Total versions found: $TOTAL"
-if [[ $DELETE_COUNT -le 0 ]]; then
-  echo "Nothing to delete. Keeping all $TOTAL versions."
-  exit 0
+version_ids="$(echo "${versions_json}" | jq -r 'sort_by(.created_at) | reverse | .[].id')"
+total="$(echo "${version_ids}" | wc -l | tr -d '[:space:]')"
+delete_count=$((total - VERSION_RETENTION_COUNT))
+
+echo "Total versions found: ${total}"
+if [[ "${delete_count}" -le 0 ]]; then
+    echo "Nothing to delete. Keeping all ${total} versions."
+    exit 0
 fi
 
-# Get only the IDs to delete (all but the latest N)
-DELETE_IDS=$(echo "$VERSION_IDS" | tail -n "$DELETE_COUNT")
+delete_ids="$(echo "${version_ids}" | tail -n "${delete_count}")"
+echo "Deleting ${delete_count} old version(s), keeping ${VERSION_RETENTION_COUNT} most recent..."
 
-echo "Deleting $DELETE_COUNT old version(s), keeping $VERSION_RETENTION_COUNT most recent..."
-for id in $DELETE_IDS; do
-  id=$(echo "$id" | tr -d '\r\n')
-  echo "Deleting version ID: $id"
-
-  url="https://api.github.com/orgs/$GITHUB_REPOSITORY_OWNER/packages/container/$IMAGE_NAME/versions/$id"
-
-  response=$(curl -s -X DELETE -H "Authorization: Bearer $GH_TOKEN" "$url")
-
-  echo "Response: $response"
-done
+while IFS= read -r id; do
+    [[ -n "${id}" ]] || continue
+    echo "Deleting version ID: ${id}"
+    delete_version_by_id "${id}"
+done <<< "${delete_ids}"
 
 echo "Cleanup complete."

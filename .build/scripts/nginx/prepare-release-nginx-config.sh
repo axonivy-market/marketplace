@@ -52,6 +52,7 @@ if [[ ! -f "${LOCAL_FIXED_DOCKERFILE}" ]]; then
 fi
 
 LOCAL_NGINX_ENV_FILE="$(mktemp)"
+# Cleans temporary local env file used for transfer to the remote node.
 cleanup_local_env_file() {
     rm -f "${LOCAL_NGINX_ENV_FILE}" || true
 }
@@ -78,7 +79,11 @@ ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
     "NGINX_VERSION='${NGINX_VERSION}' TARGET_ENV='${TARGET_ENV}' REMOTE_NGINX_CONFIG_FILE='${REMOTE_NGINX_CONFIG_FILE}' REMOTE_ENV_FILE='${REMOTE_ENV_FILE}' REMOTE_DOCKER_COMPOSE_FILE='${REMOTE_DOCKER_COMPOSE_FILE}' REMOTE_DOCKERFILE_FILE='${REMOTE_DOCKERFILE_FILE}' bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
-REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx/${TARGET_ENV}"
+if [[ "${TARGET_ENV}" == "prod" ]]; then
+    REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx"
+else
+    REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx/${TARGET_ENV}"
+fi
 NEW_RELEASE_PATH="${REMOTE_NGINX_BASE}/${NGINX_VERSION}"
 NEW_NGINX_CONFIG_PATH="${NEW_RELEASE_PATH}/nginx.conf"
 NEW_NGINX_DOCKER_COMPOSE_PATH="${NEW_RELEASE_PATH}/docker-compose.yml"

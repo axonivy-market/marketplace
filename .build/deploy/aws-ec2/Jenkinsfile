@@ -109,6 +109,7 @@ pipeline {
                                 export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
                                 export GHCR_USERNAME="\${GHCR_USERNAME}"
                                 export GHCR_TOKEN="\${GHCR_TOKEN}"
+                                export TARGET_ENV="${params.DEPLOYMENT_TARGET == 'PREVIEW node' ? 'preview' : 'prod'}"
                                 export WORKSPACE_ROOT="${env.WORKSPACE}"
                                 bash ./.build/scripts/release/run-release-rollout.sh \
                                     "\${EC2_NODE}" \
