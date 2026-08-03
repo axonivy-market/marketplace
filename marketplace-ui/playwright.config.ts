@@ -13,7 +13,6 @@ export default defineConfig({
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
     baseURL,
-    headless: false,
     trace: isCI ? 'retain-on-failure' : 'on-first-retry',
     screenshot: isCI ? 'only-on-failure' : 'off',
     video: isCI ? 'retain-on-failure' : 'off'
