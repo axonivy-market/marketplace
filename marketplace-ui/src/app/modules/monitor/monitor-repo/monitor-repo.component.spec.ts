@@ -103,11 +103,16 @@ describe('MonitoringRepoComponent', () => {
 
     fixture = TestBed.createComponent(MonitoringRepoComponent);
     component = fixture.componentInstance;
+    vi.spyOn(component['githubService'], 'getRepositories').mockReturnValue(
+      of({
+        _embedded: { githubRepos: mockRepositories },
+        page: { size: 10, totalElements: mockRepositories.length, totalPages: 1, number: 0 }
+      })
+    );
     const changes: SimpleChanges = {
       activeTab: new SimpleChange('focus', 'standard', false)
     };
     component.tabKey = FOCUSED_TAB;
-    component.displayedRepositories = [...mockRepositories];
     component.ngOnChanges(changes);
 
     fixture.detectChanges();
@@ -146,12 +151,14 @@ describe('MonitoringRepoComponent', () => {
     expect(component.loadRepositories).toHaveBeenCalled();
   });
 
-  it('should show all repositories when pageSize = -1', () => {
+  it('should show all repositories when pageSize = -1', async () => {
     component.pageSize = -1;
-    component.displayedRepositories = [...mockRepositories];
-    expect(component.displayedRepositories.length).toBe(
-      mockRepositories.length
-    );
+    component.loadRepositories();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const repoLinks = fixture.debugElement.queryAll(By.css('#product-name'));
+    expect(repoLinks.length).toBe(mockRepositories.length);
   });
 
   it('should toggle sort direction if the same column is passed and call loadRepositories', () => {
@@ -198,7 +205,11 @@ describe('MonitoringRepoComponent', () => {
     expect(component.mode[FOCUSED_TAB]).toBe(REPORT_MODE);
   });
 
-  it('should display repository links correctly in template', () => {
+  it('should display repository links correctly in template', async () => {
+    component.loadRepositories();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
     const repoLinks = fixture.debugElement.queryAll(By.css('#product-name'));
 
     expect(repoLinks.length).toBe(3);
