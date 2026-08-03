@@ -2,6 +2,7 @@ name: marketplace
 
 services:
   nginx:
+    container_name: ${NGINX_CONTAINER_NAME:-market-nginx-latest}
     build:
       context: .
       dockerfile: Dockerfile
