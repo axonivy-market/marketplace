@@ -2,6 +2,7 @@ name: marketplace
 
 services:
   ui:
+    container_name: ${UI_CONTAINER_NAME:-market-ui-latest}
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
     env_file:
       - .env
@@ -15,6 +16,7 @@ services:
       - marketplace-network
 
   app:
+    container_name: ${APP_CONTAINER_NAME:-market-app-latest}
     image: ghcr.io/axonivy-market/marketplace-app:${RELEASE_VERSION}
     restart: always
     volumes:
@@ -28,6 +30,7 @@ services:
       - marketplace-network
 
   stable:
+    container_name: ${STABLE_CONTAINER_NAME:-market-stable-latest}
     image: ghcr.io/axonivy-market/marketplace-stable:${RELEASE_VERSION}
     restart: always
     volumes:
