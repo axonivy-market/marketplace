@@ -20,8 +20,7 @@ pipeline {
             choices: [
                 'PREVIEW node',
                 'PROD_1 node',
-                'PROD_2 node',
-                'All PROD nodes'
+                'PROD_2 node'
             ],
             description: 'Select which node(s) to deploy to'
         )
