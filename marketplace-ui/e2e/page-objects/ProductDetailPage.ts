@@ -69,12 +69,7 @@ export class ProductDetailPage {
   }
 
   async waitForDetailLoaded() {
-    await this.page.waitForFunction(() => {
-      const host = document.querySelector('app-product-detail');
-      const component = (window as unknown as {
-        ng?: { getComponent?: (host: Element | null) => { isDataLoaded?: boolean } };
-      }).ng?.getComponent?.(host ?? null);
-      return Boolean(component?.isDataLoaded);
-    });
+    await expect(this.root.locator('.tab-group')).toBeVisible();
+    await expect(this.descriptionTab).toBeVisible();
   }
 }
