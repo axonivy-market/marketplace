@@ -168,6 +168,7 @@ upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CONFIG_PATH" "${NEW_NGINX_CONFIG
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_LOG_PATH" "${NEW_RELEASE_PATH}/logs"
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CACHE_PATH" "/home/axonivy/marketplace/data/cache"
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_EXTERNAL_NETWORK" "${EXTERNAL_NETWORK_NAME}"
+upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CONTAINER_NAME" "${NEW_COMPOSE_PROJECT}"
 
 ensure_external_network_exists "${EXTERNAL_NETWORK_NAME}"
 
@@ -246,15 +247,6 @@ if [[ -z "${NEW_SERVICE_NAME}" ]]; then
     exit 1
 fi
 
-NEW_NGINX_CONTAINER_OVERRIDE_FILE="$(mktemp /tmp/market-nginx-container-name.XXXXXX.yml)"
-trap 'rm -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" 2>/dev/null || true' EXIT
-
-cat > "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" <<EOF
-services:
-    ${NEW_SERVICE_NAME}:
-        container_name: ${NEW_COMPOSE_PROJECT}
-EOF
-
 GREEN_CONTAINER_NAME="${NEW_COMPOSE_PROJECT}-green"
 
 echo "Building nginx image for release ${NEW_RELEASE_NAME}..."
@@ -283,13 +275,13 @@ if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}"
 fi
 
 echo "Starting nginx for release ${NEW_RELEASE_NAME} with configured external port..."
-if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
+if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
     echo "ERROR: Failed to start nginx for release ${NEW_RELEASE_NAME} after cutover."
     rollback_to_old_release
     exit 1
 fi
 
-NEW_CONTAINER_ID="$(docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" ps -q "${NEW_SERVICE_NAME}" | head -n1 | tr -d '[:space:]')"
+NEW_CONTAINER_ID="$(docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" ps -q "${NEW_SERVICE_NAME}" | head -n1 | tr -d '[:space:]')"
 if [[ -z "${NEW_CONTAINER_ID}" ]]; then
     echo "ERROR: Could not determine running nginx container id for release ${NEW_RELEASE_NAME}."
     rollback_to_old_release
