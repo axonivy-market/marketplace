@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 import {
+  SMART_WORKFLOW_BEST_MATCH_ARTIFACTS,
   SMART_WORKFLOW_DESCRIPTION_EXPECTED,
   SMART_WORKFLOW_DEMO_EXPECTED,
   SMART_WORKFLOW_BEST_MATCH_VERSION,
+  SMART_WORKFLOW_LATEST_ARTIFACTS,
+  SMART_WORKFLOW_LATEST_VERSION,
   SMART_WORKFLOW_SETUP_EXPECTED,
   setupProductDetailMocks
 } from './mock/product-detail.mock';
@@ -37,5 +40,37 @@ test.describe('Product detail page', () => {
     for (const expectedText of SMART_WORKFLOW_SETUP_EXPECTED) {
       await expect(detail.setupPane).toContainText(expectedText);
     }
+  });
+
+  test('changes artifact options when switching version and downloads the chosen artifact', async ({ page }) => {
+    await setupProductDetailMocks(page);
+
+    const detail = new ProductDetailPage(page);
+    await detail.goto('smart-workflow');
+    await detail.assertRedirectedToVersion(SMART_WORKFLOW_BEST_MATCH_VERSION);
+    await detail.waitForDetailLoaded();
+
+    await detail.openDownloadDialog();
+    await detail.assertDownloadDialogVisible();
+    await detail.assertVersionOptions([
+      `Version ${SMART_WORKFLOW_BEST_MATCH_VERSION}`,
+      `Version ${SMART_WORKFLOW_LATEST_VERSION}`
+    ]);
+    await detail.assertArtifactOptions(SMART_WORKFLOW_BEST_MATCH_ARTIFACTS);
+
+    await detail.selectVersion(`Version ${SMART_WORKFLOW_LATEST_VERSION}`);
+    await detail.assertArtifactOptions(SMART_WORKFLOW_LATEST_ARTIFACTS);
+    await detail.selectArtifact('Smart Workflow Openai (iar)');
+
+    const requestPromise = page.waitForRequest(request =>
+      request.url().endsWith('/api/product-marketplace-data/smart-workflow/smart-workflow-openai/14.0.0-SNAPSHOT')
+    );
+
+    await detail.clickDownloadArtifact();
+
+    const request = await requestPromise;
+
+    expect(request.method()).toBe('GET');
+    expect(request.url()).toContain('/api/product-marketplace-data/smart-workflow/smart-workflow-openai/14.0.0-SNAPSHOT');
   });
 });

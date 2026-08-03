@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import type { FeedbackApiResponse } from '../../src/app/shared/models/apis/feedback-response.model';
+import type { ItemDropdown } from '../../src/app/shared/models/item-dropdown.model';
 import type { ProductDetail } from '../../src/app/shared/models/product-detail.model';
 import type { ProductReleasesApiResponse } from '../../src/app/shared/models/apis/product-releases-response.model';
 import type { VersionData } from '../../src/app/shared/models/vesion-artifact.model';
@@ -7,6 +8,21 @@ import type { VersionData } from '../../src/app/shared/models/vesion-artifact.mo
 const PRODUCT_ID = 'smart-workflow';
 export const SMART_WORKFLOW_LATEST_VERSION = '14.0.0-SNAPSHOT';
 export const SMART_WORKFLOW_BEST_MATCH_VERSION = '13.2.0';
+export const SMART_WORKFLOW_BEST_MATCH_ARTIFACTS = [
+  'Smart Workflow (iar)',
+  'Smart Workflow Demo (iar)'
+];
+export const SMART_WORKFLOW_LATEST_ARTIFACTS = [
+  'Smart Workflow Anthropic (iar)',
+  'Smart Workflow Azure Openai (iar)',
+  'Smart Workflow (iar)',
+  'Smart Workflow Demo (iar)',
+  'Smart Workflow Gemini (iar)',
+  'Smart Workflow Ollama (iar)',
+  'Smart Workflow Openai (iar)',
+  'Smart Workflow Opensearch Rag (iar)',
+  'Smart Workflow Xai (iar)'
+];
 
 const SMART_WORKFLOW_DESCRIPTION = [
   '# Smart Workflow',
@@ -157,18 +173,25 @@ function createEmptyReleasesPage(): ProductReleasesApiResponse {
   };
 }
 
-function createVersionData(version: string): VersionData {
+function createArtifact(version: string, artifactId: string, name: string): ItemDropdown {
+  return {
+    value: artifactId,
+    label: name,
+    name,
+    downloadUrl: `https://maven.axonivy.com/com/axonivy/utils/ai/${artifactId}/${version}/${artifactId}-${version}.iar`,
+    isProductArtifact: true,
+    id: {
+      artifactId,
+      productVersion: version,
+      additionalVersion: false
+    }
+  };
+}
+
+function createVersionData(version: string, artifacts: ItemDropdown[]): VersionData {
   return {
     version,
-    artifactsByVersion: [
-      {
-        value: 'smart-workflow-guide',
-        label: 'Smart Workflow Guide',
-        name: 'Smart Workflow Guide',
-        downloadUrl: `https://example.test/${PRODUCT_ID}/${version}/smart-workflow-guide.zip`,
-        isProductArtifact: true
-      }
-    ]
+    artifactsByVersion: artifacts
   };
 }
 
@@ -209,8 +232,65 @@ export async function setupProductDetailMocks(page: Page): Promise<void> {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify([
-          createVersionData(SMART_WORKFLOW_BEST_MATCH_VERSION),
-          createVersionData(SMART_WORKFLOW_LATEST_VERSION)
+          createVersionData(SMART_WORKFLOW_BEST_MATCH_VERSION, [
+            createArtifact(
+              SMART_WORKFLOW_BEST_MATCH_VERSION,
+              'smart-workflow',
+              'Smart Workflow (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_BEST_MATCH_VERSION,
+              'smart-workflow-demo',
+              'Smart Workflow Demo (iar)'
+            )
+          ]),
+          createVersionData(SMART_WORKFLOW_LATEST_VERSION, [
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-anthropic',
+              'Smart Workflow Anthropic (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-azure-openai',
+              'Smart Workflow Azure Openai (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow',
+              'Smart Workflow (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-demo',
+              'Smart Workflow Demo (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-gemini',
+              'Smart Workflow Gemini (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-ollama',
+              'Smart Workflow Ollama (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-openai',
+              'Smart Workflow Openai (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-opensearch-rag',
+              'Smart Workflow Opensearch Rag (iar)'
+            ),
+            createArtifact(
+              SMART_WORKFLOW_LATEST_VERSION,
+              'smart-workflow-xai',
+              'Smart Workflow Xai (iar)'
+            )
+          ])
         ])
       });
       return;

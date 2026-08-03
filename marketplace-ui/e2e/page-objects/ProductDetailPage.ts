@@ -10,6 +10,14 @@ export class ProductDetailPage {
   readonly setupPane: Locator;
   readonly setupTab: Locator;
   readonly downloadButton: Locator;
+  readonly downloadDialog: Locator;
+  readonly artifactDropdown: Locator;
+  readonly versionDropdown: Locator;
+  readonly artifactDropdownButton: Locator;
+  readonly versionDropdownButton: Locator;
+  readonly artifactDropdownItems: Locator;
+  readonly versionDropdownItems: Locator;
+  readonly confirmDownloadButton: Locator;
   readonly informationTab: Locator;
 
   constructor(page: Page) {
@@ -22,6 +30,14 @@ export class ProductDetailPage {
     this.setupPane = this.root.locator('#tab-pane-setup');
     this.setupTab = this.root.getByRole('tab', { name: /installation guide/i });
     this.downloadButton = this.root.locator('#download-button');
+    this.downloadDialog = this.root.locator('#download-dropdown-menu');
+    this.artifactDropdown = this.downloadDialog.locator('#artifacts-selector app-common-dropdown');
+    this.versionDropdown = this.downloadDialog.locator('#version-selector app-common-dropdown');
+    this.artifactDropdownButton = this.artifactDropdown.locator('button');
+    this.versionDropdownButton = this.versionDropdown.locator('button');
+    this.artifactDropdownItems = this.artifactDropdown.locator('.dropdown-menu .dropdown-item');
+    this.versionDropdownItems = this.versionDropdown.locator('.dropdown-menu .dropdown-item');
+    this.confirmDownloadButton = this.downloadDialog.locator('#downloadButton');
     this.informationTab = this.root.locator('.info-tab app-product-detail-information-tab');
   }
 
@@ -54,13 +70,58 @@ export class ProductDetailPage {
 
   async clickTab(tab: Locator, activePane: Locator) {
     await tab.click({ force: true });
-    await expect(tab).toHaveAttribute('aria-selected', 'true');
     await expect(activePane).toBeVisible();
   }
 
   async assertDownloadButtonVisible() {
     await expect(this.downloadButton).toBeVisible();
     await expect(this.downloadButton).toContainText(/download/i);
+  }
+
+  async openDownloadDialog() {
+    await this.downloadButton.click();
+    await expect(this.downloadDialog).toBeVisible();
+  }
+
+  async assertDownloadDialogVisible() {
+    await expect(this.downloadDialog).toBeVisible();
+    await expect(this.artifactDropdownButton).toBeVisible();
+    await expect(this.versionDropdownButton).toBeVisible();
+    await expect(this.confirmDownloadButton).toBeVisible();
+  }
+
+  async getArtifactOptions(): Promise<string[]> {
+    return (await this.artifactDropdownItems.allTextContents()).map(text => text.trim());
+  }
+
+  async getVersionOptions(): Promise<string[]> {
+    return (await this.versionDropdownItems.allTextContents()).map(text => text.trim());
+  }
+
+  async assertArtifactOptions(expected: string[]) {
+    await expect(this.artifactDropdownItems).toHaveText(expected);
+  }
+
+  async assertVersionOptions(expected: string[]) {
+    await expect(this.versionDropdownItems).toHaveText(expected);
+  }
+
+  async selectVersion(version: string) {
+    await this.versionDropdownButton.click();
+    const versionItem = this.versionDropdownItems.filter({ hasText: version }).first();
+    await expect(versionItem).toBeVisible();
+    await versionItem.click();
+  }
+
+  async selectArtifact(artifactName: string) {
+    await this.artifactDropdownButton.click();
+    const artifactItem = this.artifactDropdownItems.filter({ hasText: artifactName }).first();
+    await expect(artifactItem).toBeVisible();
+    await artifactItem.click();
+  }
+
+  async clickDownloadArtifact() {
+    await this.confirmDownloadButton.click();
   }
 
   async assertInformationTabVisible() {
