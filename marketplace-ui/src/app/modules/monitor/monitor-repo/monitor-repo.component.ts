@@ -1,10 +1,8 @@
 import {
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   inject,
   Input,
-  NgZone,
   OnDestroy,
   OnInit,
   Output,
@@ -12,7 +10,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { GithubService, Repository } from '../github.service';
+import { GithubService, Repository, RepositoryPages } from '../github.service';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -41,7 +39,7 @@ import {
   STANDARD_TAB
 } from '../../../shared/constants/common.constant';
 import { MonitoringCriteria } from '../../../shared/models/criteria.model';
-import { debounceTime, Subject, Subscription } from 'rxjs';
+import { catchError, debounceTime, map, Observable, of, ReplaySubject, shareReplay, Subject, Subscription, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PAGE } from '../../../shared/constants/query.params.constant';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -69,29 +67,41 @@ export type RepoMode = typeof DEFAULT_MODE | typeof REPORT_MODE;
   styleUrl: './monitor-repo.component.scss'
 })
 export class MonitoringRepoComponent implements OnInit, OnDestroy {
-  protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
   readonly COLUMN_NAME = NAME_COLUMN;
   readonly COLUMN_CI = CI_BUILD;
   readonly COLUMN_DEV = DEV_BUILD;
   readonly COLUMN_E2E = E2E_BUILD;
-  private readonly cdr = inject(ChangeDetectorRef);
-  private readonly ngZone = inject(NgZone);
+  protected readonly PAGE_ID = PAGE;
+  protected readonly ALL_ITEMS_PAGE_SIZE = ALL_ITEMS_PAGE_SIZE;
+  protected readonly workflowKeys = [CI_BUILD, DEV_BUILD, E2E_BUILD];
+  protected LoadingComponentId = LoadingComponentId;
+  private readonly repositoriesReload$ = new ReplaySubject<void>(1);
 
   @Input() tabKey!: string;
   @Input() activeTab = '';
   @Input() initialSearch = '';
-  searchTextChanged = new Subject<string>();
   @Output() searchChange = new EventEmitter<string>();
+
+  languageService = inject(LanguageService);
+  translateService = inject(TranslateService);
+  githubService = inject(GithubService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
+  platformId = inject(PLATFORM_ID);
+
+  searchTextChanged = new Subject<string>();
   subscriptions: Subscription[] = [];
   mode: Record<string, RepoMode> = {};
-  workflowKeys = [CI_BUILD, DEV_BUILD, E2E_BUILD];
   page = 1;
   pageSize = 10;
   totalElements = 0;
-  protected LoadingComponentId = LoadingComponentId;
   sortColumn = this.COLUMN_NAME;
   sortDirection = ASCENDING;
-  displayedRepositories: Repository[] = [];
+  repositoriesView$ = this.refreshRepositories();
+  displayedRepositories$ = this.repositoriesView$.pipe(map(view => view.displayedRepositories));
+  totalElements$ = this.repositoriesView$.pipe(map(view => view.totalElements));
+
+  // Initialize the criteria with default values
   criteria: MonitoringCriteria = {
     search: '',
     isFocused: 'true',
@@ -99,13 +109,6 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     workflowType: 'name',
     pageable: DEFAULT_MONITORING_PAGEABLE
   };
-  languageService = inject(LanguageService);
-  translateService = inject(TranslateService);
-  githubService = inject(GithubService);
-  router = inject(Router);
-  route = inject(ActivatedRoute);
-  platformId = inject(PLATFORM_ID);
-  PAGE = PAGE;
 
   ngOnInit() {
     if (!this.mode[this.tabKey]) {
@@ -229,18 +232,30 @@ export class MonitoringRepoComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadRepositories(): void {
-    this.subscriptions.push(
-      this.githubService.getRepositories(this.criteria).subscribe({
-        next: data => {
-          this.ngZone.run(() => {
-            this.displayedRepositories = data?._embedded?.githubRepos || [];
-            this.totalElements = data.page?.totalElements ?? 0;
-            this.cdr.markForCheck();
-          });
-        }
-      })
+  private refreshRepositories(): Observable<{ displayedRepositories: Repository[]; totalElements: number }> {
+    return this.repositoriesReload$.pipe(
+      switchMap(() =>
+        this.githubService.getRepositories(this.criteria).pipe(
+          catchError(() =>
+            of<RepositoryPages>({
+              _embedded: { githubRepos: [] },
+              page: { size: 0, totalElements: 0, totalPages: 0, number: 0 }
+            })
+          )
+        )
+      ),
+      map((data: RepositoryPages) => {
+        return {
+          displayedRepositories: data?._embedded?.githubRepos || [],
+          totalElements: data.page?.totalElements ?? 0
+        };
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+  }
+
+  loadRepositories(): void {
+    this.repositoriesReload$.next();
   }
 
   ngOnDestroy(): void {
