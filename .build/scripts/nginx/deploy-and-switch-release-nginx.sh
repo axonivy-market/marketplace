@@ -31,11 +31,21 @@ if [[ "${TARGET_ENV}" == "prod" ]]; then
 else
     echo "Deploying nginx from fixed remote path /home/axonivy/marketplace/nginx/${TARGET_ENV}/${NGINX_VERSION}"
 fi
+if [[ "${TARGET_ENV}" == "prod" ]]; then
+    echo "Deploying nginx from fixed remote path /home/axonivy/marketplace/nginx/${NGINX_VERSION}"
+else
+    echo "Deploying nginx from fixed remote path /home/axonivy/marketplace/nginx/${TARGET_ENV}/${NGINX_VERSION}"
+fi
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
     "NGINX_VERSION='${NGINX_VERSION}' TARGET_ENV='${TARGET_ENV}' bash -se" <<'REMOTE_EOF'
 set -euo pipefail
 
+if [[ "${TARGET_ENV}" == "prod" ]]; then
+    REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx"
+else
+    REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx/${TARGET_ENV}"
+fi
 if [[ "${TARGET_ENV}" == "prod" ]]; then
     REMOTE_NGINX_BASE="/home/axonivy/marketplace/nginx"
 else
@@ -47,6 +57,18 @@ NEW_RELEASE_PATH="${REMOTE_NGINX_BASE}/${NEW_RELEASE_NAME}"
 NEW_NGINX_CONFIG_FILE="${NEW_RELEASE_PATH}/nginx.conf"
 NEW_NGINX_DOCKER_COMPOSE_FILE="${NEW_RELEASE_PATH}/docker-compose.yml"
 NEW_NGINX_ENV_FILE="${NEW_RELEASE_PATH}/.env"
+EXTERNAL_NETWORK_NAME="${NGINX_EXTERNAL_NETWORK:-marketplace-network}"
+
+# Normalizes values into compose-safe lowercase dash-separated segments.
+sanitize_compose_segment() {
+    local value="$1"
+
+    value="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')"
+    printf '%s' "${value}"
+}
+
+# Builds the standardized compose project name for nginx releases.
+compose_project_name() {
 EXTERNAL_NETWORK_NAME="${NGINX_EXTERNAL_NETWORK:-marketplace-network}"
 
 # Normalizes values into compose-safe lowercase dash-separated segments.
@@ -79,8 +101,28 @@ compose_project_name() {
     else
         printf 'market-%s-%s-%s' "${env_value}" "${service_value}" "${version_value}"
     fi
+    local service_name="$2"
+    local version="$3"
+    local env_value
+    local service_value
+    local version_value
+
+    env_value="$(sanitize_compose_segment "${target_env}")"
+    service_value="$(sanitize_compose_segment "${service_name}")"
+    version_value="$(sanitize_compose_segment "${version}")"
+
+    [[ -n "${env_value}" ]] || env_value="prod"
+    [[ -n "${service_value}" ]] || service_value="nginx"
+    [[ -n "${version_value}" ]] || version_value="latest"
+
+    if [[ "${env_value}" == "prod" ]]; then
+        printf 'market-%s-%s' "${service_value}" "${version_value}"
+    else
+        printf 'market-%s-%s-%s' "${env_value}" "${service_value}" "${version_value}"
+    fi
 }
 
+# Inserts or replaces a key in an env file.
 # Inserts or replaces a key in an env file.
 upsert_env_value() {
     local env_file="$1"
@@ -91,6 +133,45 @@ upsert_env_value() {
         sed -i -E "s|^${key}=.*$|${key}=${value}|" "${env_file}"
     else
         echo "${key}=${value}" >> "${env_file}"
+    fi
+}
+
+# Ensures required docker external network exists before compose up.
+ensure_external_network_exists() {
+    local network_name="$1"
+
+    if [[ -z "${network_name}" ]]; then
+        echo "ERROR: External network name is empty."
+        return 1
+    fi
+
+    if ! docker network inspect "${network_name}" >/dev/null 2>&1; then
+        echo "External network ${network_name} does not exist. Creating it..."
+        docker network create "${network_name}" >/dev/null
+    fi
+}
+
+# Checks whether a container is attached to a specific docker network.
+container_connected_to_network() {
+    local container_id="$1"
+    local network_name="$2"
+
+    docker inspect "${container_id}" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null | grep -q "\"${network_name}\":"
+}
+
+# Connects a container to network and validates the attachment.
+ensure_container_connected_to_network() {
+    local container_id="$1"
+    local network_name="$2"
+
+    if ! container_connected_to_network "${container_id}" "${network_name}"; then
+        echo "Container ${container_id} is not attached to ${network_name}. Reconnecting..."
+        docker network connect "${network_name}" "${container_id}" >/dev/null
+    fi
+
+    if ! container_connected_to_network "${container_id}" "${network_name}"; then
+        echo "ERROR: Container ${container_id} is still not attached to ${network_name}."
+        return 1
     fi
 }
 
@@ -145,8 +226,12 @@ if [[ -L "${CURRENT_LINK}" ]]; then
     OLD_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${OLD_RELEASE_NAME}")"
     OLD_NGINX_DOCKER_COMPOSE_FILE="${OLD_RELEASE_PATH}/docker-compose.yml"
     OLD_NGINX_ENV_FILE="${OLD_RELEASE_PATH}/.env"
+    OLD_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${OLD_RELEASE_NAME}")"
+    OLD_NGINX_DOCKER_COMPOSE_FILE="${OLD_RELEASE_PATH}/docker-compose.yml"
+    OLD_NGINX_ENV_FILE="${OLD_RELEASE_PATH}/.env"
 fi
 
+NEW_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${NEW_RELEASE_NAME}")"
 NEW_COMPOSE_PROJECT="$(compose_project_name "${TARGET_ENV}" 'nginx' "${NEW_RELEASE_NAME}")"
 
 if [[ ! -f "${NEW_NGINX_CONFIG_FILE}" ]]; then
@@ -168,9 +253,11 @@ upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CONFIG_PATH" "${NEW_NGINX_CONFIG
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_LOG_PATH" "${NEW_RELEASE_PATH}/logs"
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CACHE_PATH" "/home/axonivy/marketplace/data/cache"
 upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_EXTERNAL_NETWORK" "${EXTERNAL_NETWORK_NAME}"
+upsert_env_value "${NEW_NGINX_ENV_FILE}" "NGINX_CONTAINER_NAME" "${NEW_COMPOSE_PROJECT}"
 
 ensure_external_network_exists "${EXTERNAL_NETWORK_NAME}"
 
+# Best-effort rollback to previous nginx release when cutover fails.
 # Best-effort rollback to previous nginx release when cutover fails.
 rollback_to_old_release() {
     # Best-effort rollback to the previously active release on startup failure.
@@ -246,15 +333,6 @@ if [[ -z "${NEW_SERVICE_NAME}" ]]; then
     exit 1
 fi
 
-NEW_NGINX_CONTAINER_OVERRIDE_FILE="$(mktemp /tmp/market-nginx-container-name.XXXXXX.yml)"
-trap 'rm -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" 2>/dev/null || true' EXIT
-
-cat > "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" <<EOF
-services:
-    ${NEW_SERVICE_NAME}:
-        container_name: ${NEW_COMPOSE_PROJECT}
-EOF
-
 GREEN_CONTAINER_NAME="${NEW_COMPOSE_PROJECT}-green"
 
 echo "Building nginx image for release ${NEW_RELEASE_NAME}..."
@@ -272,6 +350,8 @@ fi
 
 echo "Green healthcheck passed. Removing green test container before cutover..."
 docker rm -f "${GREEN_CONTAINER_NAME}" >/dev/null 2>&1 || true
+echo "Green healthcheck passed. Removing green test container before cutover..."
+docker rm -f "${GREEN_CONTAINER_NAME}" >/dev/null 2>&1 || true
 
 if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}" && -f "${OLD_NGINX_DOCKER_COMPOSE_FILE}" ]]; then
     echo "Stopping old nginx release ${OLD_RELEASE_NAME}..."
@@ -283,13 +363,13 @@ if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}"
 fi
 
 echo "Starting nginx for release ${NEW_RELEASE_NAME} with configured external port..."
-if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
+if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
     echo "ERROR: Failed to start nginx for release ${NEW_RELEASE_NAME} after cutover."
     rollback_to_old_release
     exit 1
 fi
 
-NEW_CONTAINER_ID="$(docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -f "${NEW_NGINX_CONTAINER_OVERRIDE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" ps -q "${NEW_SERVICE_NAME}" | head -n1 | tr -d '[:space:]')"
+NEW_CONTAINER_ID="$(docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" ps -q "${NEW_SERVICE_NAME}" | head -n1 | tr -d '[:space:]')"
 if [[ -z "${NEW_CONTAINER_ID}" ]]; then
     echo "ERROR: Could not determine running nginx container id for release ${NEW_RELEASE_NAME}."
     rollback_to_old_release

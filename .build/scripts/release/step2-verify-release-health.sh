@@ -39,7 +39,21 @@ rollback_release() {
 
     if [[ -n "${OLD_RELEASE_NAME}" && -f "${OLD_PUBLISH_PATH}/docker-compose.yml" ]]; then
         echo "Restarting old release ${OLD_RELEASE_NAME}..."
-        docker compose -f "${OLD_PUBLISH_PATH}/docker-compose.yml" -p "${OLD_COMPOSE_PROJECT}" --env-file "${OLD_PUBLISH_PATH}/.env" up -d || true
+        OLD_UI_CONTAINER_NAME="$(container_name_for_release_service 'ui' "${OLD_RELEASE_NAME}")"
+        OLD_APP_CONTAINER_NAME="$(container_name_for_release_service 'app' "${OLD_RELEASE_NAME}")"
+        OLD_STABLE_CONTAINER_NAME="$(container_name_for_release_service 'stable' "${OLD_RELEASE_NAME}")"
+        OLD_PUBLISH_CONTAINER_OVERRIDE_FILE="$(mktemp /tmp/market-release-container-name-old.XXXXXX.yml)"
+        cat > "${OLD_PUBLISH_CONTAINER_OVERRIDE_FILE}" <<EOF
+services:
+    ui:
+        container_name: ${OLD_UI_CONTAINER_NAME}
+    app:
+        container_name: ${OLD_APP_CONTAINER_NAME}
+    stable:
+        container_name: ${OLD_STABLE_CONTAINER_NAME}
+EOF
+        docker compose -f "${OLD_PUBLISH_PATH}/docker-compose.yml" -f "${OLD_PUBLISH_CONTAINER_OVERRIDE_FILE}" -p "${OLD_COMPOSE_PROJECT}" --env-file "${OLD_PUBLISH_PATH}/.env" up -d || true
+        rm -f "${OLD_PUBLISH_CONTAINER_OVERRIDE_FILE}" 2>/dev/null || true
     else
         echo "WARN: Old release info not available; skipped old release restart"
     fi
