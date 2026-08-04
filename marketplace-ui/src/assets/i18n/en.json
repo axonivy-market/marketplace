@@ -450,10 +450,10 @@
         }
       },
       "news": {
-        "pageTitle": "Axon Ivy Market News",
-        "title": "Axon Ivy Market News",
+        "pageTitle": "News",
+        "title": "News",
         "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
-        "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
+        "helpText": "Here you will find announcements, release notes, and important updates for marketplace extensions.",
         "emptyLatestReleaseLetter": "Looks like there's no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
         "sprint": "Sprint: ",
         "latest": "Latest"
