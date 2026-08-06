@@ -96,10 +96,10 @@ public class JwtServiceImpl implements JwtService {
 
   private String createNewJWTCompactToken(String subject, Map<String, Object> claims, long expiration) {
     return Jwts.builder()
-        .setClaims(claims)
-        .setSubject(subject)
-        .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
+        .claims(claims)
+        .subject(subject)
+        .issuedAt(new Date())
+        .expiration(new Date(System.currentTimeMillis() + expiration * TOKEN_EXPIRE_DURATION))
         .signWith(getSigningKey())
         .compact();
   }
