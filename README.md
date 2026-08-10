@@ -8,6 +8,7 @@ The project consists of three main components:
 
 ### Marketplace UI
 **Frontend**: Angular 22 single-page application  
+**Frontend**: Angular 22 single-page application  
 **Technology**: Angular, TypeScript, SCSS  
 **Purpose**: Web interface for browsing and managing products  
 **Setup**: See [marketplace-ui/README.md](marketplace-ui/README.md)
