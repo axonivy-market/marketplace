@@ -38,20 +38,8 @@ jobs:
                 -Dsonar.projectName="AxonIvy Market Service" \
                 -Dsonar.token=${{ env.SONAR_TOKEN }}
 
-      - name: SonarQube Quality Gate check (core)
+      - name: SonarQube Quality Gate check
         uses: sonarsource/sonarqube-quality-gate-action@master
         timeout-minutes: 5
         with:
-          scanMetadataReportFile: ./marketplace-service/core/target/sonar/report-task.txt
-
-      - name: SonarQube Quality Gate check (app)
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        with:
-          scanMetadataReportFile: ./marketplace-service/app/target/sonar/report-task.txt
-
-      - name: SonarQube Quality Gate check (stable)
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        with:
-          scanMetadataReportFile: ./marketplace-service/stable/target/sonar/report-task.txt
+          scanMetadataReportFile: ./marketplace-service/target/sonar/report-task.txt
