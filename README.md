@@ -29,7 +29,7 @@ The project consists of three main components:
 ## Quick Start
 
 ### Prerequisites
-- Node.js 20+ (for UI)
+- Node.js 24+ (for UI)
 - JDK 25+ (for service)
 - Maven 3.9+ (for service)
 - PostgreSQL 17+ (for service)
@@ -76,7 +76,7 @@ marketplace/
 
 ## Key Technologies
 
-- **Frontend**: Angular 18, TypeScript, SCSS
+- **Frontend**: Angular 22, TypeScript, SCSS
 - **Backend**: Java 25, Spring Boot 4.1.0, Spring Data JPA
 - **Database**: PostgreSQL
 - **Build**: Maven, npm
