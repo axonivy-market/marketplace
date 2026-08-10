@@ -1,0 +1,113 @@
+pipeline {
+  agent any
+
+  parameters {
+    string(name: 'JDK_TOOL', defaultValue: 'JDK-25', description: 'Jenkins JDK tool name from Global Tool Configuration')
+  }
+
+  triggers {
+    pollSCM 'H H/6 * * *'
+    cron '@midnight'
+  }
+
+  options {
+    ansiColor('xterm')
+  }
+
+  environment {
+    SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_KEY')
+    SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_SERVICE_PROJECT_NAME')
+    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
+  }
+
+  stages {
+
+    stage('Set Display Name') {
+      steps {
+        script {
+          def userId = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userId
+          def fullName = "system"
+          if (userId) {
+            def user = jenkins.model.Jenkins.instance.getUser(userId)
+            fullName = user?.getDisplayName() ?: userId
+          }
+          currentBuild.displayName = "Build #${env.BUILD_NUMBER} - trigger by ${fullName}"
+        }
+      }
+    }
+
+    stage('Clone Repository') {
+      steps {
+        script {
+          def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+        }
+      }
+    }
+
+    stage('Build and Test with Maven') {
+      steps {
+        script {
+          def javaHome = tool name: params.JDK_TOOL, type: 'hudson.model.JDK'
+          withEnv([
+            "JAVA_HOME=${javaHome}",
+            "PATH+JAVA=${javaHome}/bin"
+          ]) {
+            sh '''
+              java -version
+              mvn clean install --file ./marketplace-service/pom.xml -DskipTests=true
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Remove unused Docker images') {
+      steps {
+        sh 'docker image prune -af'
+      }
+    }
+
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('Sonar') {
+          script {
+            def javaHome = tool name: params.JDK_TOOL, type: 'hudson.model.JDK'
+            def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+            def sonarArgs = "-Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=\"${SONAR_PROJECT_NAME}\""
+
+            if (env.CHANGE_ID && env.CHANGE_BRANCH && env.CHANGE_TARGET) {
+              sonarArgs += " -Dsonar.pullrequest.key=${env.CHANGE_ID}"
+              sonarArgs += " -Dsonar.pullrequest.branch=${env.CHANGE_BRANCH}"
+              sonarArgs += " -Dsonar.pullrequest.base=${env.CHANGE_TARGET}"
+            } else {
+              sonarArgs += " -Dsonar.branch.name=${gitBranch}"
+            }
+
+            withEnv([
+              "JAVA_HOME=${javaHome}",
+              "PATH+JAVA=${javaHome}/bin"
+            ]) {
+              sh """
+                java -version
+                mvn -B verify sonar:sonar --file marketplace-service/app/pom.xml ${sonarArgs}
+              """
+            }
+          }
+        }
+      }
+    }
+    stage('Wait for Quality Gate') {
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+  }
+  post {
+    always {
+      cleanWs(deleteDirs: true)
+    }
+  }
+}
