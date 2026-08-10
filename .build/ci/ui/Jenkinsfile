@@ -1,0 +1,103 @@
+pipeline {
+  agent any
+
+  triggers {
+    pollSCM 'H H/6 * * *'
+    cron '@midnight'
+  }
+
+  options {
+    ansiColor('xterm')
+  }
+
+  environment {
+    UI_DIR = 'marketplace-ui'
+    SONAR_PROJECT_KEY = credentials('SONAR_MARKETPLACE_UI_PROJECT_KEY')
+    SONAR_PROJECT_NAME = credentials('SONAR_MARKETPLACE_UI_PROJECT_NAME')
+    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
+  }
+
+  stages {
+
+    stage('Set Display Name') {
+      steps {
+        script {
+          def userId = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userId
+          def fullName = "system"
+          if (userId) {
+            def user = jenkins.model.Jenkins.instance.getUser(userId)
+            fullName = user?.getDisplayName() ?: userId
+          }
+          currentBuild.displayName = "Build #${env.BUILD_NUMBER} - trigger by ${fullName}"
+        }
+      }
+    }
+    
+    stage('Clone Repository') {
+      steps {
+        script {
+          def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+          git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+        }
+      }
+    }
+
+    stage('Build And Test Project') {
+      steps {
+        dir('./marketplace-ui') {
+          sh '''
+          rm -rf ./node_modules
+          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm run build
+          chmod -R u+w ./dist/server ./.angular/cache || true
+          rm -rf ./dist/server ./.angular/cache || true
+          npm test
+          '''
+        }
+      }
+    }
+
+    stage('Docker Cleanup') {
+      steps {
+        sh 'docker image prune -af'
+      }
+    }
+
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('Sonar') {
+          dir(UI_DIR) {
+            script {
+              def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+              def sonarArgs = "-Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=\"${SONAR_PROJECT_NAME}\""
+
+              if (env.CHANGE_ID && env.CHANGE_BRANCH && env.CHANGE_TARGET) {
+                sonarArgs += " -Dsonar.pullrequest.key=${env.CHANGE_ID}"
+                sonarArgs += " -Dsonar.pullrequest.branch=${env.CHANGE_BRANCH}"
+                sonarArgs += " -Dsonar.pullrequest.base=${env.CHANGE_TARGET}"
+              } else {
+                sonarArgs += " -Dsonar.branch.name=${gitBranch}"
+              }
+
+              sh "sonar-scanner ${sonarArgs}"
+            }
+          }
+        }
+      }
+    }
+
+    stage('Quality Gate') {
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      cleanWs(deleteDirs: true)
+    }
+  }
+}
