@@ -25,6 +25,10 @@ public class ProductModelAssembler implements RepresentationModelAssembler<Produ
 
     var logoLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoId())).withSelfRel();
     resource.setLogoUrl(logoLink.getHref());
+    if (product.getLogoDarkId() != null) {
+      var logoDarkLink = linkTo(methodOn(ImageController.class).findImageById(product.getLogoDarkId())).withSelfRel();
+      resource.setLogoDarkUrl(logoDarkLink.getHref());
+    }
 
     return resource;
   }
