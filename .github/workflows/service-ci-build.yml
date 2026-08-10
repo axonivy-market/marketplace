@@ -43,3 +43,11 @@ jobs:
         timeout-minutes: 5
         with:
           scanMetadataReportFile: ./marketplace-service/target/sonar/report-task.txt
+  clean-up:
+    name: Remove unused docker images
+    needs: analysis
+    runs-on: self-hosted
+
+    steps:
+      - name: Remove unused sonar images
+        run: docker image prune -af
