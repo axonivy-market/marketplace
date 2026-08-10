@@ -22,18 +22,7 @@ pipeline {
   }
 
   parameters {
-    gitParameter(
-      name: 'BRANCH',
-      type: 'PT_BRANCH',
-      defaultValue: 'origin/develop',
-      description: 'Choose your GitHub branch',
-      branchFilter: '.*',
-      tagFilter: '*',
-      sortMode: 'NONE',
-      selectedValue: 'DEFAULT',
-      quickFilterEnabled: true
-    )
-    string(name: 'RELEASE_VERSION', defaultValue: 'latest', description: 'Release version')
+    string(name: 'RELEASE_VERSION', description: 'Release version')
   }
 
   stages {
@@ -55,10 +44,9 @@ pipeline {
     stage('Checkout Source') {
       steps {
         script {
-          def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
           sh 'rm -rf target-source'
           dir('target-source') {
-            git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+            git branch: 'master', url: env.MARKETPLACE_GIT_URL
           }
         }
       }
@@ -138,15 +126,10 @@ pipeline {
         script {
           dir('./target-source/marketplace-build/templates/dev') {
             sh '''
-                export NGINX_CONFIG_PATH=../../nginx/nginx.conf
                 export BUILD_ENV=production
                 export BUILD_VERSION=$RELEASE_VERSION
-                export NGINX_PORT=80
                 export STABLE_LOG_PATH=/home/axonivy/marketplace/logs/stable
                 export APP_LOG_PATH=/home/axonivy/marketplace/logs/app
-                export NGINX_LOG_PATH=/home/axonivy/marketplace/logs/nginx
-                export NGINX_CACHE_PATH=/home/axonivy/marketplace/cache
-                export MARKET_INSTALLATIONS_PATH=/home/axonivy/marketplace/data/market-installations.json
                 docker compose --project-name marketplace up --build --force-recreate -d
             '''
           }

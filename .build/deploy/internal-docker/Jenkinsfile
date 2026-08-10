@@ -49,7 +49,6 @@ pipeline {
         stage('Build and Deploy') {
             steps {
                 script {
-                    // When triggered by pollSCM the BRANCH param may be empty; fall back to develop
                     git branch: 'develop', url: env.MARKETPLACE_GIT_URL
                     sh '''
                         ENV_FILE='./marketplace-build/templates/.env'
@@ -87,7 +86,6 @@ pipeline {
                             export BUILD_VERSION=1.0.0-SNAPSHOT
                             export STABLE_LOG_PATH=/home/axonivy/marketplace/dev/logs/stable
                             export APP_LOG_PATH=/home/axonivy/marketplace/dev/logs/app
-                            export MARKET_INSTALLATIONS_PATH=/home/axonivy/marketplace/dev/data/market-installations.json
                             docker compose -p market-dev up --build --force-recreate -d
 
                             # Restart live nginx containers by name prefix across environments.
