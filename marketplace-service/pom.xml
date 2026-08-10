@@ -24,6 +24,9 @@
 
   <properties>
     <java.version>25</java.version>
+    <sonar.coverage.jacoco.xmlReportPaths>app/target/site/jacoco/jacoco.xml,stable/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.exclusions>**/src/test/java/**</sonar.exclusions>
+    <sonar.coverage.exclusions>**/src/test/java/**,**/src/main/java/**/config/**,**/src/main/java/**/constants/**,**/src/main/**/model/**,**/pom.xml</sonar.coverage.exclusions>
   </properties>
 
   <build>
