@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -74,7 +75,7 @@ class ProductDetailsControllerMockMvcTest {
 
     mockMvc.perform(get("/api/product-details/approval-decision-utils/99.0.0/bestmatch"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.version").doesNotExist());
+        .andExpect(jsonPath("$.version").value(nullValue()));
 
     verify(productService).getBestMatchVersion("approval-decision-utils", "99.0.0", false);
   }
