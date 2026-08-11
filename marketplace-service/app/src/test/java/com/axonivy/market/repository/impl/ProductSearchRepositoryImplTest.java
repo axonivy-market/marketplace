@@ -80,7 +80,8 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(namesJoin.key()).thenReturn(keyValue);
 
     Predicate predicate = mock(Predicate.class);
-    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
+    when(productListedRepository.buildCriteriaSearch(searchCriteria, criteriaQuery, cb, productRoot))
+        .thenReturn(predicate);
 
     // For query products
     when(em.getCriteriaBuilder()).thenReturn(cb);
@@ -95,7 +96,8 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     // For counting
     when(cb.createQuery(Long.class)).thenReturn(criteriaCountQuery);
     when(criteriaCountQuery.from(Product.class)).thenReturn(countRoot);
-    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, countRoot)).thenReturn(predicate);
+    when(productListedRepository.buildCriteriaSearch(searchCriteria, criteriaCountQuery, cb, countRoot))
+        .thenReturn(predicate);
     when(criteriaCountQuery.select(any())).thenReturn(criteriaCountQuery);
     when(criteriaCountQuery.where(predicate)).thenReturn(criteriaCountQuery);
     when(em.createQuery(criteriaCountQuery)).thenReturn(countQuery);
@@ -122,7 +124,8 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
 
     Predicate predicate = mock(Predicate.class);
-    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
+    when(productListedRepository.buildCriteriaSearch(searchCriteria, criteriaQuery, cb, productRoot))
+        .thenReturn(predicate);
 
 
     // For Sort standard
@@ -204,14 +207,24 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(List.of(mockProduct));
 
-    MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
+    Subquery<Integer> localizedMatch = mock(Subquery.class);
+    Root<Product> correlatedProduct = mock(Root.class);
+    MapJoin<Product, String, String> localizedJoin = mock(MapJoin.class);
+    Path<String> localizedValue = mock(Path.class);
+    Expression<String> normalizedValue = mock(Expression.class);
+    Expression<Integer> one = mock(Expression.class);
+    Predicate keywordPredicate = mock(Predicate.class);
 
-    Path<String> languageKey = mock(Path.class);
-    Path<String> nameValue = mock(Path.class);
-
-    when(namesJoin.key()).thenReturn(languageKey);
-    when(namesJoin.value()).thenReturn(nameValue);
+    when(criteriaQuery.subquery(Integer.class)).thenReturn(localizedMatch);
+    when(localizedMatch.correlate(productRoot)).thenReturn(correlatedProduct);
+    Mockito.<MapJoin<Product, String, String>>when(correlatedProduct.joinMap(any(), any()))
+        .thenReturn(localizedJoin);
+    when(localizedJoin.value()).thenReturn(localizedValue);
+    when(mockCriteriaBuilder.lower(localizedValue)).thenReturn(normalizedValue);
+    when(mockCriteriaBuilder.like(any(Expression.class), any(String.class))).thenReturn(keywordPredicate);
+    when(mockCriteriaBuilder.literal(1)).thenReturn(one);
+    when(localizedMatch.select(one)).thenReturn(localizedMatch);
+    when(localizedMatch.where(keywordPredicate)).thenReturn(localizedMatch);
 
 
     Product result = productListedRepository.findByCriteria(searchCriteria);
@@ -235,30 +248,38 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
 
   @ParameterizedTest
   @EnumSource(value = DocumentField.class, names = {"NAMES", "SHORT_DESCRIPTIONS"})
-  void testKeywordSearchRestrictsLocalizedJoinToRequestedLanguage(DocumentField field) {
+  void testKeywordSearchMatchesLocalizedValuesInAnyLanguage(DocumentField field) {
     CriteriaBuilder cb = mock(CriteriaBuilder.class);
+    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
+    Subquery<Integer> localizedMatch = mock(Subquery.class);
     Root<Product> productRoot = mock(Root.class);
+    Root<Product> correlatedProduct = mock(Root.class);
     MapJoin<Product, String, String> localizedJoin = mock(MapJoin.class);
-    Path<String> languageKey = mock(Path.class);
     Path<String> localizedValue = mock(Path.class);
     Expression<String> normalizedValue = mock(Expression.class);
-    Predicate languagePredicate = mock(Predicate.class);
     Predicate keywordPredicate = mock(Predicate.class);
+    Predicate existsPredicate = mock(Predicate.class);
+    Expression<Integer> one = mock(Expression.class);
 
     searchCriteria.setKeyword("connector");
     searchCriteria.setLanguage(Language.EN);
     searchCriteria.setFields(List.of(field));
-    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(field.getFieldName(), JoinType.LEFT))
+    when(criteriaQuery.subquery(Integer.class)).thenReturn(localizedMatch);
+    when(localizedMatch.correlate(productRoot)).thenReturn(correlatedProduct);
+    Mockito.<MapJoin<Product, String, String>>when(correlatedProduct.joinMap(field.getFieldName(), JoinType.INNER))
         .thenReturn(localizedJoin);
-    when(localizedJoin.key()).thenReturn(languageKey);
     when(localizedJoin.value()).thenReturn(localizedValue);
-    when(cb.equal(languageKey, Language.EN.getValue())).thenReturn(languagePredicate);
     when(cb.lower(localizedValue)).thenReturn(normalizedValue);
     when(cb.like(normalizedValue, "%connector%")).thenReturn(keywordPredicate);
+    when(cb.literal(1)).thenReturn(one);
+    when(localizedMatch.select(one)).thenReturn(localizedMatch);
+    when(localizedMatch.where(keywordPredicate)).thenReturn(localizedMatch);
+    when(cb.exists(localizedMatch)).thenReturn(existsPredicate);
 
-    productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot);
+    productListedRepository.buildCriteriaSearch(searchCriteria, criteriaQuery, cb, productRoot);
 
-    verify(localizedJoin).on(languagePredicate);
+    verify(cb).exists(localizedMatch);
+    verify(localizedJoin, never()).key();
   }
 
   @Test
