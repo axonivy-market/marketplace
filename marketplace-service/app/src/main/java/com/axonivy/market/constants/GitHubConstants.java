@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubConstants {
   public static final String AXONIVY_MARKET_ORGANIZATION_NAME = "axonivy-market";
-  public static final String AXONIVY_MARKET_TEAM_NAME = "team-octopus";
+  public static final String AXONIVY_MARKET_TEAM_NAME = "team-wawa";
   public static final String AXONIVY_MARKETPLACE_REPO_NAME = "market";
   public static final String AXONIVY_MARKETPLACE_PATH = "market";
   public static final String GITHUB_PROVIDER_NAME = "GitHub";

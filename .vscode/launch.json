@@ -1,0 +1,59 @@
+{
+  // Sample launch configuration for Marketplace Service and Marketplace Stable Service
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "MarketApp-Service",
+      "request": "launch",
+      "mainClass": "com.axonivy.market.MarketplaceServiceApplication",
+      "projectName": "app",
+      "env": {
+        // Location to expose logs, e.g. /home/market/workspaces/logs
+        "LOGGING_FILE_PATH": "../logs/app/",
+        "MARKET_LOG_PATH": "../logs/app/",
+        "SESSION_COOKIE_SECURE": false,
+        "POSTGRES_HOST_URL": "jdbc:postgresql://localhost:5432/postgres",
+        "POSTGRES_USERNAME": "",
+        "POSTGRES_PASSWORD": "",
+        "SHOW_SQL": false,
+        "MARKET_ENVIRONMENT": "development",
+        "MARKET_NODE_NUMBER": "1",
+        // Run: echo "Key: $(openssl rand -hex 32)" to generate new JWT key
+        "MARKET_JWT_SECRET_KEY": "",
+        // Run: echo "Salt: $(openssl rand -hex 8)" && echo "Key: $(openssl rand -hex 32)" to generate new salt and key
+        "MARKET_ENCRYPTION_SECRET_KEY": "",
+        "MARKET_ENCRYPTION_SALT": "",
+        "MARKET_CORS_ALLOWED_ORIGIN": "*",
+        "MARKET_CORS_ALLOWED_MAPPINGS": "/**",
+        "MARKET_CORS_ALLOWED_METHODS": "GET,POST,PUT,DELETE,OPTIONS"
+      }
+    },
+    {
+      "type": "java",
+      "name": "MarketStable-Service",
+      "request": "launch",
+      "mainClass": "com.axonivy.market.stable.MarketplaceStableApplication",
+      "projectName": "stable",
+      "env": {
+        "LOGGING_FILE_PATH": "../logs/stable/",
+        "MARKET_LOG_PATH": "../logs/stable/",
+        "SESSION_COOKIE_SECURE": false,
+        "POSTGRES_HOST_URL": "jdbc:postgresql://localhost:5432/postgres",
+        "POSTGRES_USERNAME": "",
+        "POSTGRES_PASSWORD": "",
+        "SHOW_SQL": false,
+        "MARKET_ENVIRONMENT": "development",
+        "MARKET_NODE_NUMBER": "1",
+        // Run: echo "Key: $(openssl rand -hex 32)" to generate new JWT key
+        "MARKET_JWT_SECRET_KEY": "",
+        // Run: echo "Salt: $(openssl rand -hex 8)" && echo "Key: $(openssl rand -hex 32)" to generate new salt and key
+        "MARKET_ENCRYPTION_SECRET_KEY": "",
+        "MARKET_ENCRYPTION_SALT": "",
+        "MARKET_CORS_ALLOWED_ORIGIN": "*",
+        "MARKET_CORS_ALLOWED_MAPPINGS": "/**",
+        "MARKET_CORS_ALLOWED_METHODS": "GET,POST,PUT,DELETE,OPTIONS"
+      }
+    }
+  ]
+}
