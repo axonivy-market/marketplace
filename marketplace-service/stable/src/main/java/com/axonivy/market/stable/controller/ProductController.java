@@ -42,7 +42,6 @@ public class ProductController {
   private final VersionService versionService;
   private final CoreProductService coreProductService;
   private final ProductModelAssembler assembler;
-  private final PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
 
   @GetMapping(PRODUCT_JSON_CONTENT_BY_ID_AND_VERSION)
