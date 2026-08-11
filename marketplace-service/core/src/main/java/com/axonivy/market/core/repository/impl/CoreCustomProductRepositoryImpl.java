@@ -187,7 +187,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
 
     List<Order> orders = sortByOrders(criteriaContext, pageRequest, namesJoin);
 
-    criteriaContext.query().select(criteriaContext.root()).distinct(true).where(predicate)
+    criteriaContext.query().select(criteriaContext.root()).where(predicate)
         .orderBy(orders);
 
     TypedQuery<Product> query = getEntityManager().createQuery(criteriaContext.query());

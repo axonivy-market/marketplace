@@ -12,6 +12,8 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -84,7 +87,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
@@ -106,7 +108,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     assertEquals(2, result.getContent().size(), "Unexpected number of products");
     assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
         "Expected product name not found in the result");
-    verify(criteriaQuery).distinct(true);
+    verify(criteriaQuery, never()).distinct(true);
   }
 
   @Test
@@ -142,7 +144,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
@@ -230,6 +231,34 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     assertNotNull(result, "Result is empty");
     assertEquals(mockProduct.getMarketDirectory(), result.getMarketDirectory(),
         "Product MarketDirectory " + result.getMarketDirectory());
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = DocumentField.class, names = {"NAMES", "SHORT_DESCRIPTIONS"})
+  void testKeywordSearchRestrictsLocalizedJoinToRequestedLanguage(DocumentField field) {
+    CriteriaBuilder cb = mock(CriteriaBuilder.class);
+    Root<Product> productRoot = mock(Root.class);
+    MapJoin<Product, String, String> localizedJoin = mock(MapJoin.class);
+    Path<String> languageKey = mock(Path.class);
+    Path<String> localizedValue = mock(Path.class);
+    Expression<String> normalizedValue = mock(Expression.class);
+    Predicate languagePredicate = mock(Predicate.class);
+    Predicate keywordPredicate = mock(Predicate.class);
+
+    searchCriteria.setKeyword("connector");
+    searchCriteria.setLanguage(Language.EN);
+    searchCriteria.setFields(List.of(field));
+    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(field.getFieldName(), JoinType.LEFT))
+        .thenReturn(localizedJoin);
+    when(localizedJoin.key()).thenReturn(languageKey);
+    when(localizedJoin.value()).thenReturn(localizedValue);
+    when(cb.equal(languageKey, Language.EN.getValue())).thenReturn(languagePredicate);
+    when(cb.lower(localizedValue)).thenReturn(normalizedValue);
+    when(cb.like(normalizedValue, "%connector%")).thenReturn(keywordPredicate);
+
+    productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot);
+
+    verify(localizedJoin).on(languagePredicate);
   }
 
   @Test
