@@ -17,7 +17,6 @@ This folder is infrastructure automation code. It is not application runtime cod
 ```text
 .build/
   deploy/
-    aws-ec2/Jenkinsfile           # release deployment pipeline (select target node)
     internal-docker/Jenkinsfile   # develop branch build/deploy to internal docker host
   nginx/
     Jenkinsfile                   # nginx release pipeline
@@ -55,22 +54,7 @@ Important environment/credentials used by pipeline include:
 - `ghcr-io-token` (pull auth on nodes)
 - node credentials + SSH key + per-node secret env file
 
-### 2) Targeted Node Deployment (Existing Release Version)
-
-Entry point: `.build/deploy/aws-ec2/Jenkinsfile`
-
-Parameters:
-
-- `DEPLOYMENT_TARGET`: `PREVIEW node`, `PROD_1 node`, or `PROD_2 node`
-- `RELEASE_VERSION`: existing release tag/version to deploy
-
-Behavior:
-
-- loads deployment target config from managed file (`deployment-target`)
-- enforces production approval for non-preview targets (4-eyes policy)
-- prepares node config and runs rollout scripts
-
-### 3) Internal Dev Docker Deployment
+### 2) Internal Dev Docker Deployment
 
 Entry point: `.build/deploy/internal-docker/Jenkinsfile`
 
@@ -81,7 +65,7 @@ Behavior:
 - runs compose in `marketplace-build/templates/dev`
 - restarts local nginx containers with prefix `market-dev-nginx-`
 
-### 4) Nginx Deployment Pipeline
+### 3) Nginx Deployment Pipeline
 
 Entry point: `.build/nginx/Jenkinsfile`
 
