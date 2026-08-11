@@ -17,7 +17,7 @@ if [[ ${#missing_args[@]} -gt 0 ]]; then
     exit 1
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../pipeline-lib/ssh-lib.sh"
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "${SCRIPT_DIR}/../../../../" && pwd)}"
 REMOTE_TEMPLATE_DIR="/tmp/marketplace-template-${RELEASE_VERSION}-$$"

@@ -2,8 +2,7 @@
 # Creates release folders on the node and builds the release .env by merging current, template, and secret values.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../../pipeline-lib/ssh-lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../pipeline-lib/ssh-lib.sh"
 
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"

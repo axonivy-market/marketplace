@@ -2,8 +2,7 @@
 # Rollout step 2: verify service health endpoints and roll back automatically if checks fail.
 set -Eeuo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/release-context-lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/release-context-lib.sh"
 
 : "${HEALTH_CHECK_TARGETS:?HEALTH_CHECK_TARGETS is required}"
 

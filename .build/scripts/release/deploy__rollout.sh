@@ -2,7 +2,7 @@
 # Uploads rollout step scripts to the node and executes deploy, health-check, and promote in order.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../pipeline-lib/ssh-lib.sh"
 
 NODE_IP="${1:-}"

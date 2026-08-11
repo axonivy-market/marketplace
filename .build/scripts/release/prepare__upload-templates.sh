@@ -2,8 +2,7 @@
 # Uploads template env/compose files and secret env to a temporary directory on the target node.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../../pipeline-lib/ssh-lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../pipeline-lib/ssh-lib.sh"
 
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
