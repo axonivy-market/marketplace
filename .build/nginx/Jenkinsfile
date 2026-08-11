@@ -1,0 +1,158 @@
+def nodesToDeploy = []
+def deployStages = null
+
+String resolveNginxTargetEnv(String deploymentTarget) {
+    switch (deploymentTarget) {
+        case 'DEV node':
+            return 'dev'
+        case 'PREVIEW node':
+            return 'preview'
+        case 'PROD_1 node':
+        case 'PROD_2 node':
+            return 'prod'
+        default:
+            error("Unsupported DEPLOYMENT_TARGET '${deploymentTarget}' for nginx TARGET_ENV mapping")
+    }
+}
+
+pipeline {
+    agent any
+
+    options {
+        ansiColor('xterm')
+        timestamps()
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    environment {
+        MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
+    }
+
+    parameters {
+        gitParameter(
+                name: 'BRANCH',
+                type: 'PT_BRANCH',
+                defaultValue: 'origin/develop',
+                description: 'Choose the GitHub branch that contains the Nginx configuration to deploy',
+                branchFilter: '^(origin/master|origin/develop|origin/release/.*)$',
+                sortMode: 'NONE',
+                selectedValue: 'DEFAULT',
+                quickFilterEnabled: true
+        )
+        choice(
+            name: 'DEPLOYMENT_TARGET',
+            choices: [
+                'DEV node',
+                'PREVIEW node',
+                'PROD_1 node',
+                'PROD_2 node'
+            ],
+            description: 'Select which node(s) to deploy to'
+        )
+        string(
+            name: 'NGINX_VERSION',
+            description: 'NGINX version (e.g., 1.31.2)',
+            defaultValue: 'latest'
+        )
+    }
+
+    stages {
+
+        stage('Checkout Source') {
+            steps {
+                script {
+                    sh 'rm -rf target-source'
+                    dir('target-source') {
+                        def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+                        git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+                    }
+                    deployStages = load '.build/pipeline-lib/deployStages.groovy'
+                }
+            }
+        }
+
+        stage('Confirm Production Deployment') {
+            when {
+                expression { params.DEPLOYMENT_TARGET == 'PROD_1 node' || params.DEPLOYMENT_TARGET == 'PROD_2 node' }
+            }
+            steps {
+                script {
+                    deployStages.confirmProductionDeployment(params.DEPLOYMENT_TARGET, params.NGINX_VERSION)
+                }
+            }
+        }
+
+        stage('Load Configuration') {
+            steps {
+                script {
+                    nodesToDeploy = deployStages.loadNodesToDeploy(params.DEPLOYMENT_TARGET)
+                }
+            }
+        }
+
+        stage('Configure Nginx') {
+            steps {
+                script {
+                    def nginxTargetEnv = resolveNginxTargetEnv(params.DEPLOYMENT_TARGET)
+
+                    for (node in nodesToDeploy) {
+                        echo "Configuring nginx for node: ${node.name} (${node.ip})"
+
+                        withCredentials([
+                            string(credentialsId: node.credId, variable: 'EC2_NODE'),
+                            sshUserPrivateKey(
+                                credentialsId: 'aws-ec2-ssh-key',
+                                keyFileVariable: 'SSH_PRIVATE_KEY_FILE',
+                                usernameVariable: 'SSH_REMOTE_USER'
+                            )
+                        ]) {
+                            sh """
+                                set +x
+                                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                                bash ./.build/scripts/nginx/prepare-release-nginx-config.sh \
+                                    "\${EC2_NODE}" \
+                                    "${params.NGINX_VERSION}" \
+                                    "${nginxTargetEnv}" \
+                                    "${env.WORKSPACE}" \
+                                    "${node.nginxConfigPath ?: ''}" \
+                                    "${node.nginxPort ?: ''}"
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy And Switch Nginx') {
+            steps {
+                script {
+                    def nginxTargetEnv = resolveNginxTargetEnv(params.DEPLOYMENT_TARGET)
+
+                    for (node in nodesToDeploy) {
+                        echo "Deploying and switching nginx for node: ${node.name} (${node.ip})"
+
+                        withCredentials([
+                            string(credentialsId: node.credId, variable: 'EC2_NODE'),
+                            sshUserPrivateKey(
+                                credentialsId: 'aws-ec2-ssh-key',
+                                keyFileVariable: 'SSH_PRIVATE_KEY_FILE',
+                                usernameVariable: 'SSH_REMOTE_USER'
+                            )
+                        ]) {
+                            sh """
+                                set +x
+                                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                                bash ./.build/scripts/nginx/deploy-and-switch-release-nginx.sh \
+                                    "\${EC2_NODE}" \
+                                    "${params.NGINX_VERSION}" \
+                                    "${nginxTargetEnv}"
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
