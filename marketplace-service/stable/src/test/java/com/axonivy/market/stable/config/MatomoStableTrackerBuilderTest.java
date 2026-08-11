@@ -27,9 +27,9 @@ class MatomoStableTrackerBuilderTest {
   private MatomoTrackerBuilder builder;
 
   private final Map<String, String> matomoSettings = Map.ofEntries(
-      Map.entry(AppSettingKey.MATOMO_SITE_ID.getKey(), SITE_ID),
-      Map.entry(AppSettingKey.MATOMO_API_ENDPOINT.getKey(), "https://matomo.example.com/matomo.php"),
-      Map.entry(AppSettingKey.MATOMO_ENABLED.getKey(), "false"));
+      Map.entry(AppSettingKey.MATOMO_STABLE_SITE_ID.getKey(), SITE_ID),
+      Map.entry(AppSettingKey.MATOMO_STABLE_API_ENDPOINT.getKey(), "https://matomo.example.com/matomo.php"),
+      Map.entry(AppSettingKey.MATOMO_STABLE_ENABLED.getKey(), "false"));
 
   @BeforeEach
   void setUp() {
@@ -111,7 +111,8 @@ class MatomoStableTrackerBuilderTest {
   }
 
   private Map<String, String> matomoSettings(String siteId, String endpoint, String enabled) {
-    return Map.of(AppSettingKey.MATOMO_SITE_ID.getKey(), siteId, AppSettingKey.MATOMO_API_ENDPOINT.getKey(), endpoint,
-        AppSettingKey.MATOMO_ENABLED.getKey(), enabled);
+    return Map.of(AppSettingKey.MATOMO_STABLE_SITE_ID.getKey(), siteId,
+        AppSettingKey.MATOMO_STABLE_API_ENDPOINT.getKey(), endpoint,
+        AppSettingKey.MATOMO_STABLE_ENABLED.getKey(), enabled);
   }
 }
