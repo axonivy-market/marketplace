@@ -1,10 +1,16 @@
+def deployApproval = null
+def deployConfig = null
+def releaseVersion = ''
+
 pipeline {
 
   agent any
+
   options {
     ansiColor('xterm')
     timestamps()
-    timeout(time: 30, unit: 'MINUTES')
+    timeout(time: 6, unit: 'HOURS')
+    buildDiscarder(logRotator(numToKeepStr: '10'))
   }
 
   environment {
@@ -21,38 +27,43 @@ pipeline {
     MARKETPLACE_ENV_FILE = credentials('PREVIEW_ENV_FILE')
   }
 
-  parameters {
-    string(name: 'RELEASE_VERSION', description: 'Release version')
-  }
-
   stages {
 
-    stage('Set Display Name') {
+    stage('Clean Workspace') {
       steps {
-        script {
-          def userId = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userId
-          def fullName = "system"
-          if (userId) {
-            def user = jenkins.model.Jenkins.instance.getUser(userId)
-            fullName = user?.getDisplayName() ?: userId
-          }
-          currentBuild.displayName = "Build #${env.BUILD_NUMBER} on branch ${BRANCH} with release version of ${RELEASE_VERSION} - trigger by ${fullName}"
-        }
+        cleanWs()
+        checkout scm
       }
     }
-    
+
     stage('Checkout Source') {
       steps {
         script {
-          sh 'rm -rf target-source'
           dir('target-source') {
             git branch: 'master', url: env.MARKETPLACE_GIT_URL
           }
+          deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
+          deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
         }
       }
     }
 
-    stage('Stop running docker container for compose file') {
+    stage('Compute Release Version') {
+      steps {
+        script {
+          def snapshot = sh(
+            script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ./target-source/marketplace-service/core/pom.xml',
+            returnStdout: true
+          ).trim()
+          releaseVersion = snapshot.replace('-SNAPSHOT', '')
+          env.RELEASE_VERSION = releaseVersion
+          currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
+          echo "Release version: ${releaseVersion}"
+        }
+      }
+    }
+
+    stage('Stop Running Docker Containers') {
       steps {
         script {
           try {
@@ -75,9 +86,9 @@ pipeline {
           ]) {
             script {
               sh '''
-                mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $CORE_POM_FILE
-                mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $APP_POM_FILE
-                mvn versions:set -DnewVersion=$RELEASE_VERSION -f  $STABLE_POM_FILE
+                mvn versions:set -DnewVersion=$RELEASE_VERSION -f $CORE_POM_FILE
+                mvn versions:set -DnewVersion=$RELEASE_VERSION -f $APP_POM_FILE
+                mvn versions:set -DnewVersion=$RELEASE_VERSION -f $STABLE_POM_FILE
                 sed -i 's/"version": \"[^\"]*\"/"version": "$RELEASE_VERSION"/' $PACKAGE_FILE
                 git config --global user.email $OCTOPUS_MAIL
                 git config --global user.name $OCTOPUS_ACCOUNT_NAME
@@ -94,17 +105,13 @@ pipeline {
       }
     }
 
-    stage('Build Maven skip tests') {
+    stage('Build Maven Skip Tests') {
       steps {
-        script {
-          sh '''
-            mvn clean install --file ./target-source/marketplace-service/pom.xml -DskipTests=true
-          '''
-        }
+        sh 'mvn clean install --file ./target-source/marketplace-service/pom.xml -DskipTests=true'
       }
     }
 
-    stage('Build env file') {
+    stage('Build Env File') {
       steps {
         sh '''
           ENV_FILE='./target-source/marketplace-build/templates/.env'
@@ -160,20 +167,16 @@ pipeline {
 
     stage('Log in to GitHub Container Registry') {
       steps {
-        sh """
-          echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
-        """
+        sh 'echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
       }
     }
 
     stage('Release Marketplace UI Image') {
       steps {
         sh '''
-          # Prepare UI image
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
           docker tag $UI_IMAGE_NAME:latest $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
-          # Cleanup old UI image versions
           export IMAGE_NAME=$UI_IMAGE_NAME
           bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
@@ -183,11 +186,9 @@ pipeline {
     stage('Release Marketplace App Image') {
       steps {
         sh '''
-          # Prepare App image
           APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
           docker tag $APP_IMAGE_NAME:latest $APP_IMAGE_ID:$RELEASE_VERSION
           docker push $APP_IMAGE_ID:$RELEASE_VERSION
-          # Cleanup old App image versions
           export IMAGE_NAME=$APP_IMAGE_NAME
           bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
@@ -197,14 +198,163 @@ pipeline {
     stage('Release Marketplace Stable Image') {
       steps {
         sh '''
-          # Prepare Stable image
           STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
           docker tag $STABLE_IMAGE_NAME:latest $STABLE_IMAGE_ID:$RELEASE_VERSION
           docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
-          # Cleanup old Stable image versions
           export IMAGE_NAME=$STABLE_IMAGE_NAME
           bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
+      }
+    }
+
+    stage('Deploy to Preview') {
+      steps {
+        script {
+          def nodes = deployConfig.loadNodesToDeploy('PREVIEW node')
+          for (node in nodes) {
+            echo "Deploying to Preview: ${node.name} (${node.ip})"
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              file(credentialsId: node.envCredId, variable: 'ENV_SECRET_FILE')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/prepare__config.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.marketNodeNumber}" \
+                    "\${ENV_SECRET_FILE}"
+              """
+            }
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export GHCR_USERNAME="\${GHCR_USERNAME}"
+                export GHCR_TOKEN="\${GHCR_TOKEN}"
+                export TARGET_ENV="preview"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/deploy__rollout.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.healthCheckEndpoints}"
+              """
+            }
+          }
+        }
+      }
+    }
+
+    stage('Await Production Approval') {
+      steps {
+        script {
+          timeout(time: 6, unit: 'HOURS') {
+            deployApproval.confirmProductionDeployment('Production', releaseVersion)
+          }
+        }
+      }
+    }
+
+    stage('Deploy to PROD_1') {
+      steps {
+        script {
+          def nodes = deployConfig.loadNodesToDeploy('PROD_1 node')
+          for (node in nodes) {
+            echo "Deploying to PROD_1: ${node.name} (${node.ip})"
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              file(credentialsId: node.envCredId, variable: 'ENV_SECRET_FILE')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/prepare__config.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.marketNodeNumber}" \
+                    "\${ENV_SECRET_FILE}"
+              """
+            }
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export GHCR_USERNAME="\${GHCR_USERNAME}"
+                export GHCR_TOKEN="\${GHCR_TOKEN}"
+                export TARGET_ENV="prod"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/deploy__rollout.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.healthCheckEndpoints}"
+              """
+            }
+          }
+        }
+      }
+    }
+
+    stage('Deploy to PROD_2') {
+      steps {
+        script {
+          def nodes = deployConfig.loadNodesToDeploy('PROD_2 node')
+          for (node in nodes) {
+            echo "Deploying to PROD_2: ${node.name} (${node.ip})"
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              file(credentialsId: node.envCredId, variable: 'ENV_SECRET_FILE')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/prepare__config.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.marketNodeNumber}" \
+                    "\${ENV_SECRET_FILE}"
+              """
+            }
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export GHCR_USERNAME="\${GHCR_USERNAME}"
+                export GHCR_TOKEN="\${GHCR_TOKEN}"
+                export TARGET_ENV="prod"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/deploy__rollout.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.healthCheckEndpoints}"
+              """
+            }
+          }
+        }
       }
     }
   }

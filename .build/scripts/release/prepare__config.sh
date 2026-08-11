@@ -18,14 +18,11 @@ if [[ ${#missing_args[@]} -gt 0 ]]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../../pipeline-lib/ssh-lib.sh"
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "${SCRIPT_DIR}/../../../../" && pwd)}"
 REMOTE_TEMPLATE_DIR="/tmp/marketplace-template-${RELEASE_VERSION}-$$"
 
-SSH_USER="${SSH_REMOTE_USER:-ec2-user}"
-SSH_OPTS=( -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o UserKnownHostsFile=~/.ssh/known_hosts )
-if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
-    SSH_OPTS+=( -i "${SSH_PRIVATE_KEY_FILE}" )
-fi
+setup_ssh_opts
 
 # Removes temporary template assets on the remote host when this script exits.
 cleanup_remote_templates() {
@@ -35,7 +32,7 @@ trap cleanup_remote_templates EXIT
 
 echo "Release: ${RELEASE_VERSION}"
 
-"${SCRIPT_DIR}/upload-release-templates.sh" "${NODE_IP}" "${RELEASE_VERSION}" "${ENV_SECRET_FILE}" "${WORKSPACE_ROOT}" "${REMOTE_TEMPLATE_DIR}"
-"${SCRIPT_DIR}/prepare-release-workspace.sh" "${NODE_IP}" "${RELEASE_VERSION}" "${MARKET_NODE_NUMBER}" "${REMOTE_TEMPLATE_DIR}"
-"${SCRIPT_DIR}/prepare-release-compose-assets.sh" "${NODE_IP}" "${RELEASE_VERSION}" "${REMOTE_TEMPLATE_DIR}"
+"${SCRIPT_DIR}/prepare__upload-templates.sh" "${NODE_IP}" "${RELEASE_VERSION}" "${ENV_SECRET_FILE}" "${WORKSPACE_ROOT}" "${REMOTE_TEMPLATE_DIR}"
+"${SCRIPT_DIR}/prepare__workspace.sh" "${NODE_IP}" "${RELEASE_VERSION}" "${MARKET_NODE_NUMBER}" "${REMOTE_TEMPLATE_DIR}"
+"${SCRIPT_DIR}/prepare__compose-assets.sh" "${NODE_IP}" "${RELEASE_VERSION}" "${REMOTE_TEMPLATE_DIR}"
 echo "Config location: /home/axonivy/marketplace/releases/${RELEASE_VERSION}/publish/.env"

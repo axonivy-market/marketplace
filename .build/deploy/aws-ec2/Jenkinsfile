@@ -1,5 +1,6 @@
 def nodesToDeploy = []
-def deployStages = null
+def deployApproval = null
+def deployConfig = null
 
 pipeline {
     agent any
@@ -39,7 +40,8 @@ pipeline {
                     dir('target-source') {
                         git branch: 'master', url: env.MARKETPLACE_GIT_URL
                     }
-                    deployStages = load '.build/pipeline-lib/deployStages.groovy'
+                    deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
+                    deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
                 }
             }
         }
@@ -50,7 +52,7 @@ pipeline {
             }
             steps {
                 script {
-                    deployStages.confirmProductionDeployment(params.DEPLOYMENT_TARGET, params.RELEASE_VERSION)
+                    deployApproval.confirmProductionDeployment(params.DEPLOYMENT_TARGET, params.RELEASE_VERSION)
                 }
             }
         }
@@ -58,7 +60,7 @@ pipeline {
         stage('Load Configuration') {
             steps {
                 script {
-                    nodesToDeploy = deployStages.loadNodesToDeploy(params.DEPLOYMENT_TARGET)
+                    nodesToDeploy = deployConfig.loadNodesToDeploy(params.DEPLOYMENT_TARGET)
                 }
             }
         }
@@ -79,7 +81,7 @@ pipeline {
                                 export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
                                 export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
                                 export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./.build/scripts/release/prepare-release-config.sh \
+                                bash ./.build/scripts/release/prepare__config.sh \
                                     "\${EC2_NODE}" \
                                     "${params.RELEASE_VERSION}" \
                                     "${node.marketNodeNumber}" \
@@ -110,7 +112,7 @@ pipeline {
                                 export GHCR_TOKEN="\${GHCR_TOKEN}"
                                 export TARGET_ENV="${params.DEPLOYMENT_TARGET == 'PREVIEW node' ? 'preview' : 'prod'}"
                                 export WORKSPACE_ROOT="${env.WORKSPACE}"
-                                bash ./.build/scripts/release/run-release-rollout.sh \
+                                bash ./.build/scripts/release/deploy__rollout.sh \
                                     "\${EC2_NODE}" \
                                     "${params.RELEASE_VERSION}" \
                                     "${node.healthCheckEndpoints}"

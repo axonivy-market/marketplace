@@ -2,6 +2,9 @@
 # Creates release folders on the node and builds the release .env by merging current, template, and secret values.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../../pipeline-lib/ssh-lib.sh"
+
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
 MARKET_NODE_NUMBER="${3:-}"
@@ -17,11 +20,7 @@ if [[ ${#missing_args[@]} -gt 0 ]]; then
     exit 1
 fi
 
-SSH_USER="${SSH_REMOTE_USER:-ec2-user}"
-SSH_OPTS=( -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o UserKnownHostsFile=~/.ssh/known_hosts )
-if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
-    SSH_OPTS+=( -i "${SSH_PRIVATE_KEY_FILE}" )
-fi
+setup_ssh_opts
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
     "RELEASE_VERSION='${RELEASE_VERSION}' MARKET_NODE_NUMBER='${MARKET_NODE_NUMBER}' REMOTE_TEMPLATE_DIR='${REMOTE_TEMPLATE_DIR}' bash -se" <<'REMOTE_EOF'
