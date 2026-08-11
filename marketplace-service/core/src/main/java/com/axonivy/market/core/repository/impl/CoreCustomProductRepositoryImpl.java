@@ -71,7 +71,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
     detachExcludedField(searchCriteria, resultList);
 
-    long total = resultList.size();
+    long total = pageable.getOffset() + resultList.size();
     if (resultList.size() >= pageable.getPageSize()) {
       total = getTotalCount(criteriaContext.builder(), searchCriteria);
     }
@@ -158,15 +158,12 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
       if (property.isLocalizedSupport()) {
         // Correctly join the Map<String, String> names collection
         MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName(), JoinType.LEFT);
-        // Extract key (language) and value (name)
-        Path<String> languageKey = namesJoin.key();
+        // Restrict the join before combining fields with OR to avoid multiplying rows across languages.
+        namesJoin.on(cb.equal(namesJoin.key(), language.getValue()));
         Path<String> nameValue = namesJoin.value();
-        // Filter by language key
-        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase(Locale.getDefault()));
         // Apply keyword search on product names (value)
         Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
-        // Combine conditions
-        filters.add(cb.and(languageFilter, keywordFilter));
+        filters.add(keywordFilter);
       } else {
         filters.add(cb.equal(productRoot.get(property.getFieldName()), searchCriteria.getKeyword()));
       }
@@ -188,10 +185,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
     namesJoin.on(criteriaContext.builder().equal(namesJoin.key(), language.getValue()));
 
-    List<Order> orders = new ArrayList<>();
-    if (pageRequest.getSort().isSorted()) {
-      orders = sortByOrders(criteriaContext, pageRequest, namesJoin);
-    }
+    List<Order> orders = sortByOrders(criteriaContext, pageRequest, namesJoin);
 
     criteriaContext.query().select(criteriaContext.root()).distinct(true).where(predicate)
         .orderBy(orders);
