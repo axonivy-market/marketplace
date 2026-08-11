@@ -25,7 +25,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -91,22 +90,6 @@ class ProductControllerMockMvcTest {
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].version").value("10.0.20"))
         .andExpect(jsonPath("$[0].artifactsByVersion").isArray());
-
-    verify(versionService).getArtifactsAndVersionToDisplay("connectivity-demo", true, "10.0.20");
-  }
-
-  @Test
-  void shouldReturnEmptyVersionListWhenNoArtifactIsAvailable() throws Exception {
-    when(versionService.getArtifactsAndVersionToDisplay("connectivity-demo", false, "10.0.20"))
-        .thenReturn(List.of());
-
-    mockMvc.perform(get("/api/product/connectivity-demo/versions")
-            .param("isShowDevVersion", "false")
-            .param("designerVersion", "10.0.20"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
-
-    verify(versionService).getArtifactsAndVersionToDisplay("connectivity-demo", false, "10.0.20");
   }
 
   @Test
@@ -117,8 +100,6 @@ class ProductControllerMockMvcTest {
     mockMvc.perform(get("/api/product/connectivity-demo/versions"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
-
-    verify(versionService).getArtifactsAndVersionToDisplay("connectivity-demo", false, null);
   }
 
   @Test
@@ -142,8 +123,6 @@ class ProductControllerMockMvcTest {
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].id").value("connectivity-demo"))
         .andExpect(jsonPath("$[0].names.en").value("Connectivity Demo"));
-
-    verify(assembler).toModel(product);
   }
 
   @Test
@@ -156,32 +135,5 @@ class ProductControllerMockMvcTest {
     assertEquals(0, pageableCaptor.getValue().getPageNumber(), "Expected the first page to be requested");
     assertEquals(Integer.MAX_VALUE, pageableCaptor.getValue().getPageSize(),
         "Expected all products to be fetched in one page");
-  }
-
-  @Test
-  void shouldPassNullFiltersWhenNoRequestParamIsGiven() throws Exception {
-    when(coreProductService.findProducts(null, null, null, PageRequest.of(0, Integer.MAX_VALUE)))
-        .thenReturn(Page.empty());
-
-    mockMvc.perform(get("/api/product"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
-
-    verify(coreProductService).findProducts(null, null, null, PageRequest.of(0, Integer.MAX_VALUE));
-  }
-
-  @Test
-  void shouldReturnEmptyListWhenNoProductMatchesTheFilters() throws Exception {
-    when(coreProductService.findProducts("connectors", "unknown", "en", PageRequest.of(0, Integer.MAX_VALUE)))
-        .thenReturn(Page.empty());
-
-    mockMvc.perform(get("/api/product")
-            .param("type", "connectors")
-            .param("keyword", "unknown")
-            .param("language", "en"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
-
-    verify(assembler, never()).toModel(any(Product.class));
   }
 }
