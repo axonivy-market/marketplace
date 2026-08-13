@@ -194,6 +194,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     List<Product> results = query.getResultList();
     results.forEach(product -> {
       Hibernate.initialize(product.getNames());
+      Hibernate.initialize(product.getShortDescriptions());
     });
     return results;
   }
