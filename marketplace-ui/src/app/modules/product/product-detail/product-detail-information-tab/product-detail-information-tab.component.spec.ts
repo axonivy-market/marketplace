@@ -278,7 +278,7 @@ describe('ProductDetailInformationTabComponent', () => {
       expect(component.extractVersionValue).toHaveBeenCalledWith(
         versionDisplay
       );
-      expect(component.displayVersion()).toBe(TEST_VERSION);
+      expect(component.displayVersion).toBe(TEST_VERSION);
     });
   });
 

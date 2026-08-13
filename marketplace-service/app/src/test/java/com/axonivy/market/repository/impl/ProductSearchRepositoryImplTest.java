@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,7 +83,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
@@ -106,7 +104,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     assertEquals(2, result.getContent().size(), "Unexpected number of products");
     assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
         "Expected product name not found in the result");
-    verify(criteriaQuery).distinct(true);
   }
 
   @Test
@@ -142,7 +139,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);

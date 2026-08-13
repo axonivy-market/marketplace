@@ -6,7 +6,6 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  signal,
   SimpleChange,
   SimpleChanges
 } from '@angular/core';
@@ -47,7 +46,7 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
   selectedVersion!: string;
   protected LoadingComponentId = LoadingComponentId;
   externalDocumentLink = '';
-  displayVersion = signal('');
+  displayVersion = '';
   displayExternalDocName: string | null = '';
   languageService = inject(LanguageService);
   themeService = inject(ThemeService);
@@ -63,7 +62,7 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
   private langChangeSub?: Subscription;
 
   ngOnInit(): void {
-    this.displayVersion.set(this.extractVersionValue(this.selectedVersion));
+    this.displayVersion = this.extractVersionValue(this.selectedVersion);
     this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
   }
 
@@ -120,13 +119,13 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
                 this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
               }
             });
-          this.displayVersion.set(bestMatchVersion);
+          this.displayVersion = bestMatchVersion;
           this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
           this.addVersionParamToRoute(bestMatchVersion);
         },
         error: () => {
           this.resetValues();
-          this.displayVersion.set(this.extractVersionValue(this.selectedVersion));
+          this.displayVersion = this.extractVersionValue(this.selectedVersion);
           this.shieldsBadgeUrl = this.getShieldsBadgeUrl();
           this.addVersionParamToRoute(
             this.extractVersionValue(this.selectedVersion)
