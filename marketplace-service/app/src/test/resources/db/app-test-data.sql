@@ -49,3 +49,38 @@ VALUES ('listed-product-1.0.0-content', 'en', 'Listed product demo');
 
 INSERT INTO product_module_content_component (product_module_content_id, language, component)
 VALUES ('listed-product-1.0.0-content', 'en', 'Listed product component');
+
+INSERT INTO github_repo (id, name, product_id, html_url, focused)
+VALUES
+    ('repo-portal', 'portal', 'portal', 'https://github.com/axonivy-market/portal', true),
+    ('repo-connectivity', 'connectivity-demo', 'connectivity-demo',
+        'https://github.com/axonivy-market/connectivity-demo', true),
+    ('repo-microsoft-365', 'microsoft-365', 'microsoft-365',
+        'https://github.com/axonivy-market/microsoft-365', true),
+    ('repo-jira-connector', 'jira-connector', 'jira-connector',
+        'https://github.com/axonivy-market/jira-connector', null),
+    ('repo-slack-connector', 'slack-connector', 'slack-connector',
+        'https://github.com/axonivy-market/slack-connector', null),
+    ('repo-archived-demo', 'archived-demo', 'archived-demo',
+        'https://github.com/axonivy-market/archived-demo', false);
+
+INSERT INTO workflow_information (id, repository_id, workflow_type, last_built, conclusion, last_built_run_url,
+                                  current_workflow_state)
+VALUES
+    -- portal: the newest CI run succeeded, the older one failed
+    ('wf-portal-ci-old', 'repo-portal', 'CI', TIMESTAMP '2026-06-01 10:00:00', 'failure',
+        'https://github.com/axonivy-market/portal/actions/runs/1', 'active'),
+    ('wf-portal-ci-new', 'repo-portal', 'CI', TIMESTAMP '2026-07-01 10:00:00', 'success',
+        'https://github.com/axonivy-market/portal/actions/runs/2', 'active'),
+    -- connectivity-demo: the newest CI run failed, the older one succeeded
+    ('wf-connectivity-ci-old', 'repo-connectivity', 'CI', TIMESTAMP '2026-06-15 10:00:00', 'success',
+        'https://github.com/axonivy-market/connectivity-demo/actions/runs/3', 'active'),
+    ('wf-connectivity-ci-new', 'repo-connectivity', 'CI', TIMESTAMP '2026-07-15 10:00:00', 'failure',
+        'https://github.com/axonivy-market/connectivity-demo/actions/runs/4', 'active'),
+    -- microsoft-365 has no CI run at all, only a DEV one
+    ('wf-microsoft-365-dev', 'repo-microsoft-365', 'DEV', TIMESTAMP '2026-07-20 10:00:00', 'success',
+        'https://github.com/axonivy-market/microsoft-365/actions/runs/5', 'active'),
+    ('wf-jira-connector-ci', 'repo-jira-connector', 'CI', TIMESTAMP '2026-07-02 10:00:00', 'failure',
+        'https://github.com/axonivy-market/jira-connector/actions/runs/6', 'active'),
+    ('wf-slack-connector-ci', 'repo-slack-connector', 'CI', TIMESTAMP '2026-07-03 10:00:00', 'success',
+        'https://github.com/axonivy-market/slack-connector/actions/runs/7', 'active');
