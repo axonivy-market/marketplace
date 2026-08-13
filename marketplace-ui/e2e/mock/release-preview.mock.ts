@@ -41,8 +41,8 @@ export const ASANA_RELEASE_PREVIEW_RESPONSE: ReleasePreviewData = {
       '### Asana Registration',
       '',
       '1. Register for an Asana account on the Asana Dashboard.',
-      '1. Create a PAT that you will later add to `variables.yaml`.',
-      '1. Refer to the Quick start guide to learn how to access your Workspace GID.'
+      '2. Create a PAT that you will later add to `variables.yaml`.',
+      '3. Refer to the Quick start guide to learn how to access your Workspace GID.'
     ].join('\n')
   },
   component: {
