@@ -98,10 +98,10 @@ public class ProductController {
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }
 
-  @GetMapping("ids/market-directory")
+  @GetMapping(SYNC_TARGETS)
   @Operation(summary = "Get the list of product IDs and market directories",
       description = "Return all product IDs together with market directory information")
-  public ResponseEntity<List<ProductIdMarketDirectoryProjection>> getAllProductIdsAndMarketDirectories() {
+  public ResponseEntity<List<ProductIdMarketDirectoryProjection>> getSyncTargets() {
     List<ProductIdMarketDirectoryProjection> productIds = productService.getProductIdsAndMarketDirectories();
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }

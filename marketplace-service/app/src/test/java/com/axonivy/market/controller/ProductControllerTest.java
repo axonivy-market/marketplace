@@ -199,14 +199,14 @@ class ProductControllerTest extends BaseSetup {
   }
 
   @Test
-  void testGetAllProductIdsAndMarketDirectories() {
+  void testGetSyncTargets() {
     List<ProductIdMarketDirectoryProjection> projections = List.of(
         productIdMarketDirectoryProjection("a-trust", "market/connector/a-trust/"),
         productIdMarketDirectoryProjection("portal", "market/connector/portal/")
     );
     when(service.getProductIdsAndMarketDirectories()).thenReturn(projections);
 
-    var response = productController.getAllProductIdsAndMarketDirectories();
+    var response = productController.getSyncTargets();
 
     assertEquals(HttpStatus.OK, response.getStatusCode(),
         "Expected HTTP 200 OK when getProductIdsAndMarketDirectories succeeds");

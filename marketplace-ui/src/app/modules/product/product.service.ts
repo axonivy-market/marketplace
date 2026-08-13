@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, Observable, of, map, reduce, EMPTY, expand } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { RequestParam } from '../../shared/enums/request-param';
 import { ProductApiResponse } from '../../shared/models/apis/product-response.model';
 import {
@@ -14,9 +14,6 @@ import { VersionAndUrl } from '../../shared/models/version-and-url';
 import { API_URI } from '../../shared/constants/api.constant';
 import { LoadingComponentId } from '../../shared/enums/loading-component-id';
 import { ProductReleasesApiResponse } from '../../shared/models/apis/product-releases-response.model';
-import { SortOption } from '../../shared/enums/sort-option.enum';
-import { TypeOption } from '../../shared/enums/type-option.enum';
-import { Language } from '../../shared/enums/language.enum';
 import { MarketProduct } from '../../shared/models/product.model';
 import { DEFAULT_VENDOR_IMAGE, DEFAULT_VENDOR_IMAGE_BLACK } from '../../shared/constants/common.constant';
 import { DeprecationRequest } from '../../shared/models/deprecation-request';
@@ -24,7 +21,6 @@ import { DeprecatedProductInfo } from '../../shared/models/deprecated-product-in
 import { AdminAuthService } from '../admin-dashboard/admin-auth.service';
 import { ArchiveAction } from '../../shared/enums/archive-action.enum';
 
-const PAGE_SIZE = 200;
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly httpClient = inject(HttpClient);
@@ -236,34 +232,9 @@ export class ProductService {
     );
   }
 
-  fetchAllProductsForSync(pageSize = PAGE_SIZE, language: Language = Language.EN): Observable<MarketProduct[]> {
-    return this.loadProductPage(0, pageSize, language).pipe(
-      expand(response => {
-        const pageInfo = response?.page;
-        const hasNextPage = pageInfo && pageInfo.number < pageInfo.totalPages - 1;
-        return hasNextPage ? this.loadProductPage(pageInfo.number + 1, pageSize, language) : EMPTY;
-      }),
-
-      map(response => (response._embedded?.products ?? []).map((product: MarketProduct) => ({
-          id: product.id,
-          marketDirectory: product.marketDirectory
-        }))
-      ),
-
-      reduce((allProducts, currentPageProducts) => {
-        allProducts.push(...currentPageProducts);
-        return allProducts;
-      }, [] as MarketProduct[])
+  fetchAllProductsForSync(): Observable<MarketProduct[]> {
+    return this.httpClient.get<MarketProduct[]>(
+      API_URI.SYNC_TARGETS
     );
-  }
-
-  private loadProductPage(page: number, size: number, language: Language): Observable<ProductApiResponse> {
-    return this.findProductsByCriteria({
-      search: '',
-      sort: SortOption.STANDARD,
-      type: TypeOption.All_TYPES,
-      isRESTClientEditor: false,
-      pageable: {page, size}, language
-    });
   }
 }
