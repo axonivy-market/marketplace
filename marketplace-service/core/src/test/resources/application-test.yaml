@@ -7,6 +7,7 @@ spring:
   sql:
     init:
       mode: always
+      data-locations: classpath:db/core-test-data.sql
   jpa:
     hibernate:
       ddl-auto: create-drop
