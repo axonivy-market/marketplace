@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -85,7 +86,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 
   @Override
   public String downloadAndUnzipFile(String url, DownloadOption downloadOption) throws IOException {
-    if (StringUtils.isBlank(url) || !StringUtils.endsWithAny(url, ZIP_EXTENSION, IAR)) {
+    if (StringUtils.isBlank(url) || ! Strings.CS.endsWithAny(url, ZIP_EXTENSION, IAR)) {
       log.warn("Request URL not a ZIP/iar file - {}", url);
       return EMPTY;
     }

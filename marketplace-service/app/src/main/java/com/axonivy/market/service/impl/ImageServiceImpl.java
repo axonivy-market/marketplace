@@ -21,16 +21,10 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
-
-import static com.axonivy.market.constants.CommonConstants.IMAGE_EXTENSION;
 
 @Service
 @Log4j2
 public class ImageServiceImpl implements ImageService {
-
-  private static final Pattern IMAGE_EXTENSION_PATTERN = Pattern.compile(IMAGE_EXTENSION);
-
   private final ImageRepository imageRepository;
   private final FileDownloadService fileDownloadService;
   private final CoreImageService coreImageService;
