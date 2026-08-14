@@ -1,0 +1,163 @@
+name: Market Sonar Analysis
+run-name: 'Sonar scan on branch ${{ github.event.workflow_run.head_branch }} triggered by ${{ github.event.workflow_run.actor.login }}'
+
+on:
+  workflow_run:
+    workflows: ['Market-UI CI Build', 'Market-Service CI Build']
+    types: [completed]
+
+env:
+  ORG_NAME: axonivy-market
+
+jobs:
+  check-membership:
+    name: Verify actor org membership
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      is_member: ${{ steps.check.outputs.is_member }}
+    steps:
+      - name: Check if actor is a member of the org
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          ACTOR: ${{ github.event.workflow_run.actor.login }}
+        run: |
+          if gh api "orgs/${ORG_NAME}/members/${ACTOR}" --silent; then
+            echo "is_member=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_member=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  ui-analysis:
+    name: Sonarqube (UI)
+    needs: check-membership
+    if: github.event.workflow_run.name == 'Market-UI CI Build'
+    runs-on: self-hosted
+    environment: ${{ needs.check-membership.outputs.is_member == 'true' && 'sonar-trusted' || 'sonar-approval' }}
+    env:
+      SONAR_PROJECT_KEY: 'AxonIvy-Market-UI'
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: ./marketplace-ui/package-lock.json
+      - name: Install Dependencies
+        run: |
+          cd ./marketplace-ui
+          npm install
+      - name: Execute Tests
+        run: |
+          cd ./marketplace-ui
+          npm run test
+      - uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./marketplace-ui
+          args:
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.javascript.lcov.reportPaths=${{ github.workspace }}/marketplace-ui/coverage/lcov.info
+
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          scanMetadataReportFile: ${{ github.workspace }}/marketplace-ui/.scannerwork/report-task.txt
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+
+      - name: Comment Sonar result on pull request
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pullRequests = context.payload.workflow_run.pull_requests;
+            if (!pullRequests || pullRequests.length === 0) return;
+            const status = '${{ steps.sonarqube-quality-gate-check.outcome }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pullRequests[0].number,
+              body: `Sonarqube Quality Gate for Market-UI: **${status}**`
+            });
+
+  service-analysis:
+    name: Sonarqube (Service)
+    needs: check-membership
+    if: github.event.workflow_run.name == 'Market-Service CI Build'
+    runs-on: self-hosted
+    environment: ${{ needs.check-membership.outputs.is_member == 'true' && 'sonar-trusted' || 'sonar-approval' }}
+    env:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+
+    steps:
+      - name: Remove unused sonar images
+        run: docker image prune -af
+
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v3
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Run SonarQube Scanner
+        id: sonar-scan
+        run: |
+            mvn -B verify sonar:sonar --file ./marketplace-service/pom.xml \
+                -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+                -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
+                -Dsonar.projectName="AxonIvy Market Service" \
+                -Dsonar.token=${{ env.SONAR_TOKEN }}
+
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        with:
+          scanMetadataReportFile: ./marketplace-service/target/sonar/report-task.txt
+
+      - name: Comment Sonar result on pull request
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pullRequests = context.payload.workflow_run.pull_requests;
+            if (!pullRequests || pullRequests.length === 0) return;
+            const status = '${{ steps.sonarqube-quality-gate-check.outcome }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pullRequests[0].number,
+              body: `Sonarqube Quality Gate for Market-Service: **${status}**`
+            });
+
+  clean-up:
+    name: Remove unused docker images
+    needs: [ui-analysis, service-analysis]
+    if: always() && (needs.ui-analysis.result != 'skipped' || needs.service-analysis.result != 'skipped')
+    runs-on: self-hosted
+
+    steps:
+      - name: Remove unused sonar images
+        run: docker image prune -af
