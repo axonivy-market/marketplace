@@ -72,10 +72,6 @@ export class MonitoringPage {
     }
   }
 
-  async assertTableHasAtMostRows(maxRows = 10) {
-    await expect(await this.getTableRowCount()).toBeLessThanOrEqual(maxRows);
-  }
-
   async assertTableHasRows(expected: number) {
     await expect(this.tableRows).toHaveCount(expected);
   }
