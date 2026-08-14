@@ -147,7 +147,7 @@ export class ProductDetailComponent implements AfterViewInit, OnInit {
   );
   productDetailActionType = signal(ProductDetailActionType.STANDARD);
   detailTabs = PRODUCT_DETAIL_TABS;
-  activeTab = '';
+  activeTab = DEFAULT_ACTIVE_TAB;
   displayedTabsSignal: Signal<ItemDropdown[]> = computed(() => {
     this.languageService.selectedLanguage();
     this.getReadmeContent();
