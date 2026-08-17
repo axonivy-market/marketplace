@@ -19,18 +19,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @Transactional
 class CustomProductRepositoryImplTest {
-  private static final String LISTED_PRODUCT_ID = "listed-product";
-  private static final String HIDDEN_PRODUCT_ID = "hidden-product";
-  private static final String DOCUMENTED_PRODUCT_ID = "documented-product";
-  private static final String LISTED_ARTIFACT_ID = "listed-artifact";
+  private static final String LISTED_PRODUCT_ID = "case-process-viewer-utils";
+  private static final String PORTAL_PRODUCT_ID = "portal";
+  private static final String DOCUMENTED_PRODUCT_ID = "express-importer";
+  private static final String LISTED_ARTIFACT_ID = "case-process-viewer-utils-product";
   private static final String EN_LANGUAGE = "en";
-  private static final String LISTED_PRODUCT_VERSION = "1.0.0";
-  private static final String LISTED_PRODUCT_NAME = "Listed Product";
-  private static final String LISTED_PRODUCT_SHORT_DESCRIPTION = "Listed product short description";
-  private static final String LISTED_PRODUCT_DESCRIPTION = "Listed product description";
-  private static final String LISTED_PRODUCT_SETUP = "Listed product setup";
-  private static final String LISTED_PRODUCT_DEMO = "Listed product demo";
-  private static final String LISTED_PRODUCT_COMPONENT = "Listed product component";
+  private static final String LISTED_PRODUCT_VERSION = "13.2.3";
+  private static final String LISTED_PRODUCT_NAME = "Case Process Viewer";
+  private static final String LISTED_PRODUCT_SHORT_DESCRIPTION =
+      "This Axon Ivy utility visualizes the current progress of a running process by highlighting the active task as well as all completed tasks directly within the process diagram.";
+  private static final String LISTED_PRODUCT_DESCRIPTION =
+      "This Axon Ivy component visually represents the process flow of your current case. It highlights both the active task and all completed tasks directly on the process diagram.";
+  private static final String LISTED_PRODUCT_SETUP = "Add the Component to Your JSF Page";
+  private static final String LISTED_PRODUCT_DEMO = "1. Start **Purchase Request Demo** process";
+  private static final String LISTED_PRODUCT_COMPONENT = "";
 
   @Autowired
   private ProductRepository productRepository;
@@ -48,7 +50,7 @@ class CustomProductRepositoryImplTest {
 
   @Test
   void shouldReturnNullWhenProductIsNotListed() {
-    Product product = productRepository.findProductByIdAndRelatedData(HIDDEN_PRODUCT_ID);
+    Product product = productRepository.findProductByIdAndRelatedData(PORTAL_PRODUCT_ID);
     assertThat(product).isNull();
   }
 
@@ -73,6 +75,6 @@ class CustomProductRepositoryImplTest {
 
     assertThat(products)
         .extracting(Product::getId)
-        .containsExactlyInAnyOrder(LISTED_PRODUCT_ID, DOCUMENTED_PRODUCT_ID);
+        .containsExactlyInAnyOrder(PORTAL_PRODUCT_ID);
   }
 }

@@ -1,78 +1,56 @@
 package com.axonivy.market.repository.impl;
 
-import com.axonivy.market.BaseSetup;
+import com.axonivy.market.MarketplaceServiceApplication;
 import com.axonivy.market.entity.ProductDesignerInstallation;
+import com.axonivy.market.repository.ProductDesignerInstallationRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Sort;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+@SpringBootTest(classes = MarketplaceServiceApplication.class)
+@ActiveProfiles("test")
+@Transactional
+class CustomProductDesignerInstallationRepositoryImplTest {
+  private static final String PRODUCT_ID = "express-importer";
+  private static final String EXISTING_VERSION = "10.0.22";
+  private static final String NEW_VERSION = "11.4.0";
 
-@ExtendWith(MockitoExtension.class)
-class CustomProductDesignerInstallationRepositoryImplTest extends BaseSetup {
-  @Mock
-  private EntityManager em;
+  @Autowired
+  private ProductDesignerInstallationRepository repository;
 
-  @InjectMocks
-  private CustomProductDesignerInstallationRepositoryImpl repository;
+  @Autowired
+  private EntityManager entityManager;
 
   @Test
-  void testIncreaseInstallationCountForProductByDesignerVersion() {
-    TypedQuery query = mock(TypedQuery.class);
-    CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<ProductDesignerInstallation> cq = mock(CriteriaQuery.class);
-    Root<ProductDesignerInstallation> root = mock(Root.class);
+  void shouldIncreaseInstallationCountForExistingVersion() {
+    repository.increaseInstallationCountForProductByDesignerVersion(PRODUCT_ID, EXISTING_VERSION);
+    repository.flush();
+    entityManager.clear();
 
-    when(em.getCriteriaBuilder()).thenReturn(cb);
-    when(cb.createQuery(ProductDesignerInstallation.class)).thenReturn(cq);
-    when(cq.from(ProductDesignerInstallation.class)).thenReturn(root);
-
-    when(em.createQuery(cq)).thenReturn(query);
-    when(query.getResultList()).thenReturn(createProductDesignerInstallationsMock());
-
-    when(em.createNativeQuery(anyString())).thenReturn(query);
-
-    repository.increaseInstallationCountForProductByDesignerVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-
-    verify(query).executeUpdate();
-    verify(em).createNativeQuery(anyString());
+    ProductDesignerInstallation installation = findInstallation(EXISTING_VERSION);
+    assertThat(installation.getInstallationCount()).isEqualTo(3);
   }
 
   @Test
-  void testIncreaseInstallationCountWhenNoExistingInstallationCreatesNew() {
-    var repo = Mockito.spy(new TestableCustomProductDesignerInstallationRepositoryImpl());
+  void shouldCreateNewInstallationWhenVersionDoesNotExist() {
+    repository.increaseInstallationCountForProductByDesignerVersion(PRODUCT_ID, NEW_VERSION);
+    repository.flush();
+    entityManager.clear();
 
-    TypedQuery<ProductDesignerInstallation> query = mock(TypedQuery.class);
-    CriteriaBuilder cb = mock(CriteriaBuilder.class);
-    CriteriaQuery<ProductDesignerInstallation> cq = mock(CriteriaQuery.class);
-    Root<ProductDesignerInstallation> root = mock(Root.class);
+    ProductDesignerInstallation installation = findInstallation(NEW_VERSION);
+    assertThat(installation.getInstallationCount()).isEqualTo(1);
+  }
 
-    ReflectionTestUtils.setField(repo, "entityManager", em);
-
-    when(em.getCriteriaBuilder()).thenReturn(cb);
-    when(cb.createQuery(ProductDesignerInstallation.class)).thenReturn(cq);
-    when(cq.from(ProductDesignerInstallation.class)).thenReturn(root);
-    when(em.createQuery(cq)).thenReturn(query);
-    when(query.getResultList()).thenReturn(Collections.emptyList());
-
-    repo.increaseInstallationCountForProductByDesignerVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION);
-
-    ProductDesignerInstallation saved = repo.getCaptured();
-    assertNotNull(saved, "A new ProductDesignerInstallation should be saved");
-    assertEquals(MOCK_PRODUCT_ID, saved.getProductId(), "ProductId must be set correctly");
-    assertEquals(MOCK_RELEASED_VERSION, saved.getDesignerVersion(), "DesignerVersion must be set correctly");
-    assertEquals(1, saved.getInstallationCount(), "InstallationCount must start at 1");
+  private ProductDesignerInstallation findInstallation(String version) {
+    return repository.findByProductId(PRODUCT_ID, Sort.by("designerVersion")).stream()
+        .filter(installation -> version.equals(installation.getDesignerVersion()))
+        .findFirst()
+        .orElseThrow();
   }
 }
