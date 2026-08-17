@@ -56,7 +56,7 @@ Important environment/credentials used by pipeline include:
 
 ### 2) Internal Dev Docker Deployment
 
-Entry point: `.build/deploy/internal-docker/Jenkinsfile`
+Entry point: `.build/dev-build/Jenkinsfile`
 
 Behavior:
 
