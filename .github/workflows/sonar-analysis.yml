@@ -71,7 +71,7 @@ jobs:
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
+        uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
         with:
           scanMetadataReportFile: ${{ github.workspace }}/marketplace-ui/.scannerwork/report-task.txt
         timeout-minutes: 5
@@ -132,7 +132,7 @@ jobs:
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
+        uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
         timeout-minutes: 5
         with:
           scanMetadataReportFile: ./marketplace-service/target/sonar/report-task.txt
