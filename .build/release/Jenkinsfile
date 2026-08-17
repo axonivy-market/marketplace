@@ -13,6 +13,14 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '10'))
   }
 
+  parameters {
+    booleanParam(
+      name: 'DEPLOY_TO_PROD',
+      defaultValue: false,
+      description: 'When true: publish images to GitHub Packages, tag the release in git, and (after 4-eyes approval) roll out to PREVIEW and PROD nodes. When false: only build Docker images locally and start the PREVIEW stack with those local images.'
+    )
+  }
+
   environment {
     GITHUB_ACTOR = credentials('MARKETPLACE_GITHUB_OWNER')
     GITHUB_REPOSITORY_OWNER = 'axonivy-market'
@@ -75,7 +83,7 @@ pipeline {
       }
     }
 
-    stage('Update Version and Tag Source') {
+    stage('Update Version') {
       steps {
         dir('target-source') {
           withEnv([
@@ -90,17 +98,29 @@ pipeline {
                 mvn versions:set -DnewVersion=$RELEASE_VERSION -f $APP_POM_FILE
                 mvn versions:set -DnewVersion=$RELEASE_VERSION -f $STABLE_POM_FILE
                 sed -i 's/"version": \"[^\"]*\"/"version": "$RELEASE_VERSION"/' $PACKAGE_FILE
-                git config --global user.email $OCTOPUS_MAIL
-                git config --global user.name $OCTOPUS_ACCOUNT_NAME
-                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-                git push --delete origin $RELEASE_VERSION || true
-                git tag -d $RELEASE_VERSION || true
-                git commit -a -m "Update version to $RELEASE_VERSION"
-                git tag $RELEASE_VERSION
-                git push origin $RELEASE_VERSION
               '''
             }
           }
+        }
+      }
+    }
+
+    stage('Tag Source') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        dir('target-source') {
+          sh '''
+            git config --global user.email $OCTOPUS_MAIL
+            git config --global user.name $OCTOPUS_ACCOUNT_NAME
+            git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+            git push --delete origin $RELEASE_VERSION || true
+            git tag -d $RELEASE_VERSION || true
+            git commit -a -m "Update version to $RELEASE_VERSION"
+            git tag $RELEASE_VERSION
+            git push origin $RELEASE_VERSION
+          '''
         }
       }
     }
@@ -166,12 +186,18 @@ pipeline {
     }
 
     stage('Log in to GitHub Container Registry') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         sh 'echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
       }
     }
 
     stage('Release Marketplace UI Image') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         sh '''
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
@@ -184,6 +210,9 @@ pipeline {
     }
 
     stage('Release Marketplace App Image') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         sh '''
           APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
@@ -196,6 +225,9 @@ pipeline {
     }
 
     stage('Release Marketplace Stable Image') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         sh '''
           STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
@@ -208,6 +240,9 @@ pipeline {
     }
 
     stage('Deploy to Preview') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         script {
           def nodes = deployConfig.loadNodesToDeploy('PREVIEW node')
@@ -255,6 +290,9 @@ pipeline {
     }
 
     stage('Await Production Approval') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         script {
           timeout(time: 6, unit: 'HOURS') {
@@ -265,6 +303,9 @@ pipeline {
     }
 
     stage('Deploy to PROD_1') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         script {
           def nodes = deployConfig.loadNodesToDeploy('PROD_1 node')
@@ -312,6 +353,9 @@ pipeline {
     }
 
     stage('Deploy to PROD_2') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
       steps {
         script {
           def nodes = deployConfig.loadNodesToDeploy('PROD_2 node')
