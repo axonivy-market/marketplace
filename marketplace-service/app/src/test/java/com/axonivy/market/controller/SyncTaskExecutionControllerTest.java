@@ -1,105 +1,71 @@
 package com.axonivy.market.controller;
 
 import com.axonivy.market.BaseSetup;
-import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.service.SyncTaskExecutionService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Collections;
 import java.util.List;
 
-import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME;
-import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKET_TEAM_NAME;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class SyncTaskExecutionControllerTest extends BaseSetup {
+@ControllerWebMvcTest(SyncTaskExecutionController.class)
+class SyncTaskExecutionControllerTest extends WebMvcControllerTestSupport {
 
-  private static final String TOKEN = "token";
   private static final String JOB_KEY = "jobKey";
 
+  @MockitoBean
   private SyncTaskExecutionService syncTaskExecutionService;
-  private GitHubService gitHubService;
-  private SyncTaskExecutionController controller;
-
-  @BeforeEach
-  void setUp() {
-    syncTaskExecutionService = mock(SyncTaskExecutionService.class);
-    gitHubService = mock(GitHubService.class);
-    controller = new SyncTaskExecutionController(syncTaskExecutionService);
-  }
 
   @Test
-  void testGetAllSyncTaskExecutions() {
-    List<SyncTaskExecutionModel> models = Collections.singletonList(new SyncTaskExecutionModel());
+  void testGetAllSyncTaskExecutions() throws Exception {
+    List<SyncTaskExecutionModel> models = List.of(new SyncTaskExecutionModel());
     when(syncTaskExecutionService.getAllSyncTaskExecutions()).thenReturn(models);
-    when(gitHubService.validateUserInOrganizationAndTeam(
-        TOKEN,
-        AXONIVY_MARKET_ORGANIZATION_NAME,
-        AXONIVY_MARKET_TEAM_NAME))
-        .thenReturn(getMockGithubUser());
-    ResponseEntity<List<SyncTaskExecutionModel>> response = controller.getAllSyncTaskExecutions();
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK for getAllSyncTaskExecutions");
-    assertEquals(models, response.getBody(), "Response body should match the expected models");
+
+    mockMvc.perform(get("/api/sync-task-execution"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(1)));
   }
 
   @Test
-  void testGetSyncTaskExecutionByKeyFound() {
+  void testGetSyncTaskExecutionByKeyFound() throws Exception {
     SyncTaskExecutionModel model = new SyncTaskExecutionModel();
     when(syncTaskExecutionService.getSyncTaskExecutionByKey(JOB_KEY)).thenReturn(model);
-    when(gitHubService.validateUserInOrganizationAndTeam(
-        TOKEN,
-        AXONIVY_MARKET_ORGANIZATION_NAME,
-        AXONIVY_MARKET_TEAM_NAME))
-        .thenReturn(getMockGithubUser());
-    ResponseEntity<SyncTaskExecutionModel> response = controller.getSyncTaskExecutionByKey(JOB_KEY);
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status should be OK for found SyncTaskExecution");
-    assertEquals(model, response.getBody(), "Response body should match the expected model");
+
+    mockMvc.perform(get("/api/sync-task-execution/{jobKey}", JOB_KEY))
+        .andExpect(status().isOk());
   }
 
   @Test
-  void testGetSyncTaskExecutionByKeyNotFound() {
+  void testGetSyncTaskExecutionByKeyNotFound() throws Exception {
     when(syncTaskExecutionService.getSyncTaskExecutionByKey(JOB_KEY)).thenReturn(null);
-    when(gitHubService.validateUserInOrganizationAndTeam(
-        TOKEN,
-        AXONIVY_MARKET_ORGANIZATION_NAME,
-        AXONIVY_MARKET_TEAM_NAME))
-        .thenReturn(getMockGithubUser());
-    ResponseEntity<SyncTaskExecutionModel> response = controller.getSyncTaskExecutionByKey(JOB_KEY);
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
-        "Status should be NOT_FOUND for missing SyncTaskExecution");
-    assertNull(response.getBody(), "Response body should be null when not found");
+
+    mockMvc.perform(get("/api/sync-task-execution/{jobKey}", JOB_KEY))
+        .andExpect(status().isNotFound());
   }
 
   @Test
-  void testCancelSyncTaskReturnsAcceptedWhenCancelled() {
+  void testCancelSyncTaskReturnsAcceptedWhenCancelled() throws Exception {
     when(syncTaskExecutionService.cancel(JOB_KEY)).thenReturn(true);
 
-    ResponseEntity<Void> response = controller.cancelSyncTask(JOB_KEY);
-
-    assertEquals(HttpStatus.ACCEPTED, response.getStatusCode(),
-        "Status should be ACCEPTED when cancel returns true");
-    assertNull(response.getBody(), "Response body should be null for accepted cancel response");
-    verify(syncTaskExecutionService, times(1)).cancel(JOB_KEY);
+    mockMvc.perform(post("/api/sync-task-execution/{jobKey}/cancel", JOB_KEY)
+            .with(requestedByHeader()))
+        .andExpect(status().isAccepted());
   }
 
   @Test
-  void testCancelSyncTaskReturnsNotFoundWhenNotCancelled() {
+  void testCancelSyncTaskReturnsNotFoundWhenNotCancelled() throws Exception {
     when(syncTaskExecutionService.cancel(JOB_KEY)).thenReturn(false);
 
-    ResponseEntity<Void> response = controller.cancelSyncTask(JOB_KEY);
-
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
-        "Status should be NOT_FOUND when cancel returns false");
-    assertNull(response.getBody(), "Response body should be null for not-found cancel response");
-    verify(syncTaskExecutionService, times(1)).cancel(JOB_KEY);
+    mockMvc.perform(post("/api/sync-task-execution/{jobKey}/cancel", JOB_KEY)
+            .with(requestedByHeader()))
+        .andExpect(status().isNotFound());
   }
 }

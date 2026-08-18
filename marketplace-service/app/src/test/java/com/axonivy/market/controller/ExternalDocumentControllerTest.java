@@ -2,75 +2,72 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.entity.ExternalDocumentMeta;
 import com.axonivy.market.service.ExternalDocumentService;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
-import java.util.Objects;
 
-import static com.axonivy.market.constants.RequestMappingConstants.ERROR_PAGE_404;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class ExternalDocumentControllerTest {
+@ControllerWebMvcTest(ExternalDocumentController.class)
+class ExternalDocumentControllerTest extends WebMvcControllerTestSupport {
 
   private static final String VERSION = "13.1.1";
   private static final String PORTAL = "portal";
 
-  @Mock
+  @MockitoBean
   private ExternalDocumentService service;
 
-  @InjectMocks
-  private ExternalDocumentController externalDocumentController;
-
   @Test
-  void testFindProductDoc() {
-    when(service.findExternalDocument(any(), any())).thenReturn(createExternalDocumentMock());
-    var result = externalDocumentController.findExternalDocument(PORTAL, VERSION);
-    assertEquals(HttpStatus.OK, result.getStatusCode(), "Should be ok");
-    assertTrue(result.hasBody(), "Should have body");
-    assertTrue(ObjectUtils.isNotEmpty(result.getBody()), "Body should not be empty");
+  void testFindProductDoc() throws Exception {
+    when(service.findExternalDocument(any(), any())).thenReturn(buildExternalDocumentMock());
+
+    mockMvc.perform(get("/api/externaldocument/{id}/{version}", PORTAL, VERSION))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.relativeLink").value("/market-cache/portal/10.0.0/doc/index.html"));
   }
 
   @Test
-  void testRedirectToBestVersionWithInvalidPath() {
-      ResponseEntity<Void> response = externalDocumentController.redirectToBestVersion(Strings.EMPTY);
-      assertTrue(response.getStatusCode().is3xxRedirection(), "Should be a redirection");
-      assertTrue(Objects.requireNonNull(response.getHeaders().getLocation()).toString()
-          .contains(ERROR_PAGE_404), "Should redirect to 404");
+  void testRedirectToBestVersionWithInvalidPath() throws Exception {
+    mockMvc.perform(get("/api/externaldocument/best-match"))
+        .andExpect(status().isFound())
+        .andExpect(header().string("Location", containsString("/error-page/404")));
   }
 
   @Test
-  void testSyncDocumentForProductWithVersion() {
-    when(service.determineProductIdsForSync(PORTAL)).thenReturn(List.of(PORTAL));
-    var invalidVersionResult = externalDocumentController.syncDocumentForProduct(null, PORTAL,
-        "invalid-version");
-    assertEquals(HttpStatus.BAD_REQUEST, invalidVersionResult.getStatusCode(), "Should be an inputted invalid version");
-    var validVersionResult = externalDocumentController.syncDocumentForProduct(false, PORTAL, "13.2.0");
-    assertEquals(HttpStatus.OK, validVersionResult.getStatusCode(), "Should return at least one product");
+  void testSyncDocumentForProductWithVersion() throws Exception {
+    when(service.determineProductIdsForSync(anyString())).thenReturn(List.of(PORTAL));
+
+    mockMvc.perform(put("/api/externaldocument/sync")
+            .with(requestedByHeader())
+            .param("product-id", PORTAL)
+            .param("version", "invalid-version"))
+        .andExpect(status().isBadRequest());
   }
 
   @Test
-  void testSyncDocumentForProduct() {
-    var result = externalDocumentController.syncDocumentForProduct(true, null, null);
-    assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(), "Should be no product found");
+  void testSyncDocumentForProduct() throws Exception {
+    mockMvc.perform(put("/api/externaldocument/sync")
+            .with(requestedByHeader()))
+        .andExpect(status().isNoContent());
 
-    when(service.determineProductIdsForSync(PORTAL)).thenReturn(List.of(PORTAL));
-    result = externalDocumentController.syncDocumentForProduct(true, PORTAL, null);
-    assertEquals(HttpStatus.OK, result.getStatusCode(), "Should return at least one product");
+    when(service.determineProductIdsForSync(anyString())).thenReturn(List.of(PORTAL));
+    mockMvc.perform(put("/api/externaldocument/sync")
+            .with(requestedByHeader())
+            .param("product-id", PORTAL))
+        .andExpect(status().isOk());
   }
 
-  private ExternalDocumentMeta createExternalDocumentMock() {
+  private ExternalDocumentMeta buildExternalDocumentMock() {
     return ExternalDocumentMeta.builder()
         .relativeLink("/market-cache/portal/10.0.0/doc/index.html")
         .build();

@@ -2,66 +2,56 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.model.ReleasePreview;
 import com.axonivy.market.service.ReleasePreviewService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class ReleasePreviewControllerTest {
+@ControllerWebMvcTest(ReleasePreviewController.class)
+class ReleasePreviewControllerTest extends WebMvcControllerTestSupport {
 
-  @Mock
-  private ReleasePreviewService mockPreviewService;
+  @MockitoBean
+  private ReleasePreviewService previewService;
 
-  @Mock
-  private ReleasePreview mockReleasePreview;
-
-  private ReleasePreviewController controller;
-
-  private MultipartFile testFile;
-
-  @BeforeEach
-  void setUp() {
-    controller = new ReleasePreviewController(mockPreviewService);
-    testFile = new MockMultipartFile(
+  @Test
+  void testShouldReturnOkResponseWhenPreviewIsSuccessfullyExtracted() throws Exception {
+    MockMultipartFile testFile = new MockMultipartFile(
         "file",
         "test-release.zip",
         "application/zip",
         "test zip content".getBytes()
     );
+    ReleasePreview releasePreview = ReleasePreview.builder()
+        .description(java.util.Map.of("en", "test"))
+        .build();
+    when(previewService.extract(any())).thenReturn(releasePreview);
+
+    mockMvc.perform(multipart("/api/release-preview")
+            .file(testFile)
+            .with(requestedByHeader()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.description").exists());
   }
 
   @Test
-  void testShouldReturnOkResponseWhenPreviewIsSuccessfullyExtracted() {
-    when(mockPreviewService.extract(testFile)).thenReturn(mockReleasePreview);
+  void testShouldReturnNoContentResponseWhenPreviewIsSuccessfullyExtractedAndIsNull() throws Exception {
+    MockMultipartFile testFile = new MockMultipartFile(
+        "file",
+        "test-release.zip",
+        "application/zip",
+        "test zip content".getBytes()
+    );
+    when(previewService.extract(any())).thenReturn(null);
 
-    ResponseEntity<Object> response = controller.extractZipFile(testFile);
-
-    assertNotNull(response, "Response should not be null");
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be OK when preview is successfully extracted");
-    assertSame(mockReleasePreview, response.getBody(),
-        "Response body should contain the extracted ReleasePreview object");
-  }
-
-  @Test
-  void testShouldReturnNoContentResponseWhenPreviewIsSuccessfullyExtractedAndIsNull() {
-    when(mockPreviewService.extract(testFile)).thenReturn(null);
-
-    ResponseEntity<Object> response = controller.extractZipFile(testFile);
-
-    assertNotNull(response, "Response should not be null");
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(),
-        "Response status should be NO_CONTENT when preview is successfully extracted and is null");
-    assertNull(response.getBody(),
-        "Response body should be null when preview is not extracted");
+    mockMvc.perform(multipart("/api/release-preview")
+            .file(testFile)
+            .with(requestedByHeader()))
+        .andExpect(status().isNoContent());
   }
 }

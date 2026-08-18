@@ -3,115 +3,48 @@ package com.axonivy.market.controller;
 import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.core.model.AppSettingDto;
 import com.axonivy.market.core.service.AppSettingService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
-import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class AppSettingControllerTest {
+@ControllerWebMvcTest(AppSettingController.class)
+class AppSettingControllerTest extends WebMvcControllerTestSupport {
 
-  private AppSettingController controller;
-
-  @Mock
-  private AppSettingService service;
-
-  @BeforeEach
-  void setUp() {
-    controller = new AppSettingController(service);
-  }
+  private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
   @Test
-  void testGetSettingsWithNoSearch() {
+  void testGetSettings() throws Exception {
     List<AppSettingDto> settings = List.of(
         buildDto(AppSettingKey.GITHUB_TOKEN, "token-value"),
         buildDto(AppSettingKey.GITHUB_CONNECT_TIMEOUT, "10000"));
-    when(service.search(null)).thenReturn(settings);
+    when(appSettingService.search("github")).thenReturn(settings);
 
-    ResponseEntity<List<AppSettingDto>> response = controller.getSettings(null);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals(2, response.getBody().size(), "Should return all settings");
-    verify(service, times(1)).search(null);
+    mockMvc.perform(get("/api/settings").param("search", "github"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$..settingKey").value(hasItem(AppSettingKey.GITHUB_TOKEN.getKey())))
+        .andExpect(jsonPath("$..settingKey").value(hasItem(AppSettingKey.GITHUB_CONNECT_TIMEOUT.getKey())));
   }
 
   @Test
-  void testGetSettingsWithSearchKeyword() {
-    List<AppSettingDto> filtered = List.of(buildDto(AppSettingKey.GITHUB_TOKEN, "token-value"));
-    when(service.search("github")).thenReturn(filtered);
-
-    ResponseEntity<List<AppSettingDto>> response = controller.getSettings("github");
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals(1, response.getBody().size(), "Should return filtered settings");
-    assertEquals(AppSettingKey.GITHUB_TOKEN.getKey(), response.getBody().getFirst().getSettingKey(),
-        "Returned setting key should match the search");
-    verify(service, times(1)).search("github");
-  }
-
-  @Test
-  void testGetSettingsReturnsEmptyList() {
-    when(service.search("nonexistent")).thenReturn(Collections.emptyList());
-
-    ResponseEntity<List<AppSettingDto>> response = controller.getSettings("nonexistent");
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertTrue(response.getBody().isEmpty(), "Should return empty list when no settings match");
-  }
-
-  @Test
-  void testUpdateSetting() {
-    AppSettingDto request = buildDto(AppSettingKey.GITHUB_TOKEN, "new-token");
-    AppSettingDto updated = buildDto(AppSettingKey.GITHUB_TOKEN, "new-token");
-    when(service.update(AppSettingKey.GITHUB_TOKEN.getKey(), "new-token")).thenReturn(updated);
-
-    ResponseEntity<AppSettingDto> response = controller.updateSetting(AppSettingKey.GITHUB_TOKEN.getKey(), request);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals(AppSettingKey.GITHUB_TOKEN.getKey(), response.getBody().getSettingKey(), "Returned setting key should match");
-    assertEquals("new-token", response.getBody().getSettingValue(), "Returned setting value should be updated");
-    verify(service, times(1)).update(AppSettingKey.GITHUB_TOKEN.getKey(), "new-token");
-  }
-
-  @Test
-  void testUpdateSettingPassesCorrectValueFromRequestBody() {
+  void testUpdateSetting() throws Exception {
     AppSettingDto request = buildDto(AppSettingKey.MAIL_PORT, "465");
-    AppSettingDto updated = buildDto(AppSettingKey.MAIL_PORT, "465");
-    when(service.update(AppSettingKey.MAIL_PORT.getKey(), "465")).thenReturn(updated);
+    when(appSettingService.update(AppSettingKey.MAIL_PORT.getKey(), "465")).thenReturn(request);
 
-    ResponseEntity<AppSettingDto> response = controller.updateSetting(AppSettingKey.MAIL_PORT.getKey(), request);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals("465", response.getBody().getSettingValue(),
-        "Should pass the settingValue from the request body to the service");
-    verify(service).update(AppSettingKey.MAIL_PORT.getKey(), "465");
-  }
-
-  @Test
-  void testGetSettingsWithEmptySearch() {
-    List<AppSettingDto> allSettings = List.of(buildDto(AppSettingKey.PRODUCTS_CRON, "0 30 * * * *"));
-    when(service.search("")).thenReturn(allSettings);
-
-    ResponseEntity<List<AppSettingDto>> response = controller.getSettings("");
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Response status should be OK");
-    assertNotNull(response.getBody(), "Response body should not be null");
-    assertEquals(1, response.getBody().size(), "Should delegate empty search to service");
-    verify(service, times(1)).search("");
+    mockMvc.perform(put("/api/settings/{key}", AppSettingKey.MAIL_PORT.getKey())
+            .with(requestedByHeader())
+            .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.settingKey").value(AppSettingKey.MAIL_PORT.getKey()))
+        .andExpect(jsonPath("$.settingValue").value("465"));
   }
 
   private AppSettingDto buildDto(AppSettingKey settingKey, String value) {

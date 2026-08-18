@@ -2,63 +2,45 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.service.ImageService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class ImageControllerTest {
+@ControllerWebMvcTest(ImageController.class)
+class ImageControllerTest extends WebMvcControllerTestSupport {
 
-  @Mock
+  @MockitoBean
   private ImageService imageService;
 
-  @InjectMocks
-  private ImageController imageController;
-
   @Test
-  void testGetImageFromId() {
+  void testGetImageFromId() throws Exception {
     byte[] mockImageData = "image data".getBytes();
     when(imageService.readImage("66e2b14868f2f95b2f95549a")).thenReturn(mockImageData);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.IMAGE_PNG);
-    ResponseEntity<byte[]> expectedResult = new ResponseEntity<>(mockImageData, headers, HttpStatus.OK);
-
-    ResponseEntity<byte[]> result = imageController.findImageById("66e2b14868f2f95b2f95549a");
-
-    assertEquals(expectedResult, result,
-        "ResponseEntity should match the expected result, including image data, headers, and status");
+    mockMvc.perform(get("/api/image/{id}", "66e2b14868f2f95b2f95549a"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        .andExpect(content().bytes(mockImageData));
   }
 
   @Test
-  void testGetImageFromIdWhenImageNotFound() {
+  void testGetImageFromIdWhenImageNotFound() throws Exception {
     when(imageService.readImage("missing-id")).thenReturn(null);
 
-    ResponseEntity<byte[]> result = imageController.findImageById("missing-id");
-
-    assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode(),
-        "Status should be 404 NOT_FOUND when imageService returns null");
-    assertNull(result.getBody(),
-        "Response body should be null when image is not found");
+    mockMvc.perform(get("/api/image/{id}", "missing-id"))
+        .andExpect(status().isNotFound());
   }
 
   @Test
-  void testGetImageFromIdWhenImageEmpty() {
+  void testGetImageFromIdWhenImageEmpty() throws Exception {
     when(imageService.readImage("empty-id")).thenReturn(new byte[0]);
 
-    ResponseEntity<byte[]> result = imageController.findImageById("empty-id");
-
-    assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode(),
-        "Status should be 204 NO_CONTENT when imageService returns an empty array");
-    assertNull(result.getBody(),
-        "Response body should be null when image is empty");
+    mockMvc.perform(get("/api/image/{id}", "empty-id"))
+        .andExpect(status().isNoContent());
   }
 }

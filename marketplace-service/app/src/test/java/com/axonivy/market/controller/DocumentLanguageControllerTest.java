@@ -1,45 +1,32 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import com.axonivy.market.enums.DocumentLanguage;
 import com.axonivy.market.model.DocumentInfoResponse;
 import com.axonivy.market.service.ExternalDocumentService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class DocumentLanguageControllerTest {
+@ControllerWebMvcTest(DocumentLanguageController.class)
+class DocumentLanguageControllerTest extends WebMvcControllerTestSupport {
 
   private static final String PORTAL = "portal";
   private static final String TEST_VERSION = "12";
 
-  @Mock
+  @MockitoBean
   private ExternalDocumentService service;
 
-  @InjectMocks
-  private DocumentLanguageController languageController;
-
-  @BeforeEach
-  void setup() {
-    var request = MockServletRequestUtils.createAndBindMockRequest();
-    request.setRequestURI("/api/docs/portal/12/en");
-    request.setServerName("localhost");
-    request.setServerPort(8080);
-  }
-
   @Test
-  void testGetDocumentByVersionAndLanguageSuccess() {
+  void testGetDocumentByVersionAndLanguageSuccess() throws Exception {
     var response = DocumentInfoResponse.builder()
         .versions(List.of(new DocumentInfoResponse.DocumentVersion(TEST_VERSION, "url1")))
         .languages(List.of(new DocumentInfoResponse.DocumentLanguage(DocumentLanguage.ENGLISH.getCode(), "url2")))
@@ -47,19 +34,21 @@ class DocumentLanguageControllerTest {
 
     when(service.findDocVersionsAndLanguages(anyString(), anyString(), anyString(), anyString()))
         .thenReturn(response);
-    ResponseEntity<DocumentInfoResponse> result =
-        languageController.getDocumentByVersionAndLanguage(PORTAL, TEST_VERSION, DocumentLanguage.ENGLISH.getCode());
-    assertTrue(result.getStatusCode().is2xxSuccessful(), "Status code should be 2xx");
-    assertEquals(result.getBody(), response, "Response body should match the mock response");
+
+    mockMvc.perform(get("/api/docs/{artifact}/{version}/{language}", PORTAL, TEST_VERSION,
+            DocumentLanguage.ENGLISH.getCode()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.versions[0].version").value(TEST_VERSION))
+        .andExpect(jsonPath("$.languages[0].language").value(DocumentLanguage.ENGLISH.getCode()));
   }
 
   @Test
-  void testGetDocumentByVersionAndLanguageNotFound() {
+  void testGetDocumentByVersionAndLanguageNotFound() throws Exception {
     when(service.findDocVersionsAndLanguages(anyString(), anyString(), anyString(), anyString()))
         .thenReturn(null);
-    ResponseEntity<DocumentInfoResponse> result =
-        languageController.getDocumentByVersionAndLanguage(PORTAL, TEST_VERSION, DocumentLanguage.ENGLISH.getCode());
-    assertTrue(result.getStatusCode().is4xxClientError(), "Status code should be 4xx");
-    assertNull(result.getBody(), "Response body should be null");
+
+    mockMvc.perform(get("/api/docs/{artifact}/{version}/{language}", PORTAL, TEST_VERSION,
+            DocumentLanguage.ENGLISH.getCode()))
+        .andExpect(status().isNotFound());
   }
 }

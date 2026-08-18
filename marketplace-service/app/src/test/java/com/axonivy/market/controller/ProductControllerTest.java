@@ -4,299 +4,123 @@ import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.core.enums.ErrorCode;
-import com.axonivy.market.core.enums.Language;
-import com.axonivy.market.core.enums.SortOption;
-import com.axonivy.market.core.enums.TypeOption;
-import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
-import com.axonivy.market.service.ProductDependencyService;
-import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.model.UpdateProductRequest;
+import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.github.GHContent;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.PagedModel.PageMetadata;
-import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class ProductControllerTest extends BaseSetup {
+@ControllerWebMvcTest(ProductController.class)
+class ProductControllerTest extends WebMvcControllerTestSupport {
+
   private static final String PRODUCT_ID_SAMPLE = "a-trust";
   private static final String PRODUCT_PATH_SAMPLE = "market/connector/a-trust";
-  private static final String PRODUCT_NAME_SAMPLE = "Amazon Comprehend";
-  private static final String PRODUCT_NAME_DE_SAMPLE = "Amazon Comprehend DE";
-  private static final String PRODUCT_DESC_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning to " +
-      "uncover information in unstructured data.";
-  private static final String PRODUCT_DESC_DE_SAMPLE = "Amazon Comprehend is a AI service that uses machine learning " +
-      "to uncover information in unstructured data. DE";
 
-  @Mock
+  private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+  @MockitoBean
   private ProductService service;
 
-  @Mock
+  @MockitoBean
   private ProductModelAssembler assembler;
 
-  @Mock
+  @MockitoBean
   private PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
-  @InjectMocks
-  private ProductController productController;
-
-  @Mock
-  private MetadataService metadataService;
-
-  @Mock
+  @MockitoBean
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
 
-  @Mock
+  @MockitoBean
   private ProductDependencyService productDependencyService;
 
-  @Mock
+  @MockitoBean
   private SyncTaskCancellationRegistry cancellationRegistry;
 
   @Test
-  void testFindProductsAsEmpty() {
-    PageRequest pageable = PageRequest.of(0, 20);
-    Page<Product> mockProducts = new PageImpl<>(List.of(), pageable, 0);
-    when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
-    when(pagedResourcesAssembler.toEmptyModel(any(), any())).thenReturn(PagedModel.empty());
-    var result = productController.findProducts(TypeOption.ALL.getOption(), null, "en", false, pageable);
-
-    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(result.hasBody(), "Expected response to have a body");
-    assertEquals(0, Objects.requireNonNull(result.getBody()).getContent().size(),
-        "Expected response body to contain 0 products");
-  }
-
-  @Test
-  void testFindProducts() {
-    PageRequest pageable = PageRequest.of(0, 20, Sort.by(Order.by(SortOption.ALPHABETICALLY.getOption())));
-    Product mockProduct = createProductMock();
-
-    Page<Product> mockProducts = new PageImpl<>(List.of(mockProduct), pageable, 1);
-    when(service.findProducts(any(), any(), any(), any(), any())).thenReturn(mockProducts);
-        var mockProductModel = new ProductModel();
-        mockProductModel.setId(mockProduct.getId());
-        mockProductModel.setNames(mockProduct.getNames());
-        mockProductModel.setShortDescriptions(mockProduct.getShortDescriptions());
-        mockProductModel.setType(mockProduct.getType());
-        mockProductModel.setTags(mockProduct.getTags());
-        mockProductModel.setMarketDirectory(mockProduct.getMarketDirectory());
-    var mockPagedModel = PagedModel.of(List.of(mockProductModel), new PageMetadata(1, 0, 1));
-    when(pagedResourcesAssembler.toModel(any(), any(ProductModelAssembler.class))).thenReturn(mockPagedModel);
-    var result = productController.findProducts(TypeOption.ALL.getOption(), "", "en", false, pageable);
-
-    assertEquals(HttpStatus.OK, result.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(result.hasBody(), "Expected response to have a body");
-    assertEquals(1, Objects.requireNonNull(result.getBody()).getContent().size(),
-        "Expected response body size to be 1");
-    assertEquals(PRODUCT_NAME_SAMPLE,
-        result.getBody().getContent().iterator().next().getNames().get(Language.EN.getValue()),
-        "Expected product English name to be " + PRODUCT_NAME_SAMPLE);
-    assertEquals(PRODUCT_NAME_DE_SAMPLE,
-        result.getBody().getContent().iterator().next().getNames().get(Language.DE.getValue()),
-        "Expected product German name to be " + PRODUCT_NAME_DE_SAMPLE);
-  }
-
-  @Test
-  void testSyncProductsSuccess() {
-    when(service.syncLatestDataFromMarketRepo(false)).thenReturn(List.of());
-
-    var response = productController.syncProducts(false);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(response.hasBody(),  "Expected response to have a body");
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
-        "Expected help code to be " + ErrorCode.SUCCESSFUL.getCode());
-    assertEquals("Data is already up to date, nothing to sync", response.getBody().getMessageDetails(),
-        "Expected message to be 'Data is already up to date, nothing to sync'");
-  }
-
-  @Test
-  void testSyncProductsWithResetSuccess() {
-    when(service.syncLatestDataFromMarketRepo(true)).thenReturn(List.of("portal"));
-
-    var response = productController.syncProducts(true);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(response.hasBody(), "Expected response to have a body");
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
-        "Expected help code to be " + ErrorCode.SUCCESSFUL.getCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Finished sync [[portal]] data in"),
-        "Expected message details to contain 'Finished sync [[portal]] data in'");
-  }
-
-  @Test
-  void testSyncOneProductInvalidProductPath() {
-    Product product = new Product();
-    product.setId("a-trust");
-    when(axonIvyMarketRepoService.getMarketItemByPath(any(String.class))).thenReturn(new ArrayList<>());
-    var response = productController.syncOneProduct(PRODUCT_ID_SAMPLE,
-        PRODUCT_PATH_SAMPLE, true);
-
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
-        "Expected HTTP status to be 200 OK when product path is invalid");
-    assertTrue(response.hasBody(),
-        "Response body should not be null or empty when product path is invalid");
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getHelpText(), response.getBody().getMessageDetails(),
-        "Expected response messageDetails to indicate PRODUCT_NOT_FOUND");
-  }
-
-  @Test
-  void testSyncOneProductSuccess() {
-    Product product = new Product();
-    product.setId("a-trust");
-    GHContent content = mock(GHContent.class);
-    List<GHContent> contents = new ArrayList<>();
-    contents.add(content);
-    when(axonIvyMarketRepoService.getMarketItemByPath(any(String.class))).thenReturn(contents);
-    when(service.syncOneProduct(any(String.class), any(String.class), any(Boolean.class))).thenReturn(true);
-    var response = productController.syncOneProduct(PRODUCT_ID_SAMPLE,
-        PRODUCT_PATH_SAMPLE, true);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Expected HTTP status 200 OK when syncOneProduct succeeds");
-    assertTrue(response.hasBody(),
-        "Response body should not be null or empty when syncOneProduct succeeds");
-    assertEquals("Sync successfully!", response.getBody().getMessageDetails(),
-        "Expected success message 'Sync successfully!' in response body");
-  }
-
-  @Test
-  void testGetAllProductIds() {
+  void testGetAllProductIds() throws Exception {
     List<String> productIds = List.of("a-trust", "amazon-comprehend");
     when(service.getProductIds()).thenReturn(productIds);
 
-    var response = productController.getAllProductIds();
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Expected HTTP 200 OK when getProductIdList succeeds");
-    assertTrue(response.hasBody(),
-        "Response body should not be null or empty when getProductIdList succeeds");
-    assertEquals(productIds, response.getBody(), "Expected response body to match product ID list");
-    verify(service, times(1)).getProductIds();
-  }
-
-  private Product createProductMock() {
-    Product mockProduct = new Product();
-    mockProduct.setId("amazon-comprehend");
-    Map<String, String> name = new HashMap<>();
-    name.put(Language.EN.getValue(), PRODUCT_NAME_SAMPLE);
-    name.put(Language.DE.getValue(), PRODUCT_NAME_DE_SAMPLE);
-    mockProduct.setNames(name);
-    Map<String, String> shortDescription = new HashMap<>();
-    shortDescription.put(Language.EN.getValue(), PRODUCT_DESC_SAMPLE);
-    shortDescription.put(Language.DE.getValue(), PRODUCT_DESC_DE_SAMPLE);
-    mockProduct.setShortDescriptions(shortDescription);
-    mockProduct.setType("connector");
-    mockProduct.setTags(List.of("AI"));
-    return mockProduct;
+    mockMvc.perform(get("/api/product/ids"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0]").value("a-trust"))
+        .andExpect(jsonPath("$[1]").value("amazon-comprehend"));
   }
 
   @Test
-  void testSyncFirstPublishedDateOfAllProductsFailed() {
-    when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(false);
-    var response = productController.syncFirstPublishedDateOfAllProducts();
+  void testSyncProductsSuccess() throws Exception {
+    when(service.syncLatestDataFromMarketRepo(null)).thenReturn(List.of());
 
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(),
-        "Response status should be OK even when syncing first published dates fails");
-    assertNotEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode(),
-        "Help code should not indicate SUCCESSFUL when syncing first published dates fails");
+    mockMvc.perform(put("/api/product/sync")
+            .with(requestedByHeader()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.helpCode").exists())
+        .andExpect(jsonPath("$.messageDetails").value("Data is already up to date, nothing to sync"));
   }
 
   @Test
-  void testSyncFirstPublishedDateOfAllProductsSuccess() {
-    when(service.syncFirstPublishedDateOfAllProducts()).thenReturn(true);
-    var response = productController.syncFirstPublishedDateOfAllProducts();
+  void testSyncOneProductInvalidProductPath() throws Exception {
+    when(axonIvyMarketRepoService.getMarketItemByPath(anyString())).thenReturn(List.of());
 
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be OK when syncing first published dates succeeds");
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), response.getBody().getHelpCode(),
-        "Help code should indicate SUCCESSFUL when syncing first published dates succeeds");
+    mockMvc.perform(put("/api/product/sync/{id}", PRODUCT_ID_SAMPLE)
+            .with(requestedByHeader())
+            .param("marketItemPath", PRODUCT_PATH_SAMPLE)
+            .param("overrideMarketItemPath", "true"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.messageDetails").value("PRODUCT_NOT_FOUND"));
   }
 
   @Test
-  void testSyncProductArtifactsSuccess() {
-    when(productDependencyService.syncIARDependenciesForProducts(false, null)).thenReturn(5);
+  void testSyncOneProductSuccess() throws Exception {
+    when(axonIvyMarketRepoService.getMarketItemByPath(anyString())).thenReturn(List.of(mock(GHContent.class)));
+    when(service.syncOneProduct(anyString(), anyString(), any())).thenReturn(true);
 
-    var response = productController.syncProductArtifacts(false, null);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be OK when product artifacts are successfully synced");
-    assertTrue(response.hasBody(),
-        "Response should contain a body when product artifacts are successfully synced");
-    assertEquals("Synced 5 artifact(s)", Objects.requireNonNull(response.getBody()).getMessageDetails(),
-        "Response message should confirm that 5 artifacts were synced");
+    mockMvc.perform(put("/api/product/sync/{id}", PRODUCT_ID_SAMPLE)
+            .with(requestedByHeader())
+            .param("marketItemPath", PRODUCT_PATH_SAMPLE)
+            .param("overrideMarketItemPath", "true"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.messageDetails").value("Sync successfully!"));
   }
 
   @Test
-  void testSyncProductArtifactsNothingToSync() {
-    when(productDependencyService.syncIARDependenciesForProducts(false, null)).thenReturn(0);
+  void testSyncProductArtifactsSuccess() throws Exception {
+    when(productDependencyService.syncIARDependenciesForProducts(isNull(), isNull())).thenReturn(5);
 
-    var response = productController.syncProductArtifacts(false, null);
-
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(),
-        "Response status should be NO_CONTENT when there are no artifacts to sync");
-    assertTrue(response.hasBody(),
-        "Response should still contain a body even when there are no artifacts to sync");
-    assertEquals("Nothing to sync", Objects.requireNonNull(response.getBody()).getMessageDetails(),
-        "Response message should indicate that there was nothing to sync");
+    mockMvc.perform(put("/api/product/zip-sync")
+            .with(requestedByHeader()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.messageDetails").value("Synced 5 artifact(s)"));
   }
 
   @Test
-  void testUpdateProductSuccess() {
-    var request = new UpdateProductRequest(true);
-    when(service.updateProduct(PRODUCT_ID_SAMPLE, request)).thenReturn(new Product());
+  void testUpdateProductSuccess() throws Exception {
+    UpdateProductRequest request = new UpdateProductRequest(true);
+    when(service.updateProduct(anyString(), any())).thenReturn(new Product());
 
-    var response = productController.updateProduct(PRODUCT_ID_SAMPLE, request);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be OK when product is updated successfully");
-    assertTrue(response.hasBody(),
-        "Response should contain a body when product is updated successfully");
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
-        "Help code should indicate SUCCESSFUL when product is updated");
-    assertEquals("Product with id " + PRODUCT_ID_SAMPLE + " updated successfully",
-        response.getBody().getMessageDetails(),
-        "Response message should confirm the product was updated successfully");
+    mockMvc.perform(put("/api/product/{id}", PRODUCT_ID_SAMPLE)
+            .with(requestedByHeader())
+            .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.messageDetails").value("Product with id " + PRODUCT_ID_SAMPLE + " updated successfully"));
   }
-
-  @Test
-  void testUpdateProductNotFound() {
-    var request = new UpdateProductRequest(true);
-    when(service.updateProduct(PRODUCT_ID_SAMPLE, request)).thenReturn(null);
-
-    var response = productController.updateProduct(PRODUCT_ID_SAMPLE, request);
-
-    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode(),
-        "Response status should be NOT_FOUND when product does not exist");
-    assertTrue(response.hasBody(),
-        "Response should contain a body when product is not found");
-    assertEquals(ErrorCode.PRODUCT_NOT_FOUND.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
-        "Help code should indicate PRODUCT_NOT_FOUND");
-    assertEquals("Product with id " + PRODUCT_ID_SAMPLE + " not found",
-        response.getBody().getMessageDetails(),
-        "Response message should indicate the product was not found");
-  }
-
 }

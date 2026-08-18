@@ -1,29 +1,22 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
-import java.util.Objects;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-class AppControllerTest {
-
-  private final AppController appController = new AppController();
+@ControllerWebMvcTest(AppController.class)
+class AppControllerTest extends WebMvcControllerTestSupport {
 
   @Test
-  void testRoot() {
-    MockServletRequestUtils.createAndBindMockRequest();
-    var response = appController.root();
-    MockServletRequestUtils.resetRequestAttributes();
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be 200 OK for the root endpoint.");
-    assertTrue(response.hasBody(),
-        "Response should contain a body for the root endpoint.");
-    assertTrue(Objects.requireNonNull(response.getBody()).getMessageDetails().contains("/swagger-ui/index.html"),
-        "Response body should contain a link to the Swagger UI.");
+  void testRoot() throws Exception {
+    mockMvc.perform(get("/"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.helpCode").exists())
+        .andExpect(jsonPath("$.messageDetails", containsString("/swagger-ui/index.html")));
   }
 }
