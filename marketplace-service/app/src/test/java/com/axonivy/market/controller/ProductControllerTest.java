@@ -10,13 +10,11 @@ import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.kohsuke.github.GHContent;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -24,7 +22,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,20 +60,6 @@ class ProductControllerTest extends WebMvcControllerTestSupport {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0]").value("a-trust"))
         .andExpect(jsonPath("$[1]").value("amazon-comprehend"));
-  }
-
-  private ProductIdMarketDirectoryProjection productIdMarketDirectoryProjection(String id, String marketDirectory) {
-    return new ProductIdMarketDirectoryProjection() {
-      @Override
-      public String getId() {
-        return id;
-      }
-
-      @Override
-      public String getMarketDirectory() {
-        return marketDirectory;
-      }
-    };
   }
 
   @Test
