@@ -20,7 +20,6 @@ import static com.axonivy.market.entity.TestStep.createTestStep;
 public class TestStepUtils {
   private static final String PATTERN_TEST_CASE = "^✅\\s+([^\\s].*?)(Real Server Test|Mock Server Test)?$";
   private static final String PATTERN_TEST_CASE_FAILED = "^❌\\s+([^\\s].*?)(Real Server Test|Mock Server Test)?$";
-  private static final int TEST_TYPE_INDEX = 2;
   private static final int TEST_NAME_INDEX = 1;
   private static final Pattern TEST_CASE_PATTERN = Pattern.compile(PATTERN_TEST_CASE,
       Pattern.UNICODE_CHARACTER_CLASS);
