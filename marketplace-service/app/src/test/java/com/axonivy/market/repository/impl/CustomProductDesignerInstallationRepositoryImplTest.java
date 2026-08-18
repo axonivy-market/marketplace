@@ -28,23 +28,27 @@ class CustomProductDesignerInstallationRepositoryImplTest {
   private EntityManager entityManager;
 
   @Test
-  void shouldIncreaseInstallationCountForExistingVersion() {
+  void testIncreaseInstallationCountForExistingVersion() {
     repository.increaseInstallationCountForProductByDesignerVersion(PRODUCT_ID, EXISTING_VERSION);
     repository.flush();
     entityManager.clear();
 
     ProductDesignerInstallation installation = findInstallation(EXISTING_VERSION);
-    assertThat(installation.getInstallationCount()).isEqualTo(3);
+    assertThat(installation.getInstallationCount())
+        .as("existing installation should have its count increased")
+        .isEqualTo(3);
   }
 
   @Test
-  void shouldCreateNewInstallationWhenVersionDoesNotExist() {
+  void testCreateNewInstallationWhenVersionDoesNotExist() {
     repository.increaseInstallationCountForProductByDesignerVersion(PRODUCT_ID, NEW_VERSION);
     repository.flush();
     entityManager.clear();
 
     ProductDesignerInstallation installation = findInstallation(NEW_VERSION);
-    assertThat(installation.getInstallationCount()).isEqualTo(1);
+    assertThat(installation.getInstallationCount())
+        .as("missing installation should be created with the requested count")
+        .isEqualTo(1);
   }
 
   private ProductDesignerInstallation findInstallation(String version) {
