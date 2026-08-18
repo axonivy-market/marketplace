@@ -12,6 +12,7 @@ import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.UpdateProductRequest;
+import com.axonivy.market.model.projection.ProductIdMarketDirectoryProjection;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -94,6 +95,14 @@ public class ProductController {
   @Operation(summary = "Get the list of product ID", description = "Return all product IDs")
   public ResponseEntity<List<String>> getAllProductIds() {
     List<String> productIds = productService.getProductIds();
+    return new ResponseEntity<>(productIds, HttpStatus.OK);
+  }
+
+  @GetMapping(SYNC_TARGETS)
+  @Operation(summary = "Get the list of product IDs and market directories",
+      description = "Return all product IDs together with market directory information")
+  public ResponseEntity<List<ProductIdMarketDirectoryProjection>> getSyncTargets() {
+    List<ProductIdMarketDirectoryProjection> productIds = productService.getProductIdsAndMarketDirectories();
     return new ResponseEntity<>(productIds, HttpStatus.OK);
   }
 

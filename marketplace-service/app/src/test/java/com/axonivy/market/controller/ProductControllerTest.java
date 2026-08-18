@@ -65,6 +65,20 @@ class ProductControllerTest extends WebMvcControllerTestSupport {
         .andExpect(jsonPath("$[1]").value("amazon-comprehend"));
   }
 
+  private ProductIdMarketDirectoryProjection productIdMarketDirectoryProjection(String id, String marketDirectory) {
+    return new ProductIdMarketDirectoryProjection() {
+      @Override
+      public String getId() {
+        return id;
+      }
+
+      @Override
+      public String getMarketDirectory() {
+        return marketDirectory;
+      }
+    };
+  }
+
   @Test
   void testSyncProductsSuccess() throws Exception {
     when(service.syncLatestDataFromMarketRepo(null)).thenReturn(List.of());
