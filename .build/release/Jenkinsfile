@@ -18,7 +18,7 @@ pipeline {
     booleanParam(
       name: 'DEPLOY_TO_PROD',
       defaultValue: false,
-      description: 'When true: publish images to GitHub Packages, tag the release in git, and (after 4-eyes approval) roll out to PREVIEW and PROD nodes. When false: only build Docker images locally and start the PREVIEW stack with those local images.'
+      description: 'When true: publish images to GitHub Packages, tag the release in git, and (after 4-eyes approval) roll out directly to PROD nodes (skip PREVIEW). When false: only build Docker images locally and deploy to PREVIEW stack with those local images.'
     )
   }
 
@@ -57,6 +57,31 @@ pipeline {
       }
     }
 
+    stage('Check for Existing Release PR') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        dir('target-source') {
+          script {
+            sh '''
+              git config --global user.email $OCTOPUS_MAIL
+              git config --global user.name $OCTOPUS_ACCOUNT_NAME
+              git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+              
+              OPEN_PR=$(gh pr list --repo axonivy-market/marketplace --state open --head new-release --title "Release" --json number --jq ".[0].number" 2>/dev/null || echo "")
+              
+              if [ ! -z "$OPEN_PR" ]; then
+                echo "ERROR: Found open PR #$OPEN_PR for Release. Please merge it first before running a new release build."
+                exit 1
+              fi
+              echo "No existing open Release PR found. Proceeding with build."
+            '''
+          }
+        }
+      }
+    }
+
     stage('Compute Release Version') {
       steps {
         script {
@@ -76,7 +101,12 @@ pipeline {
       steps {
         script {
           try {
-            sh 'docker compose --project-name marketplace -f ./target-source/marketplace-build/templates/docker-compose.yml down --rmi all'
+            sh '''
+              ENV_FILE='./target-source/marketplace-build/templates/.env'
+              cp "$MARKETPLACE_ENV_FILE" "$ENV_FILE"
+              chmod 600 "$ENV_FILE"
+              docker compose --project-name marketplace -f ./target-source/marketplace-build/templates/docker-compose.yml down --rmi all
+            '''
           } catch (Exception e) {
             echo "Error during docker compose down, continuing: ${e}"
           }
@@ -88,16 +118,12 @@ pipeline {
       steps {
         dir('target-source') {
           withEnv([
-            "CORE_POM_FILE=./marketplace-service/core/pom.xml",
-            "APP_POM_FILE=./marketplace-service/app/pom.xml",
-            "STABLE_POM_FILE=./marketplace-service/stable/pom.xml",
+            "PARENT_POM_FILE=./marketplace-service/pom.xml",
             "PACKAGE_FILE=./marketplace-ui/package.json"
           ]) {
             script {
               sh '''
-                mvn versions:set -DnewVersion=$RELEASE_VERSION -f $CORE_POM_FILE
-                mvn versions:set -DnewVersion=$RELEASE_VERSION -f $APP_POM_FILE
-                mvn versions:set -DnewVersion=$RELEASE_VERSION -f $STABLE_POM_FILE
+                mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules=true -f $PARENT_POM_FILE
                 sed -i 's/"version": \"[^\"]*\"/"version": "$RELEASE_VERSION"/' $PACKAGE_FILE
               '''
             }
@@ -122,6 +148,41 @@ pipeline {
             git tag $RELEASE_VERSION
             git push origin $RELEASE_VERSION
           '''
+        }
+      }
+    }
+
+    stage('Create Release PR') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        dir('target-source') {
+          script {
+            sh '''
+              git config --global user.email $OCTOPUS_MAIL
+              git config --global user.name $OCTOPUS_ACCOUNT_NAME
+              git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+              
+              git checkout -b new-release 2>/dev/null || git checkout new-release
+              git reset --hard origin/master
+              
+              mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules=true -f ./marketplace-service/pom.xml
+              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" ./marketplace-ui/package.json
+              
+              git commit -a -m "Bump version to $RELEASE_VERSION"
+              git push origin new-release --force
+              
+              PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base master --json number --jq ".[0].number" 2>/dev/null || echo "")
+              
+              if [ -z "$PR_EXISTS" ]; then
+                gh pr create --repo axonivy-market/marketplace --title "Release" --body "Automated release PR for version $RELEASE_VERSION" --head new-release --base master
+                echo "Pull request created successfully"
+              else
+                echo "Pull request #$PR_EXISTS already exists"
+              fi
+            '''
+          }
         }
       }
     }
@@ -242,7 +303,7 @@ pipeline {
 
     stage('Deploy to Preview') {
       when {
-        expression { params.DEPLOY_TO_PROD }
+        expression { !params.DEPLOY_TO_PROD }
       }
       steps {
         script {
