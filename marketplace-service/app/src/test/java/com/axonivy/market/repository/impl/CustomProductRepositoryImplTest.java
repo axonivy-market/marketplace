@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CustomProductRepositoryImplTest {
   private static final String LISTED_PRODUCT_ID = "case-process-viewer-utils";
   private static final String PORTAL_PRODUCT_ID = "portal";
-  private static final String DOCUMENTED_PRODUCT_ID = "express-importer";
   private static final String LISTED_ARTIFACT_ID = "case-process-viewer-utils-product";
   private static final String EN_LANGUAGE = "en";
   private static final String LISTED_PRODUCT_VERSION = "13.2.3";
