@@ -18,6 +18,7 @@ import static com.axonivy.market.core.constants.CoreRequestMappingConstants.API;
 public class RequestMappingConstants {
   public static final String PRODUCT = API + "/product";
   public static final String IDS = "ids";
+  public static final String SYNC_TARGETS = "sync-targets";
   public static final String DEPRECATIONS = "deprecations";
   public static final String DEPRECATION_BY_ID = "{productId}/deprecations";
   public static final String PRODUCT_DETAILS = API + "/product-details";

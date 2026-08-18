@@ -21,7 +21,7 @@ public interface VersionService extends CoreVersionService {
    *              type {@link String} - the specific product version
    * @param  designerVersion
    *              type {@link String} - the AxonIvy Designer version for which to retrieve compatible configuration
-   * @return {@link Map<String, Object>} - product JSON content as a key-value map containing metadata, features,
+   * @return {@code Map<String, Object>} - product JSON content as a key-value map containing metadata, features,
    *         dependencies, and configuration; returns null if product/version not found
    * @author nntthuy
    */

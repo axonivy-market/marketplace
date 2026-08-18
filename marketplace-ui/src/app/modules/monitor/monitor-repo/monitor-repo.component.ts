@@ -15,12 +15,7 @@ import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../core/services/language/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BuildBadgeTooltipComponent } from '../build-badge-tooltip/build-badge-tooltip.component';
-import {
-  NgbTooltipModule,
-  NgbPagination,
-  NgbPaginationModule,
-  NgbTypeaheadModule
-} from '@ng-bootstrap/ng-bootstrap';
+import { NgbTooltipModule, NgbPagination, NgbPaginationModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { ProductFilterComponent } from '../../product/product-filter/product-filter.component';
 import { RepoTestResultComponent } from '../repo-test-result/repo-test-result.component';

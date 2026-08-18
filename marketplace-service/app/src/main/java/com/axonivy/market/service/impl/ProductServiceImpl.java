@@ -38,6 +38,7 @@ import com.axonivy.market.github.util.GitHubUtils;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UpdateProductRequest;
 import com.axonivy.market.model.VersionAndUrlModel;
+import com.axonivy.market.model.projection.ProductIdMarketDirectoryProjection;
 import com.axonivy.market.repository.GitHubRepoMetaRepository;
 import com.axonivy.market.repository.GithubRepoRepository;
 import com.axonivy.market.repository.ImageRepository;
@@ -851,5 +852,10 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   @Override
   public List<String> getProductIds() {
     return productRepo.findAllIds();
+  }
+
+  @Override
+  public List<ProductIdMarketDirectoryProjection> getProductIdsAndMarketDirectories() {
+    return productRepo.findAllIdAndMarketDirectory();
   }
 }

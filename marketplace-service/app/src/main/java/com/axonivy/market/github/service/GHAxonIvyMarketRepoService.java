@@ -17,7 +17,7 @@ public interface GHAxonIvyMarketRepoService {
    * and plugins in the marketplace.
    * </p>
    *
-   * @return {@link Map<String, List<GHContent>>} - map of market items grouped by directory;
+   * @return {@code Map<String, List<GHContent>>} - map of market items grouped by directory;
    *         keys are directory names, values are lists of content files
    * @author ntqdinh
    */
