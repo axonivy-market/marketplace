@@ -8,7 +8,7 @@ import com.axonivy.market.enums.RepositoryAction;
 import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.model.ProductDeprecationProjection;
+import com.axonivy.market.model.projection.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -12,6 +12,8 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,14 +32,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductSearchRepositoryImplTest extends BaseSetup {
+  private static final String SEARCH_KEYWORD = "connector";
+  private static final String SEARCH_PATTERN = "%connector%";
 
-  Page<Product> mockResultReturn;
-  ProductSearchCriteria searchCriteria;
+  private Page<Product> mockResultReturn;
+  private ProductSearchCriteria searchCriteria;
 
   @Mock
   ProductCustomSortRepository productCustomSortRepo;
@@ -77,14 +82,13 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(namesJoin.key()).thenReturn(keyValue);
 
     Predicate predicate = mock(Predicate.class);
-    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
+    when(cb.and(any(Predicate[].class))).thenReturn(predicate);
 
     // For query products
     when(em.getCriteriaBuilder()).thenReturn(cb);
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
@@ -93,7 +97,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     // For counting
     when(cb.createQuery(Long.class)).thenReturn(criteriaCountQuery);
     when(criteriaCountQuery.from(Product.class)).thenReturn(countRoot);
-    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, countRoot)).thenReturn(predicate);
     when(criteriaCountQuery.select(any())).thenReturn(criteriaCountQuery);
     when(criteriaCountQuery.where(predicate)).thenReturn(criteriaCountQuery);
     when(em.createQuery(criteriaCountQuery)).thenReturn(countQuery);
@@ -106,7 +109,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     assertEquals(2, result.getContent().size(), "Unexpected number of products");
     assertTrue(result.getContent().get(0).getNames().containsValue(SAMPLE_PRODUCT_NAME),
         "Expected product name not found in the result");
-    verify(criteriaQuery).distinct(true);
+    verify(criteriaQuery, never()).distinct(true);
   }
 
   @Test
@@ -120,7 +123,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
 
     Predicate predicate = mock(Predicate.class);
-    when(productListedRepository.buildCriteriaSearch(searchCriteria, cb, productRoot)).thenReturn(predicate);
+    when(cb.and(any(Predicate[].class))).thenReturn(predicate);
 
 
     // For Sort standard
@@ -142,7 +145,6 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(cb.createQuery(Product.class)).thenReturn(criteriaQuery);
     when(criteriaQuery.from(Product.class)).thenReturn(productRoot);
     when(criteriaQuery.select(productRoot)).thenReturn(criteriaQuery);
-    when(criteriaQuery.distinct(true)).thenReturn(criteriaQuery);
     when(criteriaQuery.where(predicate)).thenReturn(criteriaQuery);
     when(criteriaQuery.orderBy(anyList())).thenReturn(criteriaQuery);
     when(em.createQuery(criteriaQuery)).thenReturn(query);
@@ -189,7 +191,7 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
 
 
   @Test
-  void testFindByCriteria() {
+  void testFindByCriteriaReturnsFirstProduct() {
     Product mockProduct = mockResultReturn.getContent().get(0);
     TypedQuery<Product> query = mock(TypedQuery.class);
     CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
@@ -203,33 +205,47 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     when(em.createQuery(criteriaQuery)).thenReturn(query);
     when(query.getResultList()).thenReturn(List.of(mockProduct));
 
-    MapJoin<Product, String, String> namesJoin = mock(MapJoin.class);
-    Mockito.<MapJoin<Product, String, String>>when(productRoot.joinMap(any(), any())).thenReturn(namesJoin);
-
-    Path<String> languageKey = mock(Path.class);
-    Path<String> nameValue = mock(Path.class);
-
-    when(namesJoin.key()).thenReturn(languageKey);
-    when(namesJoin.value()).thenReturn(nameValue);
-
-
     Product result = productListedRepository.findByCriteria(searchCriteria);
 
     assertNotNull(result, "Result is empty");
     assertEquals(mockProduct.getId(), result.getId(), "Product ID " + result.getId());
+  }
 
-    String productName = mockProduct.getNames().get(Language.EN.getValue());
-    searchCriteria.setKeyword(productName);
-    result = productListedRepository.findByCriteria(searchCriteria);
-    assertNotNull(result, "Result is empty");
-    assertEquals(productName, result.getNames().get(Language.EN.getValue()), "Product Name " + result.getNames());
+  @ParameterizedTest
+  @EnumSource(value = DocumentField.class, names = {"NAMES", "SHORT_DESCRIPTIONS"})
+  void testKeywordSearchMatchesLocalizedValuesInAnyLanguage(DocumentField field) {
+    CriteriaBuilder cb = mock(CriteriaBuilder.class);
+    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
+    Root<Product> productRoot = mock(Root.class);
 
+    searchCriteria.setKeyword(SEARCH_KEYWORD);
+    searchCriteria.setLanguage(Language.EN);
+    searchCriteria.setFields(List.of(field));
+    LocalizedSearchMocks mocks = mockLocalizedSearch(cb, criteriaQuery, productRoot, field);
+
+    productListedRepository.buildCriteriaSearch(searchCriteria, criteriaQuery, cb, productRoot);
+
+    verify(cb).exists(mocks.subquery());
+    verify(mocks.subquery()).where(mocks.keywordPredicate());
+    verify(mocks.localizedJoin(), never()).key();
+  }
+
+  @Test
+  void testKeywordSearchMatchesNonLocalizedField() {
+    CriteriaBuilder cb = mock(CriteriaBuilder.class);
+    CriteriaQuery<Product> criteriaQuery = mock(CriteriaQuery.class);
+    Root<Product> productRoot = mock(Root.class);
+    Path<String> marketDirectory = mock(Path.class);
+
+    searchCriteria.setKeyword(SEARCH_KEYWORD);
     searchCriteria.setFields(List.of(DocumentField.MARKET_DIRECTORY));
-    searchCriteria.setKeyword(mockProduct.getMarketDirectory());
-    result = productListedRepository.findByCriteria(searchCriteria);
-    assertNotNull(result, "Result is empty");
-    assertEquals(mockProduct.getMarketDirectory(), result.getMarketDirectory(),
-        "Product MarketDirectory " + result.getMarketDirectory());
+    Mockito.<Path<String>>when(productRoot.get(DocumentField.MARKET_DIRECTORY.getFieldName()))
+        .thenReturn(marketDirectory);
+
+    productListedRepository.buildCriteriaSearch(searchCriteria, criteriaQuery, cb, productRoot);
+
+    verify(cb).equal(marketDirectory, SEARCH_KEYWORD);
+    verify(criteriaQuery, never()).subquery(Integer.class);
   }
 
   @Test
@@ -252,6 +268,35 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
 
     assertNotNull(result, "Result is empty");
     assertEquals(mockProduct.getId(), result.getId(), "Product ID " + result.getId());
+  }
+
+  private LocalizedSearchMocks mockLocalizedSearch(CriteriaBuilder cb, CriteriaQuery<Product> criteriaQuery,
+      Root<Product> productRoot, DocumentField field) {
+    Subquery<Integer> localizedMatch = mock(Subquery.class);
+    Root<Product> correlatedProduct = mock(Root.class);
+    MapJoin<Product, String, String> localizedJoin = mock(MapJoin.class);
+    Path<String> localizedValue = mock(Path.class);
+    Expression<String> normalizedValue = mock(Expression.class);
+    Expression<Integer> one = mock(Expression.class);
+    Predicate keywordPredicate = mock(Predicate.class);
+
+    when(criteriaQuery.subquery(Integer.class)).thenReturn(localizedMatch);
+    when(localizedMatch.correlate(productRoot)).thenReturn(correlatedProduct);
+    Mockito.<MapJoin<Product, String, String>>when(correlatedProduct.joinMap(field.getFieldName(), JoinType.INNER))
+        .thenReturn(localizedJoin);
+    when(localizedJoin.value()).thenReturn(localizedValue);
+    when(cb.lower(localizedValue)).thenReturn(normalizedValue);
+    when(cb.like(normalizedValue, SEARCH_PATTERN)).thenReturn(keywordPredicate);
+    when(cb.literal(1)).thenReturn(one);
+    when(localizedMatch.select(one)).thenReturn(localizedMatch);
+    when(localizedMatch.where(keywordPredicate)).thenReturn(localizedMatch);
+
+    return new LocalizedSearchMocks(localizedMatch, localizedJoin, keywordPredicate);
+  }
+
+  private record LocalizedSearchMocks(Subquery<Integer> subquery,
+                                      MapJoin<Product, String, String> localizedJoin,
+                                      Predicate keywordPredicate) {
   }
 
 }

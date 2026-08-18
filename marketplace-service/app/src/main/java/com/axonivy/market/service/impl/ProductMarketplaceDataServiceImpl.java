@@ -13,7 +13,7 @@ import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.model.AlternativeExtensionData;
 import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.model.ProductDeprecationProjection;
+import com.axonivy.market.model.projection.ProductDeprecationProjection;
 import com.axonivy.market.repository.MavenArtifactVersionRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductDesignerInstallationRepository;

@@ -1,5 +1,6 @@
 package com.axonivy.market.model;
 
+import com.axonivy.market.model.projection.FeedbackProjection;
 import com.axonivy.market.enums.FeedbackStatus;
 import org.junit.jupiter.api.Test;
 
