@@ -13,6 +13,7 @@ import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.core.utils.CoreVersionUtils;
 import com.axonivy.market.model.UpdateProductRequest;
+import com.axonivy.market.model.projection.ProductIdMarketDirectoryProjection;
 import com.axonivy.market.entity.GitHubRepoMeta;
 import com.axonivy.market.entity.GithubRepo;
 import com.axonivy.market.core.entity.MavenArtifactVersion;
@@ -906,6 +907,20 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testGetProductIdsAndMarketDirectories() {
+    List<ProductIdMarketDirectoryProjection> projections = List.of(
+        productIdMarketDirectoryProjection("a-trust", "market/connector/a-trust/"),
+        productIdMarketDirectoryProjection("portal", "market/connector/portal/")
+    );
+    when(productRepo.findAllIdAndMarketDirectory()).thenReturn(projections);
+
+    List<ProductIdMarketDirectoryProjection> results = productService.getProductIdsAndMarketDirectories();
+
+    assertEquals(projections, results, "Product id and market directory list should match");
+    verify(productRepo).findAllIdAndMarketDirectory();
+  }
+
+  @Test
   void testSyncGitHubReleaseModels() throws IOException {
     Product mockProduct = new Product();
     mockProduct.setId("portal");
@@ -1141,5 +1156,19 @@ class ProductServiceImplTest extends BaseSetup {
     when(imageService.mappingImageFromGHContent(any(), any())).thenReturn(getMockImage());
     when(productRepo.save(any(Product.class))).thenReturn(new Product());
     when(fileDownloadService.getFileAsString(anyString())).thenReturn(getMockMetadataContent3());
+  }
+
+  private ProductIdMarketDirectoryProjection productIdMarketDirectoryProjection(String id, String marketDirectory) {
+    return new ProductIdMarketDirectoryProjection() {
+      @Override
+      public String getId() {
+        return id;
+      }
+
+      @Override
+      public String getMarketDirectory() {
+        return marketDirectory;
+      }
+    };
   }
 }

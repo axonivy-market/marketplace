@@ -3,6 +3,7 @@ package com.axonivy.market.service;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.UpdateProductRequest;
+import com.axonivy.market.model.projection.ProductIdMarketDirectoryProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -185,6 +186,8 @@ public interface ProductService {
    * @author nntthuy
    */
   List<String> getProductIds();
+
+  List<ProductIdMarketDirectoryProjection> getProductIdsAndMarketDirectories();
 
   /**
    * <p>
