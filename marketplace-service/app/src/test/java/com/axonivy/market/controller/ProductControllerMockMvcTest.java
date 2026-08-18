@@ -6,24 +6,17 @@ import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.model.ProductModel;
 import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.service.ExternalDocumentService;
 import com.axonivy.market.service.ProductDependencyService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Map;
@@ -36,13 +29,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(com.axonivy.market.controller.ProductController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
-class ProductControllerMockMvcTest {
-
-  @Autowired
-  private MockMvc mockMvc;
+@ControllerWebMvcTest(com.axonivy.market.controller.ProductController.class)
+class ProductControllerMockMvcTest extends WebMvcControllerTestSupport {
 
   @MockitoBean
   private com.axonivy.market.service.ProductService productService;
@@ -63,16 +51,10 @@ class ProductControllerMockMvcTest {
   private PagedResourcesAssembler<Product> pagedResourcesAssembler;
 
   @MockitoBean
-  private AppSettingService appSettingService;
-
-  @MockitoBean
   private GHAxonIvyMarketRepoService axonIvyMarketRepoService;
 
   @MockitoBean
   private ProductDependencyService productDependencyService;
-
-  @MockitoBean
-  private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
   @MockitoBean
   private CacheManager cacheManager;

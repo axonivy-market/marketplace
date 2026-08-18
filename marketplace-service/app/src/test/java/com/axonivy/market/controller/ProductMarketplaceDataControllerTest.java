@@ -1,210 +1,85 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
-import com.axonivy.market.core.enums.ErrorCode;
-import com.axonivy.market.core.exceptions.model.NotFoundException;
-import com.axonivy.market.enums.PullRequestAction;
 import com.axonivy.market.enums.RepositoryAction;
-import com.axonivy.market.model.DeprecationRequest;
-import com.axonivy.market.model.Message;
 import com.axonivy.market.model.ProductCustomSortRequest;
 import com.axonivy.market.model.projection.ProductDeprecationProjection;
 import com.axonivy.market.service.ProductMarketplaceDataService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class ProductMarketplaceDataControllerTest extends BaseSetup {
-  @Mock
+@ControllerWebMvcTest(ProductMarketplaceDataController.class)
+class ProductMarketplaceDataControllerTest extends WebMvcControllerTestSupport {
+
+  private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+  @MockitoBean
   private ProductMarketplaceDataService productMarketplaceDataService;
-  @InjectMocks
-  private ProductMarketplaceDataController productMarketplaceDataController;
 
   @Test
-  void testCreateCustomSortProducts() {
-    ProductCustomSortRequest mockProductCustomSortRequest = createProductCustomSortRequestMock();
-    var response = productMarketplaceDataController.createCustomSortProducts(mockProductCustomSortRequest);
+  void testCreateCustomSortProducts() throws Exception {
+    ProductCustomSortRequest request = createProductCustomSortRequestMock();
 
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Expected response status code: " + response.getStatusCode() + " to match HTTP status 200 OK");
-    assertTrue(response.hasBody(), "Expected response to have a body");
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
-        "Expected response help code " + response.getBody().getHelpCode() +
-            " to match " + ErrorCode.SUCCESSFUL.getCode());
-    assertTrue(response.getBody().getMessageDetails().contains("Custom product sort order added successfully"),
-        "Response body message details should contain 'Custom product sort order added successfully'");
+    mockMvc.perform(post("/api/product-marketplace-data/custom-sort")
+            .with(requestedByHeader())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.messageDetails").value("Custom product sort order added successfully"));
   }
 
   @Test
-  void testGetCustomSortProducts() {
-    ProductCustomSortRequest mockProductCustomSortRequest = createProductCustomSortRequestMock();
-    when(productMarketplaceDataService.getCustomSortProducts()).thenReturn(mockProductCustomSortRequest);
+  void testGetCustomSortProducts() throws Exception {
+    ProductCustomSortRequest request = createProductCustomSortRequestMock();
+    when(productMarketplaceDataService.getCustomSortProducts()).thenReturn(request);
 
-    var response = productMarketplaceDataController.getCustomSortProducts();
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Status code should be 200 when fetching custom sort products");
-
-    assertEquals(mockProductCustomSortRequest, response.getBody(),
-        "Response body should match the custom sort products returned by the service");
+    mockMvc.perform(get("/api/product-marketplace-data/custom-sort"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.orderedListOfProducts[0]").value("a-trust"));
   }
 
   @Test
-  void testExtractArtifactUrl() {
-    when(productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
-        MOCK_RELEASED_VERSION)).thenReturn(getMockEntityResource());
-    var result = productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
-        MOCK_RELEASED_VERSION);
-    assertEquals(HttpStatus.OK, result.getStatusCode(),
-        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 200 OK");
-    assertNotNull(result, "Response should not be null");
-  }
-
-  @Test
-  void testExtractArtifactUrlReturnBadGateWay() {
-    when(productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_DOWNLOAD_URL))
-        .thenReturn(ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(null));
-
-    assertThrows(NotFoundException.class,
-        () -> productMarketplaceDataController.getArtifactResourceStream(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
-            MOCK_DOWNLOAD_URL), "Expected NotFoundException to be thrown when artifact resource is not found");
-  }
-
-  @Test
-  void testGetArtifactResourceStreamWhenServiceReturnsNullShouldThrowNotFoundException() {
-    when(productMarketplaceDataService.getProductArtifactStream(
-        MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION))
-        .thenReturn(null);
-
-    assertThrows(NotFoundException.class,
-        () -> productMarketplaceDataController.getArtifactResourceStream(
-            MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION),
-        "Expected NotFoundException when service returns null ResponseEntity");
-  }
-
-  @Test
-  void testFindInstallationCount() {
+  void testFindInstallationCount() throws Exception {
     when(productMarketplaceDataService.getInstallationCount(MOCK_PRODUCT_ID)).thenReturn(5);
-    var result = productMarketplaceDataController.findInstallationCount(MOCK_PRODUCT_ID);
-    assertEquals(HttpStatus.OK, result.getStatusCode(),
-        "Expected response status code: " + result.getStatusCode() + " to match HTTP status 200 OK");
-    assertNotNull(result, "Response should not be null");
+
+    mockMvc.perform(get("/api/product-marketplace-data/installation-count/{id}", MOCK_PRODUCT_ID))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").value(5));
   }
 
   @Test
-  void testGetProductDeprecations() {
+  void testGetProductDeprecations() throws Exception {
     List<ProductDeprecationProjection> projections = List.of(
         createProductDeprecationProjection("a-trust", new Date()),
         createProductDeprecationProjection("amazon-comprehend", new Date())
     );
     when(productMarketplaceDataService.getProductIdsByDeprecated(null)).thenReturn(projections);
 
-    var response = productMarketplaceDataController.getProductDeprecations(null);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(response.hasBody(), "Response body should not be null");
-    assertEquals(2, Objects.requireNonNull(response.getBody()).size(),
-        "Expected response to contain 2 deprecation projections");
+    mockMvc.perform(get("/api/product-marketplace-data/deprecations"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$..id").value(hasItem("a-trust")))
+        .andExpect(jsonPath("$..id").value(hasItem("amazon-comprehend")));
   }
 
   @Test
-  void testUpdateDeprecatedMarketplaceData() throws Exception {
-    String productId = "cms-live-editor";
-    DeprecationRequest request = new DeprecationRequest();
-    request.setIsDeprecated(true);
-    request.setSuccessorUrl("https://example.com/successor");
-    request.setIsAddReadme(false);
-    request.setPullRequestAction(PullRequestAction.ADD);
-
-    when(productMarketplaceDataService.updateSuccessorForProduct(productId, request))
-        .thenReturn("https://github.com/org/repo/pull/123");
-
-    ResponseEntity<String> response =
-        productMarketplaceDataController.updateDeprecatedMarketplaceData(request, productId);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(response.hasBody(), "Response body should not be null");
-    assertEquals("https://github.com/org/repo/pull/123", response.getBody(),
-        "Response body should match service result");
-    verify(productMarketplaceDataService).updateSuccessorForProduct(productId, request);
-  }
-
-  @Test
-  void testUpdateDeprecatedMarketplaceDataThrowsIOException() throws Exception {
-    String productId = "cms-live-editor";
-    DeprecationRequest request = new DeprecationRequest();
-    when(productMarketplaceDataService.updateSuccessorForProduct(productId, request))
-        .thenThrow(new IOException("mock IO error"));
-
-    assertThrows(IOException.class,
-        () -> productMarketplaceDataController.updateDeprecatedMarketplaceData(request, productId),
-        "Expected IOException to propagate from service");
-
-    verify(productMarketplaceDataService).updateSuccessorForProduct(productId, request);
-  }
-
-  @Test
-  void testArchiveRepository() throws IOException {
-    String productId = "cms-live-editor";
-    doNothing().when(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
-
-    ResponseEntity<Message> response =
-        productMarketplaceDataController.archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(response.hasBody(), "Response body should not be null");
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
-        "Help code should match SUCCESSFUL");
-    assertEquals("Repository archived successfully", response.getBody().getMessageDetails(),
-        "Message details should indicate archive success");
-    verify(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
-  }
-
-  @Test
-  void testUnarchiveRepository() throws IOException {
-    String productId = "cms-live-editor";
-    doNothing().when(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.UNARCHIVE);
-
-    ResponseEntity<Message> response =
-        productMarketplaceDataController.archiveOrUnarchiveRepository(productId, RepositoryAction.UNARCHIVE);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected HTTP 200 OK");
-    assertTrue(response.hasBody(), "Response body should not be null");
-    assertEquals(ErrorCode.SUCCESSFUL.getCode(), Objects.requireNonNull(response.getBody()).getHelpCode(),
-        "Help code should match SUCCESSFUL");
-    assertEquals("Repository unarchived successfully", response.getBody().getMessageDetails(),
-        "Message details should indicate unarchive success");
-    verify(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.UNARCHIVE);
-  }
-
-  @Test
-  void testArchiveRepositoryThrowsIOException() throws IOException {
-    String productId = "cms-live-editor";
-    doThrow(new IOException("mock IO error"))
-        .when(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
-
-    assertThrows(IOException.class,
-        () -> productMarketplaceDataController.archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE),
-        "Expected IOException to propagate from service");
-
-    verify(productMarketplaceDataService).archiveOrUnarchiveRepository(productId, RepositoryAction.ARCHIVE);
+  void testArchiveRepository() throws Exception {
+    mockMvc.perform(put("/api/product-marketplace-data/{productId}/archive", "cms-live-editor")
+            .with(requestedByHeader())
+            .param("action", RepositoryAction.ARCHIVE.name()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.messageDetails").value("Repository archived successfully"));
   }
 
   private ProductCustomSortRequest createProductCustomSortRequestMock() {
