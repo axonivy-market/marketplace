@@ -1,10 +1,8 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.service.SyncTaskExecutionService;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;

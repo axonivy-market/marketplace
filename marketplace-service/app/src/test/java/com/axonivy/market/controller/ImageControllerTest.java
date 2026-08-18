@@ -2,7 +2,6 @@ package com.axonivy.market.controller;
 
 import com.axonivy.market.service.ImageService;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 

@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.enums.WorkFlowType;
 import com.axonivy.market.model.GithubReposModel;
@@ -8,7 +7,6 @@ import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -16,7 +14,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;

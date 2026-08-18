@@ -1,16 +1,13 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.ReleaseLetterModelAssembler;
 import com.axonivy.market.entity.ReleaseLetter;
 import com.axonivy.market.entity.ReleaseLetterDraft;
-import com.axonivy.market.model.ReleaseLetterDraftModel;
 import com.axonivy.market.model.ReleaseLetterModel;
 import com.axonivy.market.model.ReleaseLetterModelRequest;
 import com.axonivy.market.service.ReleaseLetterService;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;

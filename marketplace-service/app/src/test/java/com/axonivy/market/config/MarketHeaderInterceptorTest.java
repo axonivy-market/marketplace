@@ -1,6 +1,5 @@
 package com.axonivy.market.config;
 
-import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.exceptions.model.MissingHeaderException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

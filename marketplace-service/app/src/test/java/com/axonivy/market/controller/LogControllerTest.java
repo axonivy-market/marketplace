@@ -5,13 +5,11 @@ import com.axonivy.market.model.LogFileModel;
 import com.axonivy.market.service.LogService;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MvcResult;
 import reactor.core.publisher.Flux;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;

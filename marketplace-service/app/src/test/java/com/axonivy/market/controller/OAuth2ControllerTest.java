@@ -1,13 +1,10 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
-import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 

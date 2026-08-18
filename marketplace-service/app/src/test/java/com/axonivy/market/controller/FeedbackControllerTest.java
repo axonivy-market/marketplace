@@ -1,10 +1,8 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.assembler.FeedbackModelAssembler;
 import com.axonivy.market.entity.Feedback;
-import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.enums.FeedbackStatus;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
@@ -14,7 +12,6 @@ import com.axonivy.market.service.GithubUserService;
 import com.axonivy.market.service.JwtService;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;

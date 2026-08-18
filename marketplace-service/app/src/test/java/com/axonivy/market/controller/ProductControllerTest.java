@@ -1,6 +1,5 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.assembler.ProductModelAssembler;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;

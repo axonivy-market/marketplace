@@ -3,7 +3,6 @@ package com.axonivy.market.controller;
 import com.axonivy.market.model.DesignerInstallation;
 import com.axonivy.market.service.ProductDesignerInstallationService;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
