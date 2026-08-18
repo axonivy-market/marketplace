@@ -13,6 +13,7 @@ import com.axonivy.market.github.service.GHAxonIvyMarketRepoService;
 import com.axonivy.market.service.ProductDependencyService;
 import com.axonivy.market.service.MetadataService;
 import com.axonivy.market.model.UpdateProductRequest;
+import com.axonivy.market.model.projection.ProductIdMarketDirectoryProjection;
 import com.axonivy.market.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -197,6 +198,25 @@ class ProductControllerTest extends BaseSetup {
     verify(service, times(1)).getProductIds();
   }
 
+  @Test
+  void testGetSyncTargets() {
+    List<ProductIdMarketDirectoryProjection> projections = List.of(
+        productIdMarketDirectoryProjection("a-trust", "market/connector/a-trust/"),
+        productIdMarketDirectoryProjection("portal", "market/connector/portal/")
+    );
+    when(service.getProductIdsAndMarketDirectories()).thenReturn(projections);
+
+    var response = productController.getSyncTargets();
+
+    assertEquals(HttpStatus.OK, response.getStatusCode(),
+        "Expected HTTP 200 OK when getProductIdsAndMarketDirectories succeeds");
+    assertTrue(response.hasBody(),
+        "Response body should not be null or empty when getProductIdsAndMarketDirectories succeeds");
+    assertEquals(projections, response.getBody(),
+        "Expected response body to match product ID and market directory list");
+    verify(service, times(1)).getProductIdsAndMarketDirectories();
+  }
+
   private Product createProductMock() {
     Product mockProduct = new Product();
     mockProduct.setId("amazon-comprehend");
@@ -211,6 +231,20 @@ class ProductControllerTest extends BaseSetup {
     mockProduct.setType("connector");
     mockProduct.setTags(List.of("AI"));
     return mockProduct;
+  }
+
+  private ProductIdMarketDirectoryProjection productIdMarketDirectoryProjection(String id, String marketDirectory) {
+    return new ProductIdMarketDirectoryProjection() {
+      @Override
+      public String getId() {
+        return id;
+      }
+
+      @Override
+      public String getMarketDirectory() {
+        return marketDirectory;
+      }
+    };
   }
 
   @Test

@@ -1,4 +1,4 @@
-package com.axonivy.market.model;
+package com.axonivy.market.model.projection;
 
 import com.axonivy.market.enums.FeedbackStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;

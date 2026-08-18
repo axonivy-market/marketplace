@@ -463,36 +463,25 @@ describe('ProductService', () => {
       expect(result).toEqual(['product-1']);
     });
 
-    it('should use custom page size and language', () => {
-      const mockResponse = {
-        _embedded: {
-          products: [
-            { id: 'product-1', marketDirectory: 'dir1' }
-          ]
-        },
-        page: {
-          number: 0,
-          totalPages: 1
-        }
-      };
-
-      let result: MarketProduct[] | undefined;
-
-      service.fetchAllProductsForSync(100, Language.DE).subscribe(res => {
-        result = res;
-      });
+    it('should request product ids and market directories for sync', async () => {
+      const resultPromise = firstValueFrom(service.fetchAllProductsForSync());
 
       const req = httpMock.expectOne(
         request =>
-          request.url === API_URI.PRODUCT &&
-          request.params.get('size') === '100' &&
-          request.params.get('language') === Language.DE
+          request.url === API_URI.SYNC_TARGETS &&
+          request.method === 'GET'
       );
+      expect(req.request.params.keys().length).toBe(0);
 
-      req.flush(mockResponse);
+      req.flush([
+        { id: 'product-1', marketDirectory: 'dir1' },
+        { id: 'product-2', marketDirectory: 'dir2' }
+      ]);
 
+      const result = await resultPromise;
       expect(result).toEqual([
-        { id: 'product-1', marketDirectory: 'dir1' }
+        { id: 'product-1', marketDirectory: 'dir1' },
+        { id: 'product-2', marketDirectory: 'dir2' }
       ]);
     });
   });

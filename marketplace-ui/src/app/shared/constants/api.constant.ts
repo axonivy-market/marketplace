@@ -7,6 +7,7 @@ export const API_URI = {
   APP: '/',
   PRODUCT: `${API}/product`,
   IDS: `${API}/product/ids`,
+  SYNC_TARGETS: `${API}/product/sync-targets`,
   PRODUCT_DETAILS: `${API}/product-details`,
   EXTERNAL_DOCUMENT: `${API}/externaldocument`,
   FEEDBACK: `${API}/feedback`,

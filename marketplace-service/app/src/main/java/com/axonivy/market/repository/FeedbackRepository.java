@@ -2,7 +2,7 @@ package com.axonivy.market.repository;
 
 import com.axonivy.market.entity.Feedback;
 import com.axonivy.market.enums.FeedbackStatus;
-import com.axonivy.market.model.FeedbackProjection;
+import com.axonivy.market.model.projection.FeedbackProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
