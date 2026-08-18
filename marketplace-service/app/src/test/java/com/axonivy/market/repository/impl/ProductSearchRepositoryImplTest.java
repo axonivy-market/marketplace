@@ -31,51 +31,79 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
   private ProductRepository repository;
 
   @Test
-  void shouldFindAllProductsHaveDocument() {
+  void testFindAllProductsHaveDocument() {
     List<Product> products = repository.findAllProductsHaveDocument();
 
-    assertThat(products).extracting(Product::getId)
+    assertThat(products)
+        .as("documents should only exist for the expected products")
+        .extracting(Product::getId)
         .containsExactlyInAnyOrder(PORTAL_PRODUCT_ID);
   }
 
   @Test
-  void shouldFindProductByKeywordInName() {
+  void testFindProductByKeywordInName() {
     ProductSearchCriteria criteria = new ProductSearchCriteria();
     criteria.setKeyword(LISTED_PRODUCT_NAME);
 
     Product product = repository.findByCriteria(criteria);
 
-    assertThat(product).isNotNull();
-    assertThat(product.getId()).isEqualTo(LISTED_PRODUCT_ID);
+    assertThat(product)
+        .as("keyword search should return the matching product")
+        .isNotNull();
+    assertThat(product.getId())
+        .as("returned product id should match the keyword result")
+        .isEqualTo(LISTED_PRODUCT_ID);
   }
 
   @Test
-  void shouldFindProductByMarketDirectoryWhenFieldIsRestricted() {
+  void testFindProductByMarketDirectoryWhenFieldIsRestricted() {
     ProductSearchCriteria criteria = new ProductSearchCriteria();
     criteria.setFields(List.of(DocumentField.MARKET_DIRECTORY));
     criteria.setKeyword("market/utils/express-importer/");
 
     Product product = repository.findByCriteria(criteria);
 
-    assertThat(product).isNotNull();
-    assertThat(product.getId()).isEqualTo(DOCUMENTED_PRODUCT_ID);
+    assertThat(product)
+        .as("restricted field search should still return the matching product")
+        .isNotNull();
+    assertThat(product.getId())
+        .as("returned product id should match the market directory lookup")
+        .isEqualTo(DOCUMENTED_PRODUCT_ID);
   }
 
   @Test
-  void shouldAttachModuleContentForRequestedVersion() {
+  void testAttachModuleContentForRequestedVersion() {
     Product product = repository.getProductByIdAndVersion(LISTED_PRODUCT_ID, LISTED_PRODUCT_VERSION);
 
-    assertThat(product).isNotNull();
-    assertThat(product.getId()).isEqualTo(LISTED_PRODUCT_ID);
+    assertThat(product)
+        .as("product should be returned for the requested version")
+        .isNotNull();
+    assertThat(product.getId())
+        .as("returned product id should match the requested product")
+        .isEqualTo(LISTED_PRODUCT_ID);
 
     ProductModuleContent content = product.getProductModuleContent();
-    assertThat(content).isNotNull();
-    assertThat(content.getProductId()).isEqualTo(LISTED_PRODUCT_ID);
-    assertThat(content.getVersion()).isEqualTo(LISTED_PRODUCT_VERSION);
-    assertThat(content.getDescription()).containsEntry("en",
+    assertThat(content)
+        .as("module content should be attached for the requested version")
+        .isNotNull();
+    assertThat(content.getProductId())
+        .as("module content should belong to the requested product")
+        .isEqualTo(LISTED_PRODUCT_ID);
+    assertThat(content.getVersion())
+        .as("module content version should match the request")
+        .isEqualTo(LISTED_PRODUCT_VERSION);
+    assertThat(content.getDescription())
+        .as("description should include the English entry")
+        .containsEntry("en",
         "This Axon Ivy component visually represents the process flow of your current case. It highlights both the active task and all completed tasks directly on the process diagram.");
-    assertThat(content.getSetup()).containsEntry("en", "Add the Component to Your JSF Page");
-    assertThat(content.getDemo()).containsEntry("en", "1. Start **Purchase Request Demo** process");
-    assertThat(content.getComponent()).containsEntry("en", "");
+    assertThat(content.getSetup())
+        .as("setup should include the English entry")
+        .containsEntry("en", "Add the Component to Your JSF Page");
+    assertThat(content.getDemo())
+        .as("demo should include the English entry")
+        .containsEntry("en", "1. Start **Purchase Request Demo** process");
+    assertThat(content.getComponent())
+        .as("component should include the English entry")
+        .containsEntry("en", "");
   }
 }

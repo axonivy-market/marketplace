@@ -20,7 +20,9 @@ class CustomProductModuleContentRepositoryImplTest {
   private ProductModuleContentRepository repository;
 
   @Test
-  void shouldFindVersionsByProductId() {
-    assertThat(repository.findVersionsByProductId(LISTED_PRODUCT_ID)).containsExactly("13.2.3");
+  void testFindVersionsByProductId() {
+    assertThat(repository.findVersionsByProductId(LISTED_PRODUCT_ID))
+        .as("versions should be returned for the listed product")
+        .containsExactly("13.2.3");
   }
 }

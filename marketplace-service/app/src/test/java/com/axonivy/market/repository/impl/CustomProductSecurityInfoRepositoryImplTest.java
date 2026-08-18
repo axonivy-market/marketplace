@@ -28,87 +28,111 @@ class CustomProductSecurityInfoRepositoryImplTest {
   private ProductSecurityInfoRepository repository;
 
   @Test
-  void shouldReturnAllRepositoriesWhenSearchTextIsBlank() {
+  void testReturnAllRepositoriesWhenSearchTextIsBlank() {
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(ProductSecurityCriteria.builder()
         .sortOption(ProductSecuritySortOption.REPO_NAME)
         .sortDirection("ASC")
         .build(), PageRequest.of(0, 10));
 
-    assertThat(result.getTotalElements()).isEqualTo(3);
-    assertThat(result.getContent()).extracting(ProductSecurityInfo::getRepoName)
+    assertThat(result.getTotalElements())
+        .as("blank search should return all repositories")
+        .isEqualTo(3);
+    assertThat(result.getContent())
+        .as("repositories should be sorted by name ascending")
+        .extracting(ProductSecurityInfo::getRepoName)
         .containsExactly(ALPHA_SECURITY, PORTAL_CONNECTOR, ZETA_SECURITY);
   }
 
   @Test
-  void shouldFilterRepositoriesBySearchText() {
+  void testFilterRepositoriesBySearchText() {
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(ProductSecurityCriteria.builder()
         .searchText(SEARCH_TEXT)
         .sortOption(ProductSecuritySortOption.REPO_NAME)
         .sortDirection("ASC")
         .build(), PageRequest.of(0, 10));
 
-    assertThat(result.getTotalElements()).isEqualTo(1);
-    assertThat(result.getContent()).singleElement()
+    assertThat(result.getTotalElements())
+        .as("search text should narrow the result set")
+        .isEqualTo(1);
+    assertThat(result.getContent())
+        .as("filtered result should contain exactly one repository")
+        .singleElement()
         .extracting(ProductSecurityInfo::getRepoName)
         .isEqualTo(PORTAL_CONNECTOR);
   }
 
   @Test
-  void shouldTrimSearchTextBeforeSearching() {
+  void testTrimSearchTextBeforeSearching() {
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(ProductSecurityCriteria.builder()
         .searchText("  portal  ")
         .sortOption(ProductSecuritySortOption.REPO_NAME)
         .sortDirection("ASC")
         .build(), PageRequest.of(0, 10));
 
-    assertThat(result.getTotalElements()).isEqualTo(1);
-    assertThat(result.getContent()).extracting(ProductSecurityInfo::getRepoName)
+    assertThat(result.getTotalElements())
+        .as("search text should be trimmed before lookup")
+        .isEqualTo(1);
+    assertThat(result.getContent())
+        .as("trimmed search should still return the matching repository")
+        .extracting(ProductSecurityInfo::getRepoName)
         .containsExactly(PORTAL_CONNECTOR);
   }
 
   @Test
-  void shouldSortByRepositoryNameDescending() {
+  void testSortByRepositoryNameDescending() {
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(ProductSecurityCriteria.builder()
         .sortOption(ProductSecuritySortOption.REPO_NAME)
         .sortDirection("DESC")
         .build(), PageRequest.of(0, 10));
 
-    assertThat(result.getContent()).extracting(ProductSecurityInfo::getRepoName)
+    assertThat(result.getContent())
+        .as("repositories should be sorted by name descending")
+        .extracting(ProductSecurityInfo::getRepoName)
         .containsExactly(ZETA_SECURITY, PORTAL_CONNECTOR, ALPHA_SECURITY);
   }
 
   @Test
-  void shouldSortByBranchProtection() {
+  void testSortByBranchProtection() {
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(ProductSecurityCriteria.builder()
         .sortOption(ProductSecuritySortOption.BRANCH_PROTECTION)
         .sortDirection("DESC")
         .build(), PageRequest.of(0, 10));
 
-    assertThat(result.getContent()).extracting(ProductSecurityInfo::getRepoName)
+    assertThat(result.getContent())
+        .as("repositories should be sorted by branch protection")
+        .extracting(ProductSecurityInfo::getRepoName)
         .containsExactly(ALPHA_SECURITY, ZETA_SECURITY, PORTAL_CONNECTOR);
   }
 
   @Test
-  void shouldSortByCommitDate() {
+  void testSortByCommitDate() {
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(ProductSecurityCriteria.builder()
         .sortOption(ProductSecuritySortOption.COMMIT_DATE)
         .sortDirection("DESC")
         .build(), PageRequest.of(0, 10));
 
-    assertThat(result.getContent()).extracting(ProductSecurityInfo::getRepoName)
+    assertThat(result.getContent())
+        .as("repositories should be sorted by commit date")
+        .extracting(ProductSecurityInfo::getRepoName)
         .containsExactly(PORTAL_CONNECTOR, ZETA_SECURITY, ALPHA_SECURITY);
   }
 
   @Test
-  void shouldApplyPagination() {
+  void testApplyPagination() {
     Page<ProductSecurityInfo> result = repository.searchProductSecurityAndSorting(ProductSecurityCriteria.builder()
         .sortOption(ProductSecuritySortOption.REPO_NAME)
         .sortDirection("ASC")
         .build(), PageRequest.of(1, 1));
 
-    assertThat(result.getTotalElements()).isEqualTo(3);
-    assertThat(result.getTotalPages()).isEqualTo(3);
-    assertThat(result.getContent()).extracting(ProductSecurityInfo::getRepoName)
+    assertThat(result.getTotalElements())
+        .as("pagination should report the total number of repositories")
+        .isEqualTo(3);
+    assertThat(result.getTotalPages())
+        .as("pagination should report the expected number of pages")
+        .isEqualTo(3);
+    assertThat(result.getContent())
+        .as("second page should contain the middle repository")
+        .extracting(ProductSecurityInfo::getRepoName)
         .containsExactly(PORTAL_CONNECTOR);
   }
 }
