@@ -62,12 +62,10 @@ pipeline {
 
         stage('Checkout Source') {
             steps {
+                cleanWs()
                 script {
-                    sh 'rm -rf target-source'
-                    dir('target-source') {
-                        def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
-                        git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
-                    }
+                    def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
+                    git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
                     deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
                     deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
                     nginxScriptRunner = load '.build/pipeline-lib/deploy_run_nginx_on_nodes.groovy'

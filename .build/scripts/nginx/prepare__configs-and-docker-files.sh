@@ -32,14 +32,14 @@ if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
     SSH_OPTS+=( -i "${SSH_PRIVATE_KEY_FILE}" )
 fi
 
-LOCAL_NGINX_CONFIG="${WORKSPACE_ROOT}/target-source/${NGINX_CONFIG_PATH}"
+LOCAL_NGINX_CONFIG="${WORKSPACE_ROOT}/${NGINX_CONFIG_PATH}"
 if [[ ! -f "${LOCAL_NGINX_CONFIG}" ]]; then
     echo "ERROR: Required file not found: ${LOCAL_NGINX_CONFIG}"
     exit 1
 fi
 
-LOCAL_FIXED_DOCKER_COMPOSE="${WORKSPACE_ROOT}/target-source/marketplace-build/nginx/docker-compose.yml"
-LOCAL_FIXED_DOCKERFILE="${WORKSPACE_ROOT}/target-source/marketplace-build/nginx/Dockerfile"
+LOCAL_FIXED_DOCKER_COMPOSE="${WORKSPACE_ROOT}/marketplace-build/nginx/docker-compose.yml"
+LOCAL_FIXED_DOCKERFILE="${WORKSPACE_ROOT}/marketplace-build/nginx/Dockerfile"
 
 if [[ ! -f "${LOCAL_FIXED_DOCKER_COMPOSE}" ]]; then
     echo "ERROR: Required file not found: ${LOCAL_FIXED_DOCKER_COMPOSE}"

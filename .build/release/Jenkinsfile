@@ -28,7 +28,6 @@ pipeline {
     UI_IMAGE_NAME = 'marketplace-ui'
     APP_IMAGE_NAME = 'marketplace-app'
     STABLE_IMAGE_NAME = 'marketplace-stable'
-    MARKETPLACE_GIT_URL = credentials('MARKETPLACE_GIT_URL')
     GH_TOKEN = credentials('GH_TOKEN')
     VERSION_RETENTION_COUNT = credentials('VERSION_RETENTION_COUNT')
     OCTOPUS_MAIL = credentials('OCTOPUS_MAIL')
@@ -50,29 +49,25 @@ pipeline {
     stage('Checkout Source') {
       steps {
         script {
-          dir('target-source') {
-            git branch: 'master', url: env.MARKETPLACE_GIT_URL
-          }
           deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
           deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
-          dir('target-source') {
-            sh '''
-              git config --global user.email $OCTOPUS_MAIL
-              git config --global user.name $OCTOPUS_ACCOUNT_NAME
-              git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-              git fetch origin new-release || true
+          sh '''
+            git config --global user.email $OCTOPUS_MAIL
+            git config --global user.name $OCTOPUS_ACCOUNT_NAME
+            git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+            git fetch origin master
+            git fetch origin new-release || true
 
-              if git show-ref --verify --quiet refs/remotes/origin/new-release; then
-                AHEAD=$(git rev-list --count origin/master..origin/new-release)
-                if [ "$AHEAD" -gt 0 ]; then
-                  echo "ERROR: origin/new-release is $AHEAD commit(s) ahead of origin/master (likely an open Release PR). Merge or close it before running a new release build."
-                  exit 1
-                fi
+            if git show-ref --verify --quiet refs/remotes/origin/new-release; then
+              AHEAD=$(git rev-list --count origin/master..origin/new-release)
+              if [ "$AHEAD" -gt 0 ]; then
+                echo "ERROR: origin/new-release is $AHEAD commit(s) ahead of origin/master (likely an open Release PR). Merge or close it before running a new release build."
+                exit 1
               fi
+            fi
 
-              git checkout -B new-release origin/master
-            '''
-          }
+            git checkout -B new-release origin/master
+          '''
         }
       }
     }
@@ -82,10 +77,10 @@ pipeline {
         script {
           try {
             sh '''
-              ENV_FILE='./target-source/marketplace-build/templates/.env'
+              ENV_FILE='./marketplace-build/templates/.env'
               cp "$MARKETPLACE_ENV_FILE" "$ENV_FILE"
               chmod 600 "$ENV_FILE"
-              docker compose --project-name marketplace -f ./target-source/marketplace-build/templates/docker-compose.yml down --rmi all
+              docker compose --project-name marketplace -f ./marketplace-build/templates/docker-compose.yml down --rmi all
             '''
           } catch (Exception e) {
             echo "Error during docker compose down, continuing: ${e}"
@@ -102,57 +97,55 @@ pipeline {
     // from an isolated checkout dir that doesn't match our Docker COPY paths.
     stage('Update Version') {
       steps {
-        dir('target-source') {
-          withEnv([
-            "PARENT_POM_FILE=./marketplace-service/pom.xml",
-            "PACKAGE_FILE=./marketplace-ui/package.json",
-            "PUSH_CHANGES=${params.DEPLOY_TO_PROD}"
-          ]) {
-            script {
-              def snapshot = sh(
-                script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f $PARENT_POM_FILE',
-                returnStdout: true
-              ).trim()
-              releaseVersion = snapshot.replace('-SNAPSHOT', '')
-              env.RELEASE_VERSION = releaseVersion
-              currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
-              echo "Release version: ${releaseVersion}"
+        withEnv([
+          "PARENT_POM_FILE=./marketplace-service/pom.xml",
+          "PACKAGE_FILE=./marketplace-ui/package.json",
+          "PUSH_CHANGES=${params.DEPLOY_TO_PROD}"
+        ]) {
+          script {
+            def snapshot = sh(
+              script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f $PARENT_POM_FILE',
+              returnStdout: true
+            ).trim()
+            releaseVersion = snapshot.replace('-SNAPSHOT', '')
+            env.RELEASE_VERSION = releaseVersion
+            currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
+            echo "Release version: ${releaseVersion}"
 
-              def versionParts = releaseVersion.tokenize('.')
-              versionParts[-1] = ((versionParts[-1] as Integer) + 1).toString()
-              env.NEXT_SNAPSHOT_VERSION = "${versionParts.join('.')}-SNAPSHOT"
-              echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
+            def versionParts = releaseVersion.tokenize('.')
+            versionParts[-1] = ((versionParts[-1] as Integer) + 1).toString()
+            env.NEXT_SNAPSHOT_VERSION = "${versionParts.join('.')}-SNAPSHOT"
+            echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
 
-              sh '''
-                git tag -d $RELEASE_VERSION || true
-                if [ "$PUSH_CHANGES" = "true" ]; then
-                  git push --delete origin $RELEASE_VERSION || true
-                fi
+            sh '''
+              git tag -d $RELEASE_VERSION || true
+              if [ "$PUSH_CHANGES" = "true" ]; then
+                git push --delete origin $RELEASE_VERSION || true
+              fi
 
-                sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" $PACKAGE_FILE
-                git commit -a -m "[release] set marketplace-ui version to $RELEASE_VERSION"
+              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" $PACKAGE_FILE
+              git commit -a -m "[release] set marketplace-ui version to $RELEASE_VERSION"
 
-                mvn -B release:clean release:prepare \
-                  -DreleaseVersion=$RELEASE_VERSION \
-                  -DdevelopmentVersion=$NEXT_SNAPSHOT_VERSION \
-                  -DautoVersionSubmodules=true \
-                  -DpreparationGoals="clean verify -DskipTests=true" \
-                  -Dtag=$RELEASE_VERSION \
-                  -DpushChanges=$PUSH_CHANGES \
-                  -Dresume=false \
-                  -f $PARENT_POM_FILE
+              mvn -B release:clean release:prepare \
+                -DreleaseVersion=$RELEASE_VERSION \
+                -DdevelopmentVersion=$NEXT_SNAPSHOT_VERSION \
+                -DautoVersionSubmodules=true \
+                -DpreparationGoals="clean verify -DskipTests=true" \
+                -Dtag=$RELEASE_VERSION \
+                -DpushChanges=$PUSH_CHANGES \
+                -Dresume=false \
+                -f $PARENT_POM_FILE
 
-                sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$NEXT_SNAPSHOT_VERSION\\"/" $PACKAGE_FILE
-                git commit -a -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
-                if [ "$PUSH_CHANGES" = "true" ]; then
-                  git push origin HEAD:new-release
-                fi
+              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$NEXT_SNAPSHOT_VERSION\\"/" $PACKAGE_FILE
+              git commit -a -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
+              if [ "$PUSH_CHANGES" = "true" ]; then
+                git push origin HEAD:new-release
+              fi
 
-                git checkout $RELEASE_VERSION
-              '''
-            }
-            sh 'mvn clean install -DskipTests=true -f $PARENT_POM_FILE'
+              git checkout $RELEASE_VERSION
+            '''
           }
+          sh 'mvn clean install -DskipTests=true -f $PARENT_POM_FILE'
         }
       }
     }
@@ -160,7 +153,7 @@ pipeline {
     stage('Build Env File') {
       steps {
         sh '''
-          ENV_FILE='./target-source/marketplace-build/templates/.env'
+          ENV_FILE='./marketplace-build/templates/.env'
           cp "$MARKETPLACE_ENV_FILE" "$ENV_FILE"
 
           if grep -q '^RELEASE_VERSION=' "$ENV_FILE"; then
@@ -177,7 +170,7 @@ pipeline {
     stage('Build Docker Images') {
       steps {
         script {
-          dir('./target-source/marketplace-build/templates/dev') {
+          dir('./marketplace-build/templates/dev') {
             sh '''
                 export BUILD_ENV=production
                 export BUILD_VERSION=$RELEASE_VERSION
@@ -192,7 +185,7 @@ pipeline {
 
     stage('Wait for Containers') {
       steps {
-        dir('./target-source/marketplace-build/templates') {
+        dir('./marketplace-build/templates') {
           sh '''
             timeout=300
             start_time=$(date +%s)
@@ -433,19 +426,17 @@ pipeline {
         expression { params.DEPLOY_TO_PROD }
       }
       steps {
-        dir('target-source') {
-          script {
-            sh '''
-              PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base master --json number --jq ".[0].number" 2>/dev/null || echo "")
-              
-              if [ -z "$PR_EXISTS" ]; then
-                gh pr create --repo axonivy-market/marketplace --title "Release" --body "Automated release PR bumping to next development version $NEXT_SNAPSHOT_VERSION" --head new-release --base master
-                echo "Pull request created successfully"
-              else
-                echo "Pull request #$PR_EXISTS already exists"
-              fi
-            '''
-          }
+        script {
+          sh '''
+            PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base master --json number --jq ".[0].number" 2>/dev/null || echo "")
+
+            if [ -z "$PR_EXISTS" ]; then
+              gh pr create --repo axonivy-market/marketplace --title "Release" --body "Automated release PR bumping to next development version $NEXT_SNAPSHOT_VERSION" --head new-release --base master
+              echo "Pull request created successfully"
+            else
+              echo "Pull request #$PR_EXISTS already exists"
+            fi
+          '''
         }
       }
     }

@@ -24,7 +24,7 @@ fi
 
 setup_ssh_opts
 
-TEMPLATE_ROOT="${WORKSPACE_ROOT}/target-source/marketplace-build/templates"
+TEMPLATE_ROOT="${WORKSPACE_ROOT}/marketplace-build/templates"
 LOCAL_TEMPLATE_ENV="${TEMPLATE_ROOT}/.env"
 LOCAL_TEMPLATE_COMPOSE="${TEMPLATE_ROOT}/docker-compose.yml"
 
