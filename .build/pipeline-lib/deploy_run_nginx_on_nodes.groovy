@@ -23,7 +23,8 @@ def runNginxScriptOnNodes(List nodesToDeploy, String actionLabel, String scriptP
             def safeArgs = nodeArgs.collect { arg ->
                 "\"${escapeForDoubleQuotes((arg ?: '').toString())}\""
             }
-            def joinedArgs = safeArgs.join(" \\\n                                    ")
+            // Keep a leading space before line-continuation to avoid merging adjacent args.
+            def joinedArgs = safeArgs.join(" \\\n                    ")
 
             sh """
                 set +x
