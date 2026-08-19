@@ -17,6 +17,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.axonivy.market.core.converter.StringListConverter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,6 +59,7 @@ public class Product extends AbstractAuditableEntity<String> {
 
   @JsonProperty
   @ElementCollection
+  @Fetch(FetchMode.SUBSELECT)
   @CollectionTable(name = PRODUCT_NAME, joinColumns = @JoinColumn(name = PRODUCT_ID))
   @MapKeyColumn(name = LANGUAGE)
   @Column(name = NAME, columnDefinition = TEXT_TYPE)
@@ -64,6 +67,7 @@ public class Product extends AbstractAuditableEntity<String> {
 
   @JsonProperty
   @ElementCollection
+  @Fetch(FetchMode.SUBSELECT)
   @CollectionTable(name = PRODUCT_DESCRIPTION, joinColumns = @JoinColumn(name = PRODUCT_ID))
   @MapKeyColumn(name = LANGUAGE)
   @Column(name = SHORT_DESCRIPTION, columnDefinition = TEXT_TYPE)
