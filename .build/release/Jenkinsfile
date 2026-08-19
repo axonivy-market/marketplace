@@ -18,7 +18,7 @@ pipeline {
     booleanParam(
       name: 'DEPLOY_TO_PROD',
       defaultValue: false,
-      description: 'When true: publish images to GitHub Packages, tag the release in git, and (after 4-eyes approval) roll out directly to PROD nodes (skip PREVIEW). When false: only build Docker images locally and deploy to PREVIEW stack with those local images.'
+      description: 'Images are always published to GHCR (required for pull-based deploy on remote nodes). When true: additionally tag the release in git, and (after 4-eyes approval) roll out directly to PROD nodes (skip PREVIEW). When false: tag/push to git is skipped locally-only, and the pipeline deploys to the PREVIEW stack instead.'
     )
   }
 
@@ -44,8 +44,6 @@ pipeline {
       }
     }
 
-    // Checks out master and (re)creates new-release from it, failing the build if new-release
-    // is already ahead of master (i.e. an open Release PR holds unmerged version-bump commits).
     stage('Checkout Source') {
       steps {
         script {
@@ -89,12 +87,6 @@ pipeline {
       }
     }
 
-    // Same release:prepare command for PROD and non-PROD; only -DpushChanges differs, so preview
-    // builds still get a real local version bump/commit/tag (needed for the Docker build to pick up
-    // the right version) but nothing is pushed to the shared repo. package.json isn't part of the
-    // Maven reactor, so it's bumped and committed manually around the release:prepare call.
-    // We still build locally afterwards instead of using release:perform, since that goal builds
-    // from an isolated checkout dir that doesn't match our Docker COPY paths.
     stage('Update Version') {
       steps {
         withEnv([
@@ -206,55 +198,49 @@ pipeline {
     }
 
     stage('Log in to GitHub Container Registry') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
       steps {
         sh 'echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
       }
     }
 
     stage('Release Marketplace UI Image') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
       steps {
         sh '''
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
           docker tag $UI_IMAGE_NAME:latest $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
           export IMAGE_NAME=$UI_IMAGE_NAME
-          bash ./.build/scripts/utils/ghcr-cleanup.sh
+          if [ "$DEPLOY_TO_PROD" = "true" ]; then
+            bash ./.build/scripts/utils/ghcr-cleanup.sh
+          fi
         '''
       }
     }
 
     stage('Release Marketplace App Image') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
       steps {
         sh '''
           APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
           docker tag $APP_IMAGE_NAME:latest $APP_IMAGE_ID:$RELEASE_VERSION
           docker push $APP_IMAGE_ID:$RELEASE_VERSION
           export IMAGE_NAME=$APP_IMAGE_NAME
-          bash ./.build/scripts/utils/ghcr-cleanup.sh
+          if [ "$DEPLOY_TO_PROD" = "true" ]; then
+            bash ./.build/scripts/utils/ghcr-cleanup.sh
+          fi
         '''
       }
     }
 
     stage('Release Marketplace Stable Image') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
       steps {
         sh '''
           STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
           docker tag $STABLE_IMAGE_NAME:latest $STABLE_IMAGE_ID:$RELEASE_VERSION
           docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
           export IMAGE_NAME=$STABLE_IMAGE_NAME
-          bash ./.build/scripts/utils/ghcr-cleanup.sh
+          if [ "$DEPLOY_TO_PROD" = "true" ]; then
+            bash ./.build/scripts/utils/ghcr-cleanup.sh
+          fi
         '''
       }
     }
