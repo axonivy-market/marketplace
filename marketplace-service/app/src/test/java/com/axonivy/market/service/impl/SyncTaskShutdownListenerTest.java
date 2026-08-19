@@ -1,7 +1,6 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.entity.SyncTaskExecution;
-import com.axonivy.market.enums.SyncTaskStatus;
 import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;

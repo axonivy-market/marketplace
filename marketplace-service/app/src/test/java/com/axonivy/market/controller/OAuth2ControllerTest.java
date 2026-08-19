@@ -1,83 +1,75 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.aop.aspect.AuthorizedAspect;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.Oauth2AuthorizationCode;
-import com.axonivy.market.model.UserInfo;
 import com.axonivy.market.service.OAuth2Service;
-import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Map;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-class OAuth2ControllerTest extends BaseSetup {
-  @Mock
+@ControllerWebMvcTest(OAuth2Controller.class)
+class OAuth2ControllerTest extends WebMvcControllerTestSupport {
+
+  private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+  @MockitoBean
   private OAuth2Service oAuth2Service;
-  @InjectMocks
-  private OAuth2Controller oAuth2Controller;
 
-  private Oauth2AuthorizationCode oauth2AuthorizationCode;
-
-  @BeforeEach
-  void setup() {
-    oauth2AuthorizationCode = new Oauth2AuthorizationCode();
+  @Test
+  void testGitHubLoginSuccess() throws Exception {
+    Oauth2AuthorizationCode oauth2AuthorizationCode = new Oauth2AuthorizationCode();
     oauth2AuthorizationCode.setCode("sampleCode");
+    when(oAuth2Service.loginToGitHubAndGetJWT(any())).thenReturn(JWT_TOKEN);
+
+    mockMvc.perform(post("/auth/github/login")
+            .with(requestedByHeader())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(oauth2AuthorizationCode)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").value(JWT_TOKEN));
   }
 
   @Test
-  void testGitHubLoginSuccess() {
-    when(oAuth2Service.loginToGitHubAndGetJWT(oauth2AuthorizationCode)).thenReturn(JWT_TOKEN);
-    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
+  void testGitHubLoginOauth2ExchangeCodeException() throws Exception {
+    Oauth2AuthorizationCode oauth2AuthorizationCode = new Oauth2AuthorizationCode();
+    oauth2AuthorizationCode.setCode("sampleCode");
 
-    assertEquals(200, response.getStatusCode().value(),
-        "Response status should be 200 OK when GitHub login succeeds");
-    assertEquals(Map.of("token", JWT_TOKEN), response.getBody(),
-        "Response body should contain the generated JWT token");
+    mockMvc.perform(post("/auth/github/login")
+            .with(requestedByHeader())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(oauth2AuthorizationCode)))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
-  void testGitHubLoginOauth2ExchangeCodeException() {
-    ResponseEntity<?> response = oAuth2Controller.gitHubLogin(oauth2AuthorizationCode);
-    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(),
-        "Response status should be 401 UNAUTHORIZED when OAuth2 exchange fails");
-  }
-
-  @Test
-  void testRequestAccessSuccess() {
+  void testRequestAccessSuccess() throws Exception {
     var mockUserInfo = getMockUserInfo();
-
     when(oAuth2Service.validateTokenAndGenerateJWT(JWT_TOKEN)).thenReturn(mockUserInfo);
 
-    ResponseEntity<UserInfo> response =
-        oAuth2Controller.requestAccess(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN));
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be 200 OK when GitHub login succeeds");
-    assertEquals(mockUserInfo.getToken(), Objects.requireNonNull(response.getBody()).getToken(),
-        "Response body should contain the generated JWT token");
+    mockMvc.perform(post("/auth/github/request-access")
+            .with(requestedByHeader())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(Map.of(GitHubConstants.Json.TOKEN, JWT_TOKEN))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").value(JWT_TOKEN));
   }
 
   @Test
-  void testValidateAuthorizationCode() {
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-    when(mockRequest.getAttribute(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE)).thenReturn(JWT_TOKEN);
-    ResponseEntity<?> response = oAuth2Controller.isAuthenticated(mockRequest);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode(),
-        "Response status should be 200 OK when authorization code is validated.");
+  void testValidateAuthorizationCode() throws Exception {
+    mockMvc.perform(put("/auth/github/validate-token")
+            .with(requestedByHeader())
+            .requestAttr(AuthorizedAspect.VALIDATED_TOKEN_ATTRIBUTE, JWT_TOKEN))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").value(true));
   }
 }
