@@ -124,10 +124,11 @@ class ProductSearchRepositoryImplTest extends BaseSetup {
     Product nullAlpha = createProduct("standard-sort-null-alpha", "Alpha Null");
     Product nullZulu = createProduct("standard-sort-null-zulu", "Zulu Null");
 
+    productMarketplaceDataRepository.resetCustomOrderForAllProducts();
     repository.saveAll(List.of(customHigh, customLow, nullAlpha, nullZulu));
     productMarketplaceDataRepository.saveAll(List.of(
-        createMarketplaceData(customHigh.getId(), 100),
-        createMarketplaceData(customLow.getId(), 99),
+        createMarketplaceData(customHigh.getId(), 1),
+        createMarketplaceData(customLow.getId(), 2),
         createMarketplaceData(nullAlpha.getId(), null),
         createMarketplaceData(nullZulu.getId(), null)));
 

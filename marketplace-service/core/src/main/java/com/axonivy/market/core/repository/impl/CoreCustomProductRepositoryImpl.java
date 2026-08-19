@@ -16,6 +16,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.MapJoin;
 import jakarta.persistence.criteria.Order;
@@ -178,10 +179,13 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
 
     var predicate = buildCriteriaSearch(searchCriteria, criteriaContext.query(), criteriaContext.builder(),
         criteriaContext.root());
+    criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA, JoinType.LEFT);
+    Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root()
+        .join(PRODUCT_MARKETPLACE_DATA, JoinType.LEFT);
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
     namesJoin.on(criteriaContext.builder().equal(namesJoin.key(), language.getValue()));
 
-    List<Order> orders = sortByOrders(criteriaContext, pageRequest, namesJoin);
+    List<Order> orders = sortByOrders(criteriaContext, pageRequest, namesJoin, marketplaceJoin);
 
     criteriaContext.query().select(criteriaContext.root()).where(predicate)
         .orderBy(orders);
@@ -194,15 +198,13 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     results.forEach(product -> {
       Hibernate.initialize(product.getNames());
       Hibernate.initialize(product.getShortDescriptions());
-      if (product.getProductMarketplaceData() != null) {
-        Hibernate.initialize(product.getProductMarketplaceData());
-      }
     });
     return results;
   }
 
   private List<Order> sortByOrders(CriteriaQueryContext<Product> criteriaContext,
-      PageRequest pageRequest, MapJoin<Product, String, String> namesJoin) {
+      PageRequest pageRequest, MapJoin<Product, String, String> namesJoin,
+      Join<Product, ProductMarketplaceData> marketplaceJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent((Sort.Order order) -> {
@@ -211,7 +213,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
           case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
           case RECENT -> orders.add(sortByRecent(criteriaContext));
           case POPULARITY -> orders.add(sortByPopularity(criteriaContext));
-          default -> orders.addAll(sortByStandard(criteriaContext, namesJoin));
+          default -> orders.addAll(sortByStandard(criteriaContext, namesJoin, marketplaceJoin));
         }
       });
     }
@@ -221,18 +223,14 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return orders;
   }
   private List<Order> sortByStandard(
-      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin) {
+      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin,
+      Join<Product, ProductMarketplaceData> marketplaceJoin) {
     List<Order> orders = new ArrayList<>();
-    Subquery<Integer> customOrderSubquery = criteriaContext.query().subquery(Integer.class);
-    Root<ProductMarketplaceData> productMarketplaceDataRoot = customOrderSubquery.from(ProductMarketplaceData.class);
-    customOrderSubquery.select(productMarketplaceDataRoot.get(CUSTOM_ORDER))
-        .where(criteriaContext.builder().equal(productMarketplaceDataRoot.get(ID), criteriaContext.root().get(ID)));
-    Expression<Integer> customOrder = customOrderSubquery;
     var nullsLastOrder = criteriaContext.builder().asc(criteriaContext.builder().selectCase()
-        .when(criteriaContext.builder().isNull(customOrder), 1)
+        .when(criteriaContext.builder().isNull(marketplaceJoin.get(CUSTOM_ORDER)), 1)
         .otherwise(0));
     orders.add(nullsLastOrder);
-    orders.add(criteriaContext.builder().desc(customOrder));
+    orders.add(criteriaContext.builder().asc(marketplaceJoin.get(CUSTOM_ORDER)));
     orders.add(sortByAlphabet(criteriaContext, namesJoin));
     return orders;
   }
