@@ -2,8 +2,7 @@
 # Rollout step 3: promote the release by switching current, reloading nginx, and cleaning old resources.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/release-context-lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/release-context-lib.sh"
 
 echo "--- Step 3: Promote Release ---"
 echo "Switching current symlink to ${NEW_RELEASE_NAME}..."

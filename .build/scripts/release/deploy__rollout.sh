@@ -2,7 +2,8 @@
 # Uploads rollout step scripts to the node and executes deploy, health-check, and promote in order.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../../pipeline-lib/ssh-lib.sh"
 
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
@@ -13,11 +14,7 @@ if [[ -z "${NODE_IP}" || -z "${RELEASE_VERSION}" || -z "${HEALTH_CHECK_TARGETS_A
     exit 1
 fi
 
-SSH_USER="${SSH_REMOTE_USER:-ec2-user}"
-SSH_OPTS=( -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o UserKnownHostsFile=~/.ssh/known_hosts )
-if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
-    SSH_OPTS+=( -i "${SSH_PRIVATE_KEY_FILE}" )
-fi
+setup_ssh_opts
 
 HEALTH_CHECK_TIMEOUT="${HEALTH_CHECK_TIMEOUT:-300}"
 HEALTH_CHECK_INTERVAL="${HEALTH_CHECK_INTERVAL:-10}"
@@ -39,10 +36,10 @@ echo "Release: ${RELEASE_VERSION}"
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" "mkdir -p '${REMOTE_SCRIPT_DIR}'"
 
 scp "${SSH_OPTS[@]}" \
-    "${SCRIPT_DIR}/release-context-lib.sh" \
-    "${SCRIPT_DIR}/step1-deploy-release.sh" \
-    "${SCRIPT_DIR}/step2-verify-release-health.sh" \
-    "${SCRIPT_DIR}/step3-promote-release.sh" \
+    "${SCRIPT_DIR}/../../pipeline-lib/release-context-lib.sh" \
+    "${SCRIPT_DIR}/deploy__start-containers.sh" \
+    "${SCRIPT_DIR}/deploy__verify-health.sh" \
+    "${SCRIPT_DIR}/deploy__promote.sh" \
     "${SSH_USER}@${NODE_IP}:${REMOTE_SCRIPT_DIR}/" || {
     echo "Failed to transfer deployment assets"
     exit 1
@@ -86,10 +83,10 @@ export ROLLBACK_COMPOSE_PROJECT="${OLD_COMPOSE_PROJECT}"
 echo "Pinned rollback release: ${ROLLBACK_RELEASE_NAME:-<none>}"
 
 if [[ "${SKIP_DEPLOY_RELEASE:-false}" != "true" ]]; then
-    bash "${REMOTE_SCRIPT_DIR}/step1-deploy-release.sh"
+    bash "${REMOTE_SCRIPT_DIR}/deploy__start-containers.sh"
 else
-    echo "Skipping step1-deploy-release.sh because containers were already restarted earlier"
+    echo "Skipping deploy__start-containers.sh because containers were already restarted earlier"
 fi
-bash "${REMOTE_SCRIPT_DIR}/step2-verify-release-health.sh"
-bash "${REMOTE_SCRIPT_DIR}/step3-promote-release.sh"
+bash "${REMOTE_SCRIPT_DIR}/deploy__verify-health.sh"
+bash "${REMOTE_SCRIPT_DIR}/deploy__promote.sh"
 REMOTE_EOF

@@ -2,6 +2,8 @@
 # Creates release compose assets by copying the template compose file into the new publish path.
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../pipeline-lib/ssh-lib.sh"
+
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
 REMOTE_TEMPLATE_DIR="${3:-}"
@@ -16,11 +18,7 @@ if [[ ${#missing_args[@]} -gt 0 ]]; then
     exit 1
 fi
 
-SSH_USER="${SSH_REMOTE_USER:-ec2-user}"
-SSH_OPTS=( -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o UserKnownHostsFile=~/.ssh/known_hosts )
-if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
-    SSH_OPTS+=( -i "${SSH_PRIVATE_KEY_FILE}" )
-fi
+setup_ssh_opts
 
 ssh "${SSH_OPTS[@]}" "${SSH_USER}@${NODE_IP}" \
     "RELEASE_VERSION='${RELEASE_VERSION}' REMOTE_TEMPLATE_DIR='${REMOTE_TEMPLATE_DIR}' bash -se" <<'REMOTE_EOF'

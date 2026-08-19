@@ -2,8 +2,7 @@
 # Rollout step 1: authenticate to GHCR, stop old release containers, and start the new release.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/release-context-lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/release-context-lib.sh"
 
 echo "--- Step 1: Deploy New Release ---"
 echo "Logging into ghcr.io..."
