@@ -147,6 +147,19 @@ pipeline {
         }
       }
     }
+    
+    stage('Await Production Approval') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        script {
+          timeout(time: 6, unit: 'HOURS') {
+            deployApproval.confirmProductionDeployment('Production', releaseVersion)
+          }
+        }
+      }
+    }
 
     stage('Build Env File') {
       steps {
@@ -314,19 +327,6 @@ pipeline {
                     "${node.healthCheckEndpoints}"
               """
             }
-          }
-        }
-      }
-    }
-
-    stage('Await Production Approval') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
-      steps {
-        script {
-          timeout(time: 6, unit: 'HOURS') {
-            deployApproval.confirmProductionDeployment('Production', releaseVersion)
           }
         }
       }
