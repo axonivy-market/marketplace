@@ -243,6 +243,22 @@ pipeline {
       }
     }
 
+    stage('Stop Build Containers') {
+      steps {
+        script {
+          try {
+            dir('./marketplace-build/templates/dev') {
+              sh '''
+                docker compose --project-name marketplace down
+              '''
+            }
+          } catch (Exception e) {
+            echo "Error stopping build containers, continuing: ${e}"
+          }
+        }
+      }
+    }
+
     stage('Deploy to Preview') {
       when {
         expression { !params.DEPLOY_TO_PROD }
