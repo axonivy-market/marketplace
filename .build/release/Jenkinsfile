@@ -113,7 +113,8 @@ pipeline {
             echo "Release version: ${releaseVersion}"
 
             def versionParts = releaseVersion.tokenize('.')
-            versionParts[-1] = ((versionParts[-1] as Integer) + 1).toString()
+            versionParts[1] = ((versionParts[1] as Integer) + 1).toString()
+            versionParts[2] = '0'
             env.NEXT_SNAPSHOT_VERSION = "${versionParts.join('.')}-SNAPSHOT"
             echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
 
