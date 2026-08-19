@@ -75,10 +75,7 @@ pipeline {
         script {
           try {
             sh '''
-              ENV_FILE='./marketplace-build/templates/.env'
-              cp "$MARKETPLACE_ENV_FILE" "$ENV_FILE"
-              chmod 600 "$ENV_FILE"
-              docker compose --project-name marketplace -f ./marketplace-build/templates/docker-compose.yml down --rmi all
+              docker compose --env-file "$MARKETPLACE_ENV_FILE" --project-name marketplace -f ./marketplace-build/templates/docker-compose.yml down --rmi all
             '''
           } catch (Exception e) {
             echo "Error during docker compose down, continuing: ${e}"
@@ -125,7 +122,7 @@ pipeline {
                 -DautoVersionSubmodules=true \
                 -DpreparationGoals="clean verify -DskipTests=true" \
                 -Dtag=$RELEASE_VERSION \
-                -DpushChanges=$PUSH_CHANGES \
+                -DpushChanges=false \
                 -Dresume=false \
                 -f $PARENT_POM_FILE
 
@@ -133,6 +130,7 @@ pipeline {
               git commit -a -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
               if [ "$PUSH_CHANGES" = "true" ]; then
                 git push origin HEAD:new-release
+                git push origin $RELEASE_VERSION
               fi
 
               git checkout $RELEASE_VERSION
