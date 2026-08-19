@@ -51,8 +51,8 @@ pipeline {
           deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
           deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
           sh '''
-            git config --global user.email $MARKET_MAIL
-            git config --global user.name $MARKET_ACCOUNT_NAME
+            git config --global user.email $MARKET_MAIL --add
+            git config --global user.name $MARKET_ACCOUNT_NAME --add
             git remote set-url origin https://github.com/axonivy-market/marketplace.git
             git fetch origin $RELEASE_BASE_BRANCH
             git fetch origin new-release || true
