@@ -4,19 +4,9 @@ pipeline {
         ansiColor('xterm')
     }
 
-    parameters {
-        string(name: 'JDK_TOOL', defaultValue: 'JDK-25', description: 'Jenkins JDK tool name from Global Tool Configuration')
-        gitParameter(
-                name: 'BRANCH',
-                type: 'PT_BRANCH',
-                defaultValue: 'origin/develop',
-                description: 'Choose your GitHub branch',
-                branchFilter: '.*',
-                tagFilter: '*',
-                sortMode: 'NONE',
-                selectedValue: 'DEFAULT',
-                quickFilterEnabled: true
-        )
+    triggers {
+        // Poll every 5 minutes; fires only when develop has new commits
+        pollSCM('H/5 * * * *')
     }
 
     environment {
@@ -59,8 +49,7 @@ pipeline {
         stage('Build and Deploy') {
             steps {
                 script {
-                    def gitBranch = params.BRANCH.replaceFirst(/^origin\//, '')
-                    git branch: gitBranch, url: env.MARKETPLACE_GIT_URL
+                    git branch: 'develop', url: env.MARKETPLACE_GIT_URL
                     sh '''
                         ENV_FILE='./marketplace-build/templates/.env'
                         cp "$MARKETPLACE_ENV_FILE" "$ENV_FILE"
@@ -73,7 +62,7 @@ pipeline {
         stage('Build skip tests with Maven') {
           steps {
             script {
-              def javaHome = tool name: params.JDK_TOOL, type: 'hudson.model.JDK'
+              def javaHome = tool name: 'JDK-25', type: 'hudson.model.JDK'
               withEnv([
                 "JAVA_HOME=${javaHome}",
                 "PATH+JAVA=${javaHome}/bin"
@@ -95,12 +84,8 @@ pipeline {
                             export NGINX_CONFIG_PATH=$NGINX_CONFIG_PATH
                             export BUILD_ENV=staging
                             export BUILD_VERSION=1.0.0-SNAPSHOT
-                            export NGINX_PORT=80
                             export STABLE_LOG_PATH=/home/axonivy/marketplace/dev/logs/stable
                             export APP_LOG_PATH=/home/axonivy/marketplace/dev/logs/app
-                            export NGINX_LOG_PATH=/home/axonivy/marketplace/dev/logs/nginx
-                            export NGINX_CACHE_PATH=/home/axonivy/marketplace/dev/cache
-                            export MARKET_INSTALLATIONS_PATH=/home/axonivy/marketplace/dev/data/market-installations.json
                             docker compose -p market-dev up --build --force-recreate -d
 
                             # Restart live nginx containers by name prefix across environments.
