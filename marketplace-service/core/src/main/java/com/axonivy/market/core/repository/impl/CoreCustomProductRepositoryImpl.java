@@ -3,7 +3,6 @@ package com.axonivy.market.core.repository.impl;
 import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.core.entity.ProductCustomSort;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.core.enums.DocumentField;
 import com.axonivy.market.core.enums.Language;
@@ -223,7 +222,6 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   }
   private List<Order> sortByStandard(
       CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin) {
-    List<ProductCustomSort> customSorts = coreProductCustomSortRepository.findAll();
     List<Order> orders = new ArrayList<>();
     Subquery<Integer> customOrderSubquery = criteriaContext.query().subquery(Integer.class);
     Root<ProductMarketplaceData> productMarketplaceDataRoot = customOrderSubquery.from(ProductMarketplaceData.class);
@@ -235,16 +233,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
         .otherwise(0));
     orders.add(nullsLastOrder);
     orders.add(criteriaContext.builder().desc(customOrder));
-    if (ObjectUtils.isNotEmpty(customSorts)) {
-      var sortOptionExtension = SortOption.of(customSorts.getFirst().getRuleForRemainder());
-      switch (sortOptionExtension) {
-        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
-        case RECENT -> orders.add(sortByRecent(criteriaContext));
-        default -> orders.add(sortByPopularity(criteriaContext));
-      }
-    } else {
-      orders.add(sortByAlphabet(criteriaContext, namesJoin));
-    }
+    orders.add(sortByAlphabet(criteriaContext, namesJoin));
     return orders;
   }
 
