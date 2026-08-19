@@ -2,6 +2,8 @@
 # Uploads template env/compose files and secret env to a temporary directory on the target node.
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../pipeline-lib/ssh-lib.sh"
+
 NODE_IP="${1:-}"
 RELEASE_VERSION="${2:-}"
 ENV_SECRET_FILE="${3:-}"
@@ -20,13 +22,9 @@ if [[ ${#missing_args[@]} -gt 0 ]]; then
     exit 1
 fi
 
-SSH_USER="${SSH_REMOTE_USER:-ec2-user}"
-SSH_OPTS=( -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o UserKnownHostsFile=~/.ssh/known_hosts )
-if [[ -n "${SSH_PRIVATE_KEY_FILE:-}" ]]; then
-    SSH_OPTS+=( -i "${SSH_PRIVATE_KEY_FILE}" )
-fi
+setup_ssh_opts
 
-TEMPLATE_ROOT="${WORKSPACE_ROOT}/target-source/marketplace-build/templates"
+TEMPLATE_ROOT="${WORKSPACE_ROOT}/marketplace-build/templates"
 LOCAL_TEMPLATE_ENV="${TEMPLATE_ROOT}/.env"
 LOCAL_TEMPLATE_COMPOSE="${TEMPLATE_ROOT}/docker-compose.yml"
 

@@ -5,7 +5,7 @@ services:
     container_name: ${UI_CONTAINER_NAME:-market-ui-latest}
     image: ghcr.io/axonivy-market/marketplace-ui:${RELEASE_VERSION}
     env_file:
-      - .env
+      - ${MARKET_ENV_FILE:-.env}
     volumes:
       - marketbrowser:/browser_share
     restart: always
@@ -23,7 +23,7 @@ services:
       - marketcache:/app/data/market-cache
       - ${APP_LOG_PATH}:/app/logs
     env_file:
-      - .env
+      - ${MARKET_ENV_FILE:-.env}
     expose:
       - 8080
     networks:
@@ -36,7 +36,7 @@ services:
     volumes:
       - ${STABLE_LOG_PATH}:/app/logs
     env_file:
-      - .env
+      - ${MARKET_ENV_FILE:-.env}
     expose:
       - 8085
     networks:
