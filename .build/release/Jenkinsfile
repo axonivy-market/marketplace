@@ -124,10 +124,6 @@ pipeline {
               echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
 
               sh '''
-                git config --global user.email $OCTOPUS_MAIL
-                git config --global user.name $OCTOPUS_ACCOUNT_NAME
-                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-
                 git tag -d $RELEASE_VERSION || true
                 if [ "$PUSH_CHANGES" = "true" ]; then
                   git push --delete origin $RELEASE_VERSION || true

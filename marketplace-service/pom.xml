@@ -16,6 +16,13 @@
   <name>marketplace-service</name>
   <description>marketplace-service</description>
 
+  <scm>
+    <connection>scm:git:https://github.com/axonivy-market/marketplace.git</connection>
+    <developerConnection>scm:git:https://github.com/axonivy-market/marketplace.git</developerConnection>
+    <url>https://github.com/axonivy-market/marketplace</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <modules>
     <module>core</module>
     <module>app</module>
