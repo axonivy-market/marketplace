@@ -45,6 +45,8 @@ pipeline {
       }
     }
 
+    // Checks out master and (re)creates new-release from it, failing the build if new-release
+    // is already ahead of master (i.e. an open Release PR holds unmerged version-bump commits).
     stage('Checkout Source') {
       steps {
         script {
@@ -53,46 +55,24 @@ pipeline {
           }
           deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
           deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
-        }
-      }
-    }
-
-    stage('Check for Existing Release PR') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
-      steps {
-        dir('target-source') {
-          script {
+          dir('target-source') {
             sh '''
               git config --global user.email $OCTOPUS_MAIL
               git config --global user.name $OCTOPUS_ACCOUNT_NAME
               git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-              
-              OPEN_PR=$(gh pr list --repo axonivy-market/marketplace --state open --head new-release --title "Release" --json number --jq ".[0].number" 2>/dev/null || echo "")
-              
-              if [ ! -z "$OPEN_PR" ]; then
-                echo "ERROR: Found open PR #$OPEN_PR for Release. Please merge it first before running a new release build."
-                exit 1
+              git fetch origin new-release || true
+
+              if git show-ref --verify --quiet refs/remotes/origin/new-release; then
+                AHEAD=$(git rev-list --count origin/master..origin/new-release)
+                if [ "$AHEAD" -gt 0 ]; then
+                  echo "ERROR: origin/new-release is $AHEAD commit(s) ahead of origin/master (likely an open Release PR). Merge or close it before running a new release build."
+                  exit 1
+                fi
               fi
-              echo "No existing open Release PR found. Proceeding with build."
+
+              git checkout -B new-release origin/master
             '''
           }
-        }
-      }
-    }
-
-    stage('Compute Release Version') {
-      steps {
-        script {
-          def snapshot = sh(
-            script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file ./target-source/marketplace-service/core/pom.xml',
-            returnStdout: true
-          ).trim()
-          releaseVersion = snapshot.replace('-SNAPSHOT', '')
-          env.RELEASE_VERSION = releaseVersion
-          currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
-          echo "Release version: ${releaseVersion}"
         }
       }
     }
@@ -114,82 +94,70 @@ pipeline {
       }
     }
 
+    // Same release:prepare command for PROD and non-PROD; only -DpushChanges differs, so preview
+    // builds still get a real local version bump/commit/tag (needed for the Docker build to pick up
+    // the right version) but nothing is pushed to the shared repo. package.json isn't part of the
+    // Maven reactor, so it's bumped and committed manually around the release:prepare call.
+    // We still build locally afterwards instead of using release:perform, since that goal builds
+    // from an isolated checkout dir that doesn't match our Docker COPY paths.
     stage('Update Version') {
       steps {
         dir('target-source') {
           withEnv([
             "PARENT_POM_FILE=./marketplace-service/pom.xml",
-            "PACKAGE_FILE=./marketplace-ui/package.json"
+            "PACKAGE_FILE=./marketplace-ui/package.json",
+            "PUSH_CHANGES=${params.DEPLOY_TO_PROD}"
           ]) {
             script {
+              def snapshot = sh(
+                script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f $PARENT_POM_FILE',
+                returnStdout: true
+              ).trim()
+              releaseVersion = snapshot.replace('-SNAPSHOT', '')
+              env.RELEASE_VERSION = releaseVersion
+              currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
+              echo "Release version: ${releaseVersion}"
+
+              def versionParts = releaseVersion.tokenize('.')
+              versionParts[-1] = ((versionParts[-1] as Integer) + 1).toString()
+              env.NEXT_SNAPSHOT_VERSION = "${versionParts.join('.')}-SNAPSHOT"
+              echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
+
               sh '''
-                mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules=true -f $PARENT_POM_FILE
-                sed -i 's/"version": \"[^\"]*\"/"version": "$RELEASE_VERSION"/' $PACKAGE_FILE
+                git config --global user.email $OCTOPUS_MAIL
+                git config --global user.name $OCTOPUS_ACCOUNT_NAME
+                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+
+                git tag -d $RELEASE_VERSION || true
+                if [ "$PUSH_CHANGES" = "true" ]; then
+                  git push --delete origin $RELEASE_VERSION || true
+                fi
+
+                sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" $PACKAGE_FILE
+                git commit -a -m "[release] set marketplace-ui version to $RELEASE_VERSION"
+
+                mvn -B release:clean release:prepare \
+                  -DreleaseVersion=$RELEASE_VERSION \
+                  -DdevelopmentVersion=$NEXT_SNAPSHOT_VERSION \
+                  -DautoVersionSubmodules=true \
+                  -DpreparationGoals="clean verify -DskipTests=true" \
+                  -Dtag=$RELEASE_VERSION \
+                  -DpushChanges=$PUSH_CHANGES \
+                  -Dresume=false \
+                  -f $PARENT_POM_FILE
+
+                sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$NEXT_SNAPSHOT_VERSION\\"/" $PACKAGE_FILE
+                git commit -a -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
+                if [ "$PUSH_CHANGES" = "true" ]; then
+                  git push origin HEAD:new-release
+                fi
+
+                git checkout $RELEASE_VERSION
               '''
             }
+            sh 'mvn clean install -DskipTests=true -f $PARENT_POM_FILE'
           }
         }
-      }
-    }
-
-    stage('Tag Source') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
-      steps {
-        dir('target-source') {
-          sh '''
-            git config --global user.email $OCTOPUS_MAIL
-            git config --global user.name $OCTOPUS_ACCOUNT_NAME
-            git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-            git push --delete origin $RELEASE_VERSION || true
-            git tag -d $RELEASE_VERSION || true
-            git commit -a -m "Update version to $RELEASE_VERSION"
-            git tag $RELEASE_VERSION
-            git push origin $RELEASE_VERSION
-          '''
-        }
-      }
-    }
-
-    stage('Create Release PR') {
-      when {
-        expression { params.DEPLOY_TO_PROD }
-      }
-      steps {
-        dir('target-source') {
-          script {
-            sh '''
-              git config --global user.email $OCTOPUS_MAIL
-              git config --global user.name $OCTOPUS_ACCOUNT_NAME
-              git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-              
-              git checkout -b new-release 2>/dev/null || git checkout new-release
-              git reset --hard origin/master
-              
-              mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules=true -f ./marketplace-service/pom.xml
-              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" ./marketplace-ui/package.json
-              
-              git commit -a -m "Bump version to $RELEASE_VERSION"
-              git push origin new-release --force
-              
-              PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base master --json number --jq ".[0].number" 2>/dev/null || echo "")
-              
-              if [ -z "$PR_EXISTS" ]; then
-                gh pr create --repo axonivy-market/marketplace --title "Release" --body "Automated release PR for version $RELEASE_VERSION" --head new-release --base master
-                echo "Pull request created successfully"
-              else
-                echo "Pull request #$PR_EXISTS already exists"
-              fi
-            '''
-          }
-        }
-      }
-    }
-
-    stage('Build Maven Skip Tests') {
-      steps {
-        sh 'mvn clean install --file ./target-source/marketplace-service/pom.xml -DskipTests=true'
       }
     }
 
@@ -459,6 +427,28 @@ pipeline {
                     "${node.healthCheckEndpoints}"
               """
             }
+          }
+        }
+      }
+    }
+
+    stage('Create Pull Request') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        dir('target-source') {
+          script {
+            sh '''
+              PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base master --json number --jq ".[0].number" 2>/dev/null || echo "")
+              
+              if [ -z "$PR_EXISTS" ]; then
+                gh pr create --repo axonivy-market/marketplace --title "Release" --body "Automated release PR bumping to next development version $NEXT_SNAPSHOT_VERSION" --head new-release --base master
+                echo "Pull request created successfully"
+              else
+                echo "Pull request #$PR_EXISTS already exists"
+              fi
+            '''
           }
         }
       }
