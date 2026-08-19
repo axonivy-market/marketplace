@@ -44,3 +44,18 @@ WHERE id IN (
     'anonymous-user-demos',
     'ai-assistant'
 );
+
+UPDATE product_marketplace_data
+SET custom_order = NULL;
+
+UPDATE product_marketplace_data
+SET custom_order = 1
+WHERE id = 'portal';
+
+UPDATE product_marketplace_data
+SET custom_order = 2
+WHERE id = 'smart-workflow';
+
+UPDATE product_marketplace_data
+SET custom_order = 3
+WHERE id = 'idp-utils';
