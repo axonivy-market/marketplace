@@ -230,10 +230,8 @@ pipeline {
           UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
           docker tag $UI_IMAGE_NAME:latest $UI_IMAGE_ID:$RELEASE_VERSION
           docker push $UI_IMAGE_ID:$RELEASE_VERSION
-          if [ "$DEPLOY_TO_PROD" = "true" ]; then
-            export IMAGE_NAME=$UI_IMAGE_NAME
-            bash ./.build/scripts/utils/ghcr-cleanup.sh
-          fi
+          export IMAGE_NAME=$UI_IMAGE_NAME
+          bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
       }
     }
@@ -244,10 +242,8 @@ pipeline {
           APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
           docker tag $APP_IMAGE_NAME:latest $APP_IMAGE_ID:$RELEASE_VERSION
           docker push $APP_IMAGE_ID:$RELEASE_VERSION
-          if [ "$DEPLOY_TO_PROD" = "true" ]; then
-            export IMAGE_NAME=$APP_IMAGE_NAME
-            bash ./.build/scripts/utils/ghcr-cleanup.sh
-          fi
+          export IMAGE_NAME=$APP_IMAGE_NAME
+          bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
       }
     }
@@ -258,10 +254,8 @@ pipeline {
           STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
           docker tag $STABLE_IMAGE_NAME:latest $STABLE_IMAGE_ID:$RELEASE_VERSION
           docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
-          if [ "$DEPLOY_TO_PROD" = "true" ]; then
-            export IMAGE_NAME=$STABLE_IMAGE_NAME
-            bash ./.build/scripts/utils/ghcr-cleanup.sh
-          fi
+          export IMAGE_NAME=$STABLE_IMAGE_NAME
+          bash ./.build/scripts/utils/ghcr-cleanup.sh
         '''
       }
     }
