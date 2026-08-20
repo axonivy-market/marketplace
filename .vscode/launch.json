@@ -23,10 +23,10 @@
         "MARKET_ENVIRONMENT": "development",
         "MARKET_NODE_NUMBER": "1",
         // Run: echo "Key: $(openssl rand -hex 32)" to generate new JWT key
-        "MARKET_JWT_SECRET_KEY": "42bcf9726cfcda05836bf6f5e86a5fc7d13e6c5c356602dcd4db7ca5bcef703d",
+        "MARKET_JWT_SECRET_KEY": "",
         // Run: echo "Salt: $(openssl rand -hex 8)" && echo "Key: $(openssl rand -hex 32)" to generate new salt and key
-        "MARKET_ENCRYPTION_SECRET_KEY": "e8b913cdc1c21a8447117ac7df888292218ac0ffd80131d65ddf2d90d008be2a",
-        "MARKET_ENCRYPTION_SALT": "4f8722d68d0dc02c",
+        "MARKET_ENCRYPTION_SECRET_KEY": "",
+        "MARKET_ENCRYPTION_SALT": "",
         "MARKET_CORS_ALLOWED_ORIGIN": "*",
         "MARKET_CORS_ALLOWED_MAPPINGS": "/**",
         "MARKET_CORS_ALLOWED_METHODS": "GET,POST,PUT,DELETE,OPTIONS"
@@ -50,10 +50,10 @@
         "MARKET_ENVIRONMENT": "development",
         "MARKET_NODE_NUMBER": "1",
         // Run: echo "Key: $(openssl rand -hex 32)" to generate new JWT key
-        "MARKET_JWT_SECRET_KEY": "42bcf9726cfcda05836bf6f5e86a5fc7d13e6c5c356602dcd4db7ca5bcef703d",
+        "MARKET_JWT_SECRET_KEY": "",
         // Run: echo "Salt: $(openssl rand -hex 8)" && echo "Key: $(openssl rand -hex 32)" to generate new salt and key
-        "MARKET_ENCRYPTION_SECRET_KEY": "e8b913cdc1c21a8447117ac7df888292218ac0ffd80131d65ddf2d90d008be2a",
-        "MARKET_ENCRYPTION_SALT": "4f8722d68d0dc02c",
+        "MARKET_ENCRYPTION_SECRET_KEY": "",
+        "MARKET_ENCRYPTION_SALT": "",
         "MARKET_CORS_ALLOWED_ORIGIN": "*",
         "MARKET_CORS_ALLOWED_MAPPINGS": "/**",
         "MARKET_CORS_ALLOWED_METHODS": "GET,POST,PUT,DELETE,OPTIONS"
