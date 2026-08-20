@@ -62,18 +62,27 @@ if [[ "$(echo "${versions_json}" | jq 'length')" -eq 0 ]]; then
     exit 0
 fi
 
-version_ids="$(echo "${versions_json}" | jq -r 'sort_by(.created_at) | reverse | .[].id')"
-total="$(echo "${version_ids}" | wc -l | tr -d '[:space:]')"
-delete_count=$((total - VERSION_RETENTION_COUNT))
+# Untagged versions are orphaned digests left behind by re-tagging (e.g. builds reusing the same tag); always remove them.
+untagged_ids="$(echo "${versions_json}" | jq -r '.[] | select((.metadata.container.tags // []) | length == 0) | .id')"
 
-echo "Total versions found: ${total}"
-if [[ "${delete_count}" -le 0 ]]; then
-    echo "Nothing to delete. Keeping all ${total} versions."
-    exit 0
+# Tagged versions are pruned by recency, keeping only VERSION_RETENTION_COUNT.
+tagged_ids_sorted="$(echo "${versions_json}" | jq -r '[.[] | select((.metadata.container.tags // []) | length > 0)] | sort_by(.created_at) | reverse | .[].id')"
+tagged_total="$(echo "${tagged_ids_sorted}" | grep -c . || true)"
+
+old_tagged_ids=""
+if [[ "${tagged_total}" -gt "${VERSION_RETENTION_COUNT}" ]]; then
+    delete_count=$((tagged_total - VERSION_RETENTION_COUNT))
+    old_tagged_ids="$(echo "${tagged_ids_sorted}" | tail -n "${delete_count}")"
 fi
 
-delete_ids="$(echo "${version_ids}" | tail -n "${delete_count}")"
-echo "Deleting ${delete_count} old version(s), keeping ${VERSION_RETENTION_COUNT} most recent..."
+untagged_count="$(echo "${untagged_ids}" | grep -c . || true)"
+old_tagged_count="$(echo "${old_tagged_ids}" | grep -c . || true)"
+
+echo "Tagged versions: ${tagged_total} (keeping ${VERSION_RETENTION_COUNT} most recent)."
+echo "Untagged versions to delete: ${untagged_count}"
+echo "Old tagged versions to delete: ${old_tagged_count}"
+
+delete_ids="$(printf '%s\n%s' "${untagged_ids}" "${old_tagged_ids}" | sort -u)"
 
 while IFS= read -r id; do
     [[ -n "${id}" ]] || continue
