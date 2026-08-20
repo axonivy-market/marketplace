@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, NgZone, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -76,7 +76,7 @@ export class DeprecationManagementComponent implements OnInit {
   selectableProductIds: string[] = [];
   filteredProductIds: string[] = [];
   deprecatedItems: DeprecatedProductInfo[] = [];
-  filteredDeprecatedRows: DeprecatedProductInfo[] = [];
+  filteredDeprecatedRows = signal<DeprecatedProductInfo[]>([]);
   tableSearchTerm = '';
   moderatorName = '';
   // Validation state
@@ -434,11 +434,11 @@ export class DeprecationManagementComponent implements OnInit {
     this.tableSearchTerm = searchTerm;
     const normalized = (searchTerm || '').trim().toLowerCase();
     if (!normalized) {
-      this.filteredDeprecatedRows = [...this.deprecatedItems];
+      this.filteredDeprecatedRows.set([...this.deprecatedItems]);
       return;
     }
 
-    this.filteredDeprecatedRows = this.deprecatedItems.filter(row => row.id.toLowerCase().includes(normalized));
+    this.filteredDeprecatedRows.set(this.deprecatedItems.filter(row => row.id.toLowerCase().includes(normalized)));
   }
 
   private loadAllProductIds(isDeprecated: boolean | undefined = undefined): Promise<DeprecatedProductInfo[]> {
