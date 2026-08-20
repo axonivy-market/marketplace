@@ -183,9 +183,9 @@ rollback_to_old_release() {
 
         if [[ -f "${OLD_NGINX_DOCKER_COMPOSE_FILE}" ]]; then
             if [[ -f "${OLD_NGINX_ENV_FILE}" ]]; then
-                docker compose -f "${OLD_NGINX_DOCKER_COMPOSE_FILE}" -p "${OLD_COMPOSE_PROJECT}" --env-file "${OLD_NGINX_ENV_FILE}" up -d || true
+                docker compose -f "${OLD_NGINX_DOCKER_COMPOSE_FILE}" -p "${OLD_COMPOSE_PROJECT}" --env-file "${OLD_NGINX_ENV_FILE}" up -d --force-recreate || true
             else
-                docker compose -f "${OLD_NGINX_DOCKER_COMPOSE_FILE}" -p "${OLD_COMPOSE_PROJECT}" up -d || true
+                docker compose -f "${OLD_NGINX_DOCKER_COMPOSE_FILE}" -p "${OLD_COMPOSE_PROJECT}" up -d --force-recreate || true
             fi
         fi
     fi
@@ -275,7 +275,8 @@ if [[ -n "${OLD_RELEASE_NAME}" && "${OLD_RELEASE_NAME}" != "${NEW_RELEASE_NAME}"
 fi
 
 echo "Starting nginx for release ${NEW_RELEASE_NAME} with configured external port..."
-if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build; then
+# --force-recreate guarantees a fresh container so proxy_cache (container-local /tmp/nginx_cache) is never reused from a stale container.
+if ! docker compose -f "${NEW_NGINX_DOCKER_COMPOSE_FILE}" -p "${NEW_COMPOSE_PROJECT}" --env-file "${NEW_NGINX_ENV_FILE}" up -d --build --force-recreate; then
     echo "ERROR: Failed to start nginx for release ${NEW_RELEASE_NAME} after cutover."
     rollback_to_old_release
     exit 1
