@@ -20,7 +20,7 @@ import java.util.List;
 public class ProductServiceImpl extends CoreProductServiceImpl implements ProductService {
   private final CoreProductRepository coreProductRepository;
 
-  public ProductServiceImpl(CoreProductRepository coreProductRepo, CoreMetadataRepository coreMetadataRepo,
+  public ProductServiceImpl(CoreProductRepository coreProductRepo,
       CoreProductRepository coreProductRepository) {
     super(coreProductRepo);
     this.coreProductRepository = coreProductRepository;

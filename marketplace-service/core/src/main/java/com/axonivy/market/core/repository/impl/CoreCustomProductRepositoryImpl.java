@@ -1,30 +1,12 @@
 package com.axonivy.market.core.repository.impl;
 
-import com.axonivy.market.core.constants.CoreCommonConstants;
-import com.axonivy.market.core.criteria.ProductSearchCriteria;
-import com.axonivy.market.core.entity.Product;
-import com.axonivy.market.core.entity.ProductCustomSort;
-import com.axonivy.market.core.enums.DocumentField;
-import com.axonivy.market.core.enums.Language;
-import com.axonivy.market.core.enums.SortOption;
-import com.axonivy.market.core.enums.TypeOption;
-import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
-import com.axonivy.market.core.repository.CoreCustomProductRepository;
-import com.axonivy.market.core.repository.CoreProductCustomSortRepository;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.MapJoin;
-import jakarta.persistence.criteria.Order;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.extern.log4j.Log4j2;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
@@ -34,14 +16,43 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import com.axonivy.market.core.constants.CoreCommonConstants;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.CUSTOM_ORDER;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.FIRST_PUBLISHED_DATE;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.INSTALLATION_COUNT;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.LISTED;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ARTIFACT;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_MARKETPLACE_DATA;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_NAMES;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_SHORT_DESCRIPTION;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.TYPE;
+import com.axonivy.market.core.criteria.ProductSearchCriteria;
+import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.entity.ProductMarketplaceData;
+import com.axonivy.market.core.enums.DocumentField;
+import com.axonivy.market.core.enums.Language;
+import com.axonivy.market.core.enums.SortOption;
+import com.axonivy.market.core.enums.TypeOption;
+import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
+import com.axonivy.market.core.repository.CoreCustomProductRepository;
+import com.axonivy.market.core.repository.CoreProductCustomSortRepository;
 
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.MapJoin;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Builder
@@ -53,7 +64,8 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
   public Product findByCriteria(ProductSearchCriteria criteria) {
     CriteriaQueryContext<Product> criteriaContext = createCriteriaQueryContext();
 
-    Predicate searchCriteria = buildCriteriaSearch(criteria, criteriaContext.builder(), criteriaContext.root());
+    Predicate searchCriteria = buildCriteriaSearch(criteria, criteriaContext.query(), criteriaContext.builder(),
+        criteriaContext.root());
     criteriaContext.query().where(searchCriteria);
 
     List<Product> results = findByCriteria(criteriaContext);
@@ -71,7 +83,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     List<Product> resultList = getPagedProductsByCriteria(criteriaContext, searchCriteria, pageRequest);
     detachExcludedField(searchCriteria, resultList);
 
-    long total = resultList.size();
+    long total = pageable.getOffset() + resultList.size();
     if (resultList.size() >= pageable.getPageSize()) {
       total = getTotalCount(criteriaContext.builder(), searchCriteria);
     }
@@ -105,13 +117,13 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
     Root<Product> countRoot = countQuery.from(Product.class);
     // Rebuild predicate for the count query using the new Root<Product>
-    var countPredicate = buildCriteriaSearch(searchCriteria, cb, countRoot);
+    var countPredicate = buildCriteriaSearch(searchCriteria, countQuery, cb, countRoot);
     countQuery.select(cb.countDistinct(countRoot)).where(countPredicate);
     return getEntityManager().createQuery(countQuery).getSingleResult();
   }
 
-  public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
-      Root<Product> productRoot) {
+  public Predicate buildCriteriaSearch(ProductSearchCriteria searchCriteria, CriteriaQuery<?> query,
+      CriteriaBuilder cb, Root<Product> productRoot) {
     List<Predicate> predicates = new ArrayList<>();
 
     // Query by Listed (Assuming "listed" is a boolean field)
@@ -128,20 +140,15 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
 
     // Query by Keyword (Using LIKE for partial matching)
     if (StringUtils.isNotBlank(searchCriteria.getKeyword())) {
-      predicates.add(createQueryByKeywordRegex(searchCriteria, cb, productRoot));
+      predicates.add(createQueryByKeywordRegex(searchCriteria, query, cb, productRoot));
     }
 
     // Combine all conditions using AND
     return cb.and(predicates.toArray(new Predicate[0]));
   }
-  private static Predicate createQueryByKeywordRegex(ProductSearchCriteria searchCriteria, CriteriaBuilder cb,
-      Root<Product> productRoot) {
+  private static Predicate createQueryByKeywordRegex(ProductSearchCriteria searchCriteria, CriteriaQuery<?> query,
+      CriteriaBuilder cb, Root<Product> productRoot) {
     List<Predicate> filters = new ArrayList<>();
-    var language = Language.EN;
-    if (searchCriteria.getLanguage() != null) {
-      language = searchCriteria.getLanguage();
-    }
-
     List<DocumentField> filterProperties = new ArrayList<>(ProductSearchCriteria.DEFAULT_SEARCH_FIELDS);
     if (ObjectUtils.isNotEmpty(searchCriteria.getFields())) {
       filterProperties.clear();
@@ -156,17 +163,13 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
         searchCriteria.getKeyword().toLowerCase(Locale.getDefault()));
     for (DocumentField property : filterProperties) {
       if (property.isLocalizedSupport()) {
-        // Correctly join the Map<String, String> names collection
-        MapJoin<Product, String, String> namesJoin = productRoot.joinMap(property.getFieldName(), JoinType.LEFT);
-        // Extract key (language) and value (name)
-        Path<String> languageKey = namesJoin.key();
-        Path<String> nameValue = namesJoin.value();
-        // Filter by language key
-        Predicate languageFilter = cb.equal(languageKey, language.name().toLowerCase(Locale.getDefault()));
-        // Apply keyword search on product names (value)
-        Predicate keywordFilter = cb.like(cb.lower(nameValue), keywordPattern);
-        // Combine conditions
-        filters.add(cb.and(languageFilter, keywordFilter));
+        Subquery<Integer> localizedMatch = query.subquery(Integer.class);
+        Root<Product> correlatedProduct = localizedMatch.correlate(productRoot);
+        MapJoin<Product, String, String> localizedValues = correlatedProduct.joinMap(
+            property.getFieldName(), JoinType.INNER);
+        localizedMatch.select(cb.literal(1))
+            .where(cb.like(cb.lower(localizedValues.value()), keywordPattern));
+        filters.add(cb.exists(localizedMatch));
       } else {
         filters.add(cb.equal(productRoot.get(property.getFieldName()), searchCriteria.getKeyword()));
       }
@@ -183,15 +186,15 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
       language = searchCriteria.getLanguage();
     }
 
-    var predicate = buildCriteriaSearch(searchCriteria, criteriaContext.builder(), criteriaContext.root());
-    criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA);
+    var predicate = buildCriteriaSearch(searchCriteria, criteriaContext.query(), criteriaContext.builder(),
+        criteriaContext.root());
+    criteriaContext.root().fetch(PRODUCT_MARKETPLACE_DATA, JoinType.LEFT);
+    Join<Product, ProductMarketplaceData> marketplaceJoin = criteriaContext.root()
+        .join(PRODUCT_MARKETPLACE_DATA, JoinType.LEFT);
     MapJoin<Product, String, String> namesJoin = criteriaContext.root().joinMap(PRODUCT_NAMES, JoinType.LEFT);
     namesJoin.on(criteriaContext.builder().equal(namesJoin.key(), language.getValue()));
 
-    List<Order> orders = new ArrayList<>();
-    if (pageRequest.getSort().isSorted()) {
-      orders = sortByOrders(criteriaContext, pageRequest, namesJoin);
-    }
+    List<Order> orders = sortByOrders(criteriaContext, pageRequest, namesJoin, marketplaceJoin);
 
     criteriaContext.query().select(criteriaContext.root()).where(predicate)
         .orderBy(orders);
@@ -203,12 +206,14 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     List<Product> results = query.getResultList();
     results.forEach(product -> {
       Hibernate.initialize(product.getNames());
+      Hibernate.initialize(product.getShortDescriptions());
     });
     return results;
   }
 
   private List<Order> sortByOrders(CriteriaQueryContext<Product> criteriaContext,
-      PageRequest pageRequest, MapJoin<Product, String, String> namesJoin) {
+      PageRequest pageRequest, MapJoin<Product, String, String> namesJoin,
+      Join<Product, ProductMarketplaceData> marketplaceJoin) {
     List<Order> orders = new ArrayList<>();
     if (pageRequest != null) {
       pageRequest.getSort().stream().findFirst().ifPresent((Sort.Order order) -> {
@@ -217,7 +222,7 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
           case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
           case RECENT -> orders.add(sortByRecent(criteriaContext));
           case POPULARITY -> orders.add(sortByPopularity(criteriaContext));
-          default -> orders.addAll(sortByStandard(criteriaContext, namesJoin));
+          default -> orders.addAll(sortByStandard(criteriaContext, namesJoin, marketplaceJoin));
         }
       });
     }
@@ -227,21 +232,15 @@ public class CoreCustomProductRepositoryImpl extends CoreAbstractBaseRepository<
     return orders;
   }
   private List<Order> sortByStandard(
-      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin) {
-    List<ProductCustomSort> customSorts = coreProductCustomSortRepository.findAll();
+      CriteriaQueryContext<Product> criteriaContext, MapJoin<Product, String, String> namesJoin,
+      Join<Product, ProductMarketplaceData> marketplaceJoin) {
     List<Order> orders = new ArrayList<>();
-    var order = criteriaContext.builder().desc(
-        criteriaContext.builder().coalesce(criteriaContext.root().get(PRODUCT_MARKETPLACE_DATA).get(CUSTOM_ORDER),
-            Integer.MIN_VALUE));
-    orders.add(order);
-    if (ObjectUtils.isNotEmpty(customSorts)) {
-      var sortOptionExtension = SortOption.of(customSorts.getFirst().getRuleForRemainder());
-      switch (sortOptionExtension) {
-        case ALPHABETICALLY -> orders.add(sortByAlphabet(criteriaContext, namesJoin));
-        case RECENT -> orders.add(sortByRecent(criteriaContext));
-        default -> orders.add(sortByPopularity(criteriaContext));
-      }
-    }
+    var nullsLastOrder = criteriaContext.builder().asc(criteriaContext.builder().selectCase()
+        .when(criteriaContext.builder().isNull(marketplaceJoin.get(CUSTOM_ORDER)), 1)
+        .otherwise(0));
+    orders.add(nullsLastOrder);
+    orders.add(criteriaContext.builder().asc(marketplaceJoin.get(CUSTOM_ORDER)));
+    orders.add(sortByAlphabet(criteriaContext, namesJoin));
     return orders;
   }
 

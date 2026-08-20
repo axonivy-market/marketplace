@@ -11,7 +11,7 @@ import com.axonivy.market.exceptions.model.NoContentException;
 import com.axonivy.market.model.FeedbackApprovalModel;
 import com.axonivy.market.model.FeedbackModel;
 import com.axonivy.market.model.FeedbackModelRequest;
-import com.axonivy.market.model.FeedbackProjection;
+import com.axonivy.market.model.projection.FeedbackProjection;
 import com.axonivy.market.model.ProductRating;
 import com.axonivy.market.repository.FeedbackRepository;
 import com.axonivy.market.repository.GithubUserRepository;

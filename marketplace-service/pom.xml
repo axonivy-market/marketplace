@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>4.1.0</version>
-    <relativePath/>
+    <relativePath />
   </parent>
   <groupId>com.axonivy.market</groupId>
   <artifactId>marketplace-service</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.29.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>marketplace-service</name>
   <description>marketplace-service</description>
+
+  <scm>
+    <connection>scm:git:https://github.com/axonivy-market/marketplace.git</connection>
+    <developerConnection>scm:git:https://github.com/axonivy-market/marketplace.git</developerConnection>
+    <url>https://github.com/axonivy-market/marketplace</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <modules>
     <module>core</module>
@@ -24,7 +29,25 @@
 
   <properties>
     <java.version>25</java.version>
+    <sonar.coverage.jacoco.xmlReportPaths>app/target/site/jacoco/jacoco.xml,stable/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.exclusions>**/src/test/java/**</sonar.exclusions>
+    <sonar.coverage.exclusions>**/src/test/java/**,**/src/main/java/**/config/**,**/src/main/java/**/constants/**,**/src/main/**/model/**,**/pom.xml</sonar.coverage.exclusions>
   </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>4.0.0.4121</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>3.1.1</version>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>

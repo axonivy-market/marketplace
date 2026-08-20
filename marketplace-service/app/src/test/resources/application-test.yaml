@@ -7,16 +7,23 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;NON_KEYWORDS=KEY,VALUE
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;NON_KEYWORDS=KEY,VALUE
     username: sa
     password: password
     driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      # Only this module's seed: app_settings rows are created by AppSettingServiceImpl#initializeSettings
+      # (@PostConstruct), so loading core's seed here collides on the app_settings.key unique index.
+      data-locations: classpath:db/app-test-data.sql
   flyway:
     enabled: false
   jpa:
     show-sql: false
     hibernate:
       ddl-auto: create-drop
+    defer-datasource-initialization: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect

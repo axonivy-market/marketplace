@@ -10,7 +10,7 @@
       "no": "Nein"
     },
     "team": {
-      "title": "Meet Team Octopus",
+      "title": "Meet Team Wawa",
       "description": "As the core engineering unit behind the Axon Ivy Marketplace, we drive ecosystem innovation and stability. We specialize in the end-to-end lifecycle management of platform extensions, delivering new integration solutions, ensuring seamless version compatibility, and enforcing rigorous standards for security compliance and runtime performance.",
       "accessibilityTitle": {
         "poImage": "Image of the Product Owner of Axon Ivy Market",
@@ -450,10 +450,10 @@
         }
       },
       "news": {
-        "pageTitle": "Axon Ivy Market News",
-        "title": "Axon Ivy Market News",
-        "description": "Stay up to date with the latest news, releases, and improvements across the Axon Ivy Marketplace.",
-        "helpText": "Here you will find announcements, release notes, and important updates for marketplace connectors.",
+        "pageTitle": "News",
+        "title": "News",
+        "description": "Verpasse keine Neuigkeiten und Releases im Axon Ivy Marketplace.",
+        "helpText": "Hier findest du Ankündigungen, Release Notes und wichtige Updates zu den Marketplace-Extensions.",
         "emptyLatestReleaseLetter": "Looks like there's no news at the moment. Please check back later for the latest news and updates on our Marketplace.",
         "sprint": "Sprint: ",
         "latest": "Latest"

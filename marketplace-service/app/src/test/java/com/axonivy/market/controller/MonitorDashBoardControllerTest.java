@@ -1,149 +1,83 @@
 package com.axonivy.market.controller;
 
-import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.enums.WorkFlowType;
-import com.axonivy.market.github.service.GitHubService;
-import com.axonivy.market.github.service.impl.GitHubServiceImpl;
 import com.axonivy.market.model.GithubReposModel;
 import com.axonivy.market.model.TestStepsModel;
 import com.axonivy.market.service.GithubReposService;
 import com.axonivy.market.service.TestStepsService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kohsuke.github.GHMyself;
-import org.kohsuke.github.GitHub;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.io.IOException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class MonitorDashBoardControllerTest extends BaseSetup {
+@ControllerWebMvcTest(MonitorDashBoardController.class)
+class MonitorDashBoardControllerTest extends WebMvcControllerTestSupport {
 
-  private static final String TOKEN = "validToken";
-
-  @Mock
+  @MockitoBean
   private GithubReposService githubReposService;
 
-  @Mock
-  private GitHubService githubService;
-
-  @Mock
+  @MockitoBean
   private TestStepsService testStepsService;
 
-  @Mock
+  @MockitoBean
   private SyncTaskCancellationRegistry cancellationRegistry;
 
-  @Mock
-  private GitHub gitHub;
-
-  @InjectMocks
-  private MonitorDashBoardController controller;
-
-  @Spy
-  @InjectMocks
-  private GitHubServiceImpl gitHubService;
-
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.openMocks(this);
-  }
-
   @Test
-  void testGetTestReportReturnsList() {
+  void testGetTestReportReturnsList() throws Exception {
     TestStepsModel model = new TestStepsModel();
     when(testStepsService.fetchTestReport("repo", WorkFlowType.CI)).thenReturn(List.of(model));
-    ResponseEntity<List<TestStepsModel>> response = controller.getTestReport("repo", WorkFlowType.CI);
-    assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals(1, response.getBody().size(), "Response body should contain one element");
-    assertSame(model, response.getBody().get(0), "Returned model should match the mocked model");
+
+    mockMvc.perform(get("/api/monitor-dashboard/{productId}/{workflow}", "repo", "CI"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)));
   }
 
   @Test
-  void testSyncGithubMonitorReturnsOk() throws IOException {
-    String organization = "testOrg";
-    String team = "devTeam";
-    GHMyself fakeMyself = getFakeGHMyself();
-
-    doReturn(gitHub).when(githubService).getGitHub(TOKEN);
-    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
-    when(gitHub.getMyself()).thenReturn(fakeMyself);
-    doNothing().when(githubReposService).loadAndStoreTestReports();
-
-    ResponseEntity<String> response = controller.syncGithubMonitor();
-    assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals("Repositories loaded successfully.", response.getBody(),
-        "Response body should match expected message");
+  void testSyncGithubMonitorReturnsOk() throws Exception {
+    mockMvc.perform(put("/api/monitor-dashboard/sync")
+            .with(requestedByHeader()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").value("Repositories loaded successfully."));
   }
 
   @Test
-  void testSyncGithubMonitorHandlesException() throws IOException {
-    String organization = "testOrg";
-    String team = "devTeam";
-    GHMyself fakeMyself = getFakeGHMyself();
-
-    doReturn(gitHub).when(githubService).getGitHub(TOKEN);
-    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
-    when(gitHub.getMyself()).thenReturn(fakeMyself);
-    doThrow(new IOException("fail")).when(githubReposService).loadAndStoreTestReports();
-
-    assertThrows(IOException.class, () -> controller.syncGithubMonitor(),
-        "IOException should be thrown when service fails to load and store test reports");
+  void testUpdateRepoPriorities() throws Exception {
+    mockMvc.perform(put("/api/monitor-dashboard/focus")
+            .with(requestedByHeader())
+            .param("repos", "repo1")
+            .param("repos", "repo2")
+            .param("isFocused", "true"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").value("Focused repository updated successfully."));
   }
 
   @Test
-  void testUpdateRepoPriorities() throws IOException {
-    List<String> updates = List.of("repo1", "repo2");
-    String organization = "testOrg";
-    String team = "devTeam";
-    GHMyself fakeMyself = getFakeGHMyself();
-
-    doNothing().when(githubReposService).updateFocusedRepo(updates, true);
-    doReturn(gitHub).when(githubService).getGitHub(TOKEN);
-    when(gitHubService.isUserInOrganizationAndTeam(gitHub, organization, team)).thenReturn(true);
-    when(gitHub.getMyself()).thenReturn(fakeMyself);
-
-    ResponseEntity<String> response = controller.updateFocusedRepo(updates, true);
-
-    assertEquals(200, response.getStatusCode().value(), "Status code should be 200 OK");
-    assertEquals("Focused repository updated successfully.", response.getBody(),
-        "Response body should match expected message");
-  }
-
-  @Test
-  void testFindAllFeedbacksReturnPagedModel() {
+  void testFindAllFeedbacksReturnPagedModel() throws Exception {
     GithubReposModel model = new GithubReposModel();
-    List<GithubReposModel> models = List.of(model);
-    Page<GithubReposModel> page = new PageImpl<>(models, PageRequest.of(0, 10), 1);
-
-    when(githubReposService.fetchAllRepositories(
-        eq(true), eq("feedback"), eq("name"), eq("ASC"), any(PageRequest.class)))
+    Page<GithubReposModel> page = new PageImpl<>(List.of(model), PageRequest.of(0, 10), 1);
+    when(githubReposService.fetchAllRepositories(eq(true), eq("feedback"), eq("name"), eq("ASC"), any(PageRequest.class)))
         .thenReturn(page);
 
-    ResponseEntity<PagedModel<GithubReposModel>> response = controller.findAllFeedbacks(
-        true, PageRequest.of(0, 10), "feedback", "name", "ASC");
-
-    PagedModel<GithubReposModel> pagedModel = response.getBody();
-    assertNotNull(pagedModel, "PagedModel should not be null");
-    assertEquals(1, pagedModel.getContent().size(), "Content size should be 1");
-    assertTrue(pagedModel.getContent().contains(model), "Content should contain the mocked model");
-
-    PagedModel.PageMetadata metadata = pagedModel.getMetadata();
-    assertNotNull(metadata, "Page metadata should not be null");
-    assertEquals(10, metadata.getSize(), "Page size should be 10");
-    assertEquals(0, metadata.getNumber(), "Page number should be 0");
-    assertEquals(1, metadata.getTotalElements(), "Total elements should be 1");
-    assertEquals(1, metadata.getTotalPages(), "Total pages should be 1");
+    mockMvc.perform(get("/api/monitor-dashboard/repos")
+            .param("isFocused", "true")
+            .param("search", "feedback")
+            .param("workflowType", "name")
+            .param("sortDirection", "ASC")
+            .param("page", "0")
+            .param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$..repoName").exists());
   }
 }

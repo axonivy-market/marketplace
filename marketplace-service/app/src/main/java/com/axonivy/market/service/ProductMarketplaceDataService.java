@@ -4,7 +4,7 @@ import com.axonivy.market.core.entity.ProductMarketplaceData;
 import com.axonivy.market.enums.RepositoryAction;
 import com.axonivy.market.model.DeprecationRequest;
 import com.axonivy.market.model.ProductCustomSortRequest;
-import com.axonivy.market.model.ProductDeprecationProjection;
+import com.axonivy.market.model.projection.ProductDeprecationProjection;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 

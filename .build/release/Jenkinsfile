@@ -1,0 +1,455 @@
+def deployApproval = null
+def deployConfig = null
+def releaseVersion = ''
+
+pipeline {
+
+  agent any
+
+  options {
+    ansiColor('xterm')
+    timestamps()
+    timeout(time: 6, unit: 'HOURS')
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    disableConcurrentBuilds()
+  }
+
+  parameters {
+    booleanParam(
+      name: 'DEPLOY_TO_PROD',
+      defaultValue: false,
+      description: 'Images are always published to GHCR (required for pull-based deploy on remote nodes). When true: additionally tag the release in git, and (after 4-eyes approval) roll out directly to PROD nodes (skip PREVIEW). When false: tag/push to git is skipped locally-only, and the pipeline deploys to the PREVIEW stack instead.'
+    )
+  }
+
+  environment {
+    RELEASE_BASE_BRANCH = 'master'
+    GITHUB_ACTOR = credentials('MARKETPLACE_GITHUB_OWNER')
+    GITHUB_REPOSITORY_OWNER = 'axonivy-market'
+    UI_IMAGE_NAME = 'marketplace-ui'
+    APP_IMAGE_NAME = 'marketplace-app'
+    STABLE_IMAGE_NAME = 'marketplace-stable'
+    GH_TOKEN = credentials('GH_TOKEN')
+    VERSION_RETENTION_COUNT = credentials('VERSION_RETENTION_COUNT')
+    MARKET_MAIL = credentials('MARKET_MAIL')
+    MARKET_ACCOUNT_NAME = credentials('MARKET_ACCOUNT_NAME')
+    MARKETPLACE_ENV_FILE = credentials('PREVIEW_ENV_FILE')
+  }
+
+  stages {
+
+    stage('Clean Workspace') {
+      steps {
+        cleanWs()
+        checkout scm
+      }
+    }
+
+    stage('Checkout Source') {
+      steps {
+        script {
+          deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
+          deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
+          sh '''
+            git config --global user.email $MARKET_MAIL --add
+            git config --global user.name $MARKET_ACCOUNT_NAME --add
+            git remote set-url origin https://github.com/axonivy-market/marketplace.git
+            git fetch origin $RELEASE_BASE_BRANCH
+            git fetch origin new-release || true
+
+            if git show-ref --verify --quiet refs/remotes/origin/new-release; then
+              AHEAD=$(git rev-list --count origin/$RELEASE_BASE_BRANCH..origin/new-release)
+              if [ "$AHEAD" -gt 0 ]; then
+                echo "ERROR: origin/new-release is $AHEAD commit(s) ahead of origin/$RELEASE_BASE_BRANCH (likely an open Release PR). Merge or close it before running a new release build."
+                exit 1
+              fi
+            fi
+
+            git checkout -B new-release origin/$RELEASE_BASE_BRANCH
+          '''
+        }
+      }
+    }
+
+    stage('Stop Running Docker Containers') {
+      steps {
+        script {
+          try {
+            sh '''
+              docker compose --env-file "$MARKETPLACE_ENV_FILE" --project-name marketplace -f ./marketplace-build/templates/docker-compose.yml down --rmi all
+            '''
+          } catch (Exception e) {
+            echo "Error during docker compose down, continuing: ${e}"
+          }
+        }
+      }
+    }
+
+    stage('Update Version') {
+      steps {
+        withEnv([
+          "PARENT_POM_FILE=./marketplace-service/pom.xml",
+          "PACKAGE_FILE=./marketplace-ui/package.json",
+          "PUSH_CHANGES=${params.DEPLOY_TO_PROD}"
+        ]) {
+          script {
+            def snapshot = sh(
+              script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f $PARENT_POM_FILE',
+              returnStdout: true
+            ).trim()
+            releaseVersion = snapshot.replace('-SNAPSHOT', '')
+            env.RELEASE_VERSION = releaseVersion
+            currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
+            echo "Release version: ${releaseVersion}"
+
+            def versionParts = releaseVersion.tokenize('.')
+            versionParts[1] = ((versionParts[1] as Integer) + 1).toString()
+            versionParts[2] = '0'
+            env.NEXT_SNAPSHOT_VERSION = "${versionParts.join('.')}-SNAPSHOT"
+            echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
+
+            sh '''
+              git tag -d $RELEASE_VERSION || true
+              if [ "$PUSH_CHANGES" = "true" ]; then
+                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+                git push --delete origin $RELEASE_VERSION || true
+                git remote set-url origin https://github.com/axonivy-market/marketplace.git
+              fi
+
+              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" $PACKAGE_FILE
+              git add $PACKAGE_FILE
+              git commit -m "[release] set marketplace-ui version to $RELEASE_VERSION"
+
+              mvn -B release:clean release:prepare \
+                -DreleaseVersion=$RELEASE_VERSION \
+                -DdevelopmentVersion=$NEXT_SNAPSHOT_VERSION \
+                -DautoVersionSubmodules=true \
+                -DpreparationGoals="clean verify -DskipTests=true" \
+                -Dtag=$RELEASE_VERSION \
+                -DpushChanges=false \
+                -Dresume=false \
+                -f $PARENT_POM_FILE
+
+              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$NEXT_SNAPSHOT_VERSION\\"/" $PACKAGE_FILE
+              git add $PACKAGE_FILE
+              git commit -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
+              if [ "$PUSH_CHANGES" = "true" ]; then
+                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+                git push origin HEAD:new-release
+                git push origin $RELEASE_VERSION
+                git remote set-url origin https://github.com/axonivy-market/marketplace.git
+              fi
+
+              git checkout $RELEASE_VERSION
+            '''
+          }
+          sh 'mvn clean install -DskipTests=true -f $PARENT_POM_FILE'
+        }
+      }
+    }
+    
+    stage('Await Production Approval') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        script {
+          timeout(time: 6, unit: 'HOURS') {
+            deployApproval.confirmProductionDeployment('Production', releaseVersion)
+          }
+        }
+      }
+    }
+
+    stage('Build Env File') {
+      steps {
+        sh '''
+          TEMPLATE_ENV_FILE='./marketplace-build/templates/.env'
+          RUNTIME_ENV_FILE='./marketplace-build/templates/.env.runtime'
+
+          cat "$TEMPLATE_ENV_FILE" "$MARKETPLACE_ENV_FILE" > "$RUNTIME_ENV_FILE"
+
+          if grep -q '^RELEASE_VERSION=' "$RUNTIME_ENV_FILE"; then
+            sed -i "s|^RELEASE_VERSION=.*$|RELEASE_VERSION=$RELEASE_VERSION|" "$RUNTIME_ENV_FILE"
+          else
+            echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$RUNTIME_ENV_FILE"
+          fi
+
+          chmod 600 "$RUNTIME_ENV_FILE"
+        '''
+      }
+    }
+
+    stage('Build Docker Images') {
+      steps {
+        script {
+          dir('./marketplace-build/templates/dev') {
+            sh '''
+                export BUILD_ENV=production
+                export BUILD_VERSION=$RELEASE_VERSION
+                export STABLE_LOG_PATH=/home/axonivy/marketplace/logs/stable
+                export APP_LOG_PATH=/home/axonivy/marketplace/logs/app
+                export MARKET_ENV_FILE=../.env.runtime
+                docker compose --project-name marketplace up --build --force-recreate -d
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Wait for Containers') {
+      steps {
+        dir('./marketplace-build/templates') {
+          sh '''
+            timeout=300
+            start_time=$(date +%s)
+            while [ $(($(date +%s) - start_time)) -lt $timeout ]; do
+              if docker compose --project-name marketplace ps | grep -q "Up"; then
+                echo "Containers are up and running."
+                exit 0
+              fi
+              echo "Waiting for containers to start..."
+              sleep 5
+            done
+            echo "Containers did not start within the timeout period."
+            exit 1
+          '''
+        }
+      }
+    }
+
+    stage('Log in to GitHub Container Registry') {
+      steps {
+        sh 'echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
+      }
+    }
+
+    stage('Release Marketplace UI Image') {
+      steps {
+        sh '''
+          UI_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$UI_IMAGE_NAME
+          docker tag $UI_IMAGE_NAME:latest $UI_IMAGE_ID:$RELEASE_VERSION
+          docker push $UI_IMAGE_ID:$RELEASE_VERSION
+          if [ "$DEPLOY_TO_PROD" = "true" ]; then
+            export IMAGE_NAME=$UI_IMAGE_NAME
+            bash ./.build/scripts/utils/ghcr-cleanup.sh
+          fi
+        '''
+      }
+    }
+
+    stage('Release Marketplace App Image') {
+      steps {
+        sh '''
+          APP_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$APP_IMAGE_NAME
+          docker tag $APP_IMAGE_NAME:latest $APP_IMAGE_ID:$RELEASE_VERSION
+          docker push $APP_IMAGE_ID:$RELEASE_VERSION
+          if [ "$DEPLOY_TO_PROD" = "true" ]; then
+            export IMAGE_NAME=$APP_IMAGE_NAME
+            bash ./.build/scripts/utils/ghcr-cleanup.sh
+          fi
+        '''
+      }
+    }
+
+    stage('Release Marketplace Stable Image') {
+      steps {
+        sh '''
+          STABLE_IMAGE_ID=ghcr.io/$GITHUB_REPOSITORY_OWNER/$STABLE_IMAGE_NAME
+          docker tag $STABLE_IMAGE_NAME:latest $STABLE_IMAGE_ID:$RELEASE_VERSION
+          docker push $STABLE_IMAGE_ID:$RELEASE_VERSION
+          if [ "$DEPLOY_TO_PROD" = "true" ]; then
+            export IMAGE_NAME=$STABLE_IMAGE_NAME
+            bash ./.build/scripts/utils/ghcr-cleanup.sh
+          fi
+        '''
+      }
+    }
+
+    stage('Stop Build Containers') {
+      steps {
+        script {
+          try {
+            dir('./marketplace-build/templates/dev') {
+              sh '''
+                docker compose --project-name marketplace down
+              '''
+            }
+          } catch (Exception e) {
+            echo "Error stopping build containers, continuing: ${e}"
+          }
+        }
+      }
+    }
+
+    stage('Deploy to Preview') {
+      when {
+        expression { !params.DEPLOY_TO_PROD }
+      }
+      steps {
+        script {
+          def nodes = deployConfig.loadNodesToDeploy('PREVIEW node')
+          for (node in nodes) {
+            echo "Deploying to Preview: ${node.name} (${node.ip})"
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              file(credentialsId: node.envCredId, variable: 'ENV_SECRET_FILE')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/prepare__config.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.marketNodeNumber}" \
+                    "\${ENV_SECRET_FILE}"
+              """
+            }
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export GHCR_USERNAME="\${GHCR_USERNAME}"
+                export GHCR_TOKEN="\${GHCR_TOKEN}"
+                export TARGET_ENV="preview"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/deploy__rollout.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.healthCheckEndpoints}"
+              """
+            }
+          }
+        }
+      }
+    }
+
+    stage('Deploy to PROD_1') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        script {
+          def nodes = deployConfig.loadNodesToDeploy('PROD_1 node')
+          for (node in nodes) {
+            echo "Deploying to PROD_1: ${node.name} (${node.ip})"
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              file(credentialsId: node.envCredId, variable: 'ENV_SECRET_FILE')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/prepare__config.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.marketNodeNumber}" \
+                    "\${ENV_SECRET_FILE}"
+              """
+            }
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export GHCR_USERNAME="\${GHCR_USERNAME}"
+                export GHCR_TOKEN="\${GHCR_TOKEN}"
+                export TARGET_ENV="prod"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/deploy__rollout.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.healthCheckEndpoints}"
+              """
+            }
+          }
+        }
+      }
+    }
+
+    stage('Deploy to PROD_2') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        script {
+          def nodes = deployConfig.loadNodesToDeploy('PROD_2 node')
+          for (node in nodes) {
+            echo "Deploying to PROD_2: ${node.name} (${node.ip})"
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              file(credentialsId: node.envCredId, variable: 'ENV_SECRET_FILE')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/prepare__config.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.marketNodeNumber}" \
+                    "\${ENV_SECRET_FILE}"
+              """
+            }
+            withCredentials([
+              string(credentialsId: node.credId, variable: 'EC2_NODE'),
+              sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
+              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+            ]) {
+              sh """
+                set +x
+                export SSH_PRIVATE_KEY_FILE="\${SSH_PRIVATE_KEY_FILE}"
+                export SSH_REMOTE_USER="\${SSH_REMOTE_USER}"
+                export GHCR_USERNAME="\${GHCR_USERNAME}"
+                export GHCR_TOKEN="\${GHCR_TOKEN}"
+                export TARGET_ENV="prod"
+                export WORKSPACE_ROOT="${env.WORKSPACE}"
+                bash ./.build/scripts/release/deploy__rollout.sh \
+                    "\${EC2_NODE}" \
+                    "${releaseVersion}" \
+                    "${node.healthCheckEndpoints}"
+              """
+            }
+          }
+        }
+      }
+    }
+
+    stage('Create Pull Request') {
+      when {
+        expression { params.DEPLOY_TO_PROD }
+      }
+      steps {
+        script {
+          sh '''
+            PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base $RELEASE_BASE_BRANCH --json number --jq ".[0].number" 2>/dev/null || echo "")
+
+            if [ -z "$PR_EXISTS" ]; then
+              gh pr create --repo axonivy-market/marketplace --title "Release" --body "Automated release PR bumping to next development version $NEXT_SNAPSHOT_VERSION" --head new-release --base $RELEASE_BASE_BRANCH
+              echo "Pull request created successfully"
+            else
+              echo "Pull request #$PR_EXISTS already exists"
+            fi
+          '''
+        }
+      }
+    }
+  }
+}
