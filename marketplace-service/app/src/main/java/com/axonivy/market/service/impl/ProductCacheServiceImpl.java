@@ -1,21 +1,21 @@
 package com.axonivy.market.service.impl;
 
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.springframework.stereotype.Service;
-
+import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.repository.ProductRepository;
 import com.axonivy.market.service.ProductCacheService;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -69,19 +69,17 @@ public class ProductCacheServiceImpl implements ProductCacheService {
   }
 
   private Map<String, Set<String>> loadVersionsByProductId() {
-    Map<String, Set<String>> versionsByProductId = new HashMap<>();
-    for (var product : productRepo.findAll()) {
-      if (product.getReleasedVersions() != null && !product.getReleasedVersions().isEmpty()) {
-        versionsByProductId.put(product.getId(), new HashSet<>(product.getReleasedVersions()));
-      }
-    }
-    return versionsByProductId;
+    return productRepo.findAll().stream()
+        .filter(product -> ObjectUtils.isNotEmpty(product.getReleasedVersions()))
+        .collect(Collectors.toMap(Product::getId, product -> new HashSet<>(product.getReleasedVersions())));
   }
 
-
   private boolean isExpired() {
-    long expirationMillis = Duration.ofMinutes(
-        appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_CACHE_EXPIRATION_MINUTES)).toMillis();
-    return validProductIds.isEmpty() || System.currentTimeMillis() - lastLoadedAt > expirationMillis;
+    return validProductIds.isEmpty() || System.currentTimeMillis() - lastLoadedAt > getProductCacheExpirationMillis();
+  }
+
+  private long getProductCacheExpirationMillis() {
+    return Duration.ofMinutes(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_CACHE_EXPIRATION_MINUTES))
+        .toMillis();
   }
 }

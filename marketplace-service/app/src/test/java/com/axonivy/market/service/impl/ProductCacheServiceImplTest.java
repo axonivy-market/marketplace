@@ -1,28 +1,26 @@
 package com.axonivy.market.service.impl;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
-
+import com.axonivy.market.BaseSetup;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.repository.ProductRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductCacheServiceImplTest {
+class ProductCacheServiceImplTest extends BaseSetup {
 
-  private static final String MOCK_PRODUCT_ID = "bpmn-statistic";
-  private static final String MOCK_VERSION = "10.0.10";
+  private static final String UNKNOWN_PRODUCT = "unknown-product";
 
   @Mock
   private ProductRepository productRepo;
@@ -30,12 +28,8 @@ class ProductCacheServiceImplTest {
   @Mock
   private AppSettingService appSettingService;
 
+  @InjectMocks
   private ProductCacheServiceImpl productCacheService;
-
-  @BeforeEach
-  void setUp() {
-    productCacheService = new ProductCacheServiceImpl(productRepo, appSettingService);
-  }
 
   @Test
   void testIsValidProductIdReturnsFalseForNull() {
@@ -44,18 +38,18 @@ class ProductCacheServiceImplTest {
 
   @Test
   void testIsValidProductIdAndVersionReturnsFalseForNullArguments() {
-    assertFalse(productCacheService.isValidProductIdAndVersion(null, MOCK_VERSION));
+    assertFalse(productCacheService.isValidProductIdAndVersion(null, MOCK_RELEASED_VERSION));
     assertFalse(productCacheService.isValidProductIdAndVersion(MOCK_PRODUCT_ID, null));
   }
 
   @Test
   void testIsValidProductIdLoadsCacheFromDatabaseOnce() {
     when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
-    Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_VERSION));
+    Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
     when(productRepo.findAll()).thenReturn(List.of(product));
 
     assertTrue(productCacheService.isValidProductId(MOCK_PRODUCT_ID));
-    assertFalse(productCacheService.isValidProductId("unknown-product"));
+    assertFalse(productCacheService.isValidProductId(UNKNOWN_PRODUCT));
 
     // The cache must be filled once in bulk from Product entities, never re-queried using the caller-supplied id.
     verify(productRepo, times(1)).findAll();
@@ -64,12 +58,12 @@ class ProductCacheServiceImplTest {
   @Test
   void testIsValidProductIdAndVersionMatchesCachedCombination() {
     when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
-    Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_VERSION));
+    Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
     when(productRepo.findAll()).thenReturn(List.of(product));
 
-    assertTrue(productCacheService.isValidProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_VERSION));
+    assertTrue(productCacheService.isValidProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION));
     assertFalse(productCacheService.isValidProductIdAndVersion(MOCK_PRODUCT_ID, "unknown-version"));
-    assertFalse(productCacheService.isValidProductIdAndVersion("unknown-product", MOCK_VERSION));
+    assertFalse(productCacheService.isValidProductIdAndVersion(UNKNOWN_PRODUCT, MOCK_RELEASED_VERSION));
   }
 
   private Product buildProduct(String productId, List<String> releasedVersions) {

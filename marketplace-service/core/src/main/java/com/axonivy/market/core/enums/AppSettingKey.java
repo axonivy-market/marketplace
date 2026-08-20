@@ -228,7 +228,7 @@ public enum AppSettingKey {
 
   PRODUCT_CACHE_EXPIRATION_MINUTES(
       "market.product-cache.expiration-minutes",
-      "60",
+      "10",
       AppSettingCategory.SECURITY.name(),
       "Minutes before the valid product id/version cache is refreshed from the database.",
       false),
