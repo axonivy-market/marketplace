@@ -61,8 +61,14 @@ class GHAxonIvyMarketRepoServiceImplTest {
   @BeforeEach
   void setup() throws IOException {
     when(ghOrganization.getRepository(any())).thenReturn(ghRepository);
-    when(gitHubService.getOrganization(anyString())).thenReturn(ghOrganization);
+    when(gitHubService.getOrganization(any())).thenReturn(ghOrganization);
     lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH)).thenReturn("master");
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME))
+        .thenReturn("axonivy-market");
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKETPLACE_REPO_NAME))
+        .thenReturn("market");
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKETPLACE_PATH))
+        .thenReturn("market");
   }
 
   @Test

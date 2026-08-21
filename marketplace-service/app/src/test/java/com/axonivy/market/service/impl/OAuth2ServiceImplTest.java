@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.entity.GithubUser;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.exceptions.model.UnauthorizedException;
@@ -29,6 +30,8 @@ class OAuth2ServiceImplTest extends BaseSetup {
   private GitHubService gitHubService;
   @Mock
   private JwtService jwtService;
+  @Mock
+  private AppSettingService appSettingService;
   @InjectMocks
   private OAuth2ServiceImpl oAuth2Service;
 

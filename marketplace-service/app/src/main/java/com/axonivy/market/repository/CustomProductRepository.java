@@ -10,7 +10,5 @@ public interface CustomProductRepository extends CoreCustomProductRepository {
 
   Product findProductByIdAndRelatedData(String id);
 
-//  List<String> getReleasedVersionsById(String id);
-
   List<Product> findAllProductsHaveDocument();
 }

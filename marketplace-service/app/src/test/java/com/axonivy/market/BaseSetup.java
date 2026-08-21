@@ -59,10 +59,6 @@ public class BaseSetup extends CoreBaseSetup {
   protected static final String ACCESS_TOKEN = "sampleAccessToken";
   protected static final String SAMPLE_PRODUCT_PATH = "/market/connector/amazon-comprehend";
   protected static final String SAMPLE_PRODUCT_REPOSITORY_NAME = "axonivy-market/amazon-comprehend";
-  protected static final Pageable PAGEABLE_ALPHABETICALLY = PageRequest.of(0, 1,
-      Sort.by(SortOption.ALPHABETICALLY.getOption()).descending());
-  protected static final Pageable PAGEABLE_STANDARD = PageRequest.of(0, 20,
-      Sort.by(SortOption.STANDARD.getOption()).descending());
   protected static final String MOCK_PRODUCT_ID = "bpmn-statistic";
   protected static final String MOCK_PRODUCT_ID_WITH_VERSION = "bpmn-statistic-10.0.10";
   protected static final String MOCK_ARTIFACT_ID = "bpmn-statistic";
@@ -101,11 +97,8 @@ public class BaseSetup extends CoreBaseSetup {
   protected static final String MOCK_DUMP_DOWNLOAD_URL = "octopus.com";
   protected static final String MOCK_ARTIFACT_NAME = "bpmn statistic (zip)";
   protected static final String MOCK_ARTIFACT_DOWNLOAD_FILE = "bpmn-statistic.zip";
-  protected static final String LEGACY_INSTALLATION_COUNT_PATH_FIELD_NAME = "legacyInstallationCountPath";
   protected static final String MOCK_IMAGE_URL = "https://raw.githubusercontent" +
       ".com/amazon-comprehend-connector-product/images/comprehend-demo-sentiment.png";
-  protected static final String INSTALLATION_FILE_PATH = "src/test/resources/installationCount.json";
-  protected static final String IMAGE_NAME = "test.png";
   protected static final String SAMPLE_LOGO_ID = "1234";
   protected static final String JWT_TOKEN = "sampleJwtToken";
   public static final String DEFAULT_HOST = "http://localhost:";
