@@ -24,7 +24,7 @@ public abstract class BaseCorsWebConfig implements WebMvcConfigurer {
   @Value("${market.cors.allowed.origin.patterns:" + DEFAULT_ALLOWED_ORIGIN_PATTERNS + "}")
   private String marketCorsAllowedOriginPatterns;
 
-  @Value("${market.cors.allowed.origin.maxAge:" + DEFAULT_MAX_AGE + "}")
+  @Value("${market.cors.allowed.origin.max-age:" + DEFAULT_MAX_AGE + "}")
   private int marketCorsAllowedOriginMaxAge;
 
   @Override

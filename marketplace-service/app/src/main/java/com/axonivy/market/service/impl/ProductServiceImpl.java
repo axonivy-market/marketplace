@@ -2,7 +2,7 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
-import com.axonivy.market.constants.CacheNameConstants;
+import com.axonivy.market.core.constants.CacheNameConstants;
 import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
@@ -73,6 +73,7 @@ import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.core.enums.AppSettingKey;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -614,6 +615,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
+  @Cacheable(value = CacheNameConstants.FIND_PRODUCT_BY_ID_STATE, key = "{ #id, #isShowDevVersion }")
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
     return Optional.ofNullable(product).map((Product productItem) -> {
@@ -700,6 +702,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
+  @Cacheable(value = CacheNameConstants.FIND_PRODUCT_BY_ID_VERSION, key = "{ #id, #version }")
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     var product = productRepo.getProductByIdAndVersion(id, version);
     if (product != null) {
@@ -824,6 +827,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
+  @Cacheable(value = CacheNameConstants.GET_GITHUB_RELEASES, key = "{ #productId, #pageable }")
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     var product = productRepo.findProductByIdAndRelatedData(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
@@ -834,7 +838,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
         product.getSourceUrl());
   }
 
-  @CacheEvict(value = CacheNameConstants.REPO_RELEASES, key = "{#productId}")
+  @CacheEvict(value = { CacheNameConstants.REPO_RELEASES, CacheNameConstants.GET_GITHUB_RELEASES },
+      key = "{ #productId }")
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_RELEASE_NOTES)
   public Page<GitHubReleaseModel> syncGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
@@ -842,6 +847,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
+  @Cacheable(value = CacheNameConstants.GET_GITHUB_RELEASES_PRODUCT_ID, key = "{ #productId, #releaseId }")
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId,
       Long releaseId) throws IOException {
     var product = productRepo.findProductByIdAndRelatedData(productId);
