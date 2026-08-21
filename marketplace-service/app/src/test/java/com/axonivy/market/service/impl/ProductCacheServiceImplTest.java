@@ -44,7 +44,7 @@ class ProductCacheServiceImplTest extends BaseSetup {
 
   @Test
   void testIsValidProductIdLoadsCacheFromDatabaseOnce() {
-    when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
+    when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_ID_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
     Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
     when(productRepo.findAll()).thenReturn(List.of(product));
 
@@ -57,7 +57,7 @@ class ProductCacheServiceImplTest extends BaseSetup {
 
   @Test
   void testIsValidProductIdAndVersionMatchesCachedCombination() {
-    when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
+    when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_ID_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
     Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
     when(productRepo.findAll()).thenReturn(List.of(product));
 

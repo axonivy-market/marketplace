@@ -79,7 +79,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
   }
 
   private long getProductCacheExpirationMillis() {
-    return Duration.ofMinutes(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_CACHE_EXPIRATION_MINUTES))
+    return Duration.ofMinutes(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_ID_CACHE_EXPIRATION_MINUTES))
         .toMillis();
   }
 }

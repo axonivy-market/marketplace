@@ -3,7 +3,6 @@ package com.axonivy.market.service.impl;
 import com.axonivy.market.aop.annotation.TrackSyncTaskExecution;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.constants.CacheNameConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.MavenConstants;
 import com.axonivy.market.constants.MetaConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
@@ -157,12 +156,16 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
   }
 
+  private String getMarketplaceRepoName() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKETPLACE_REPO_NAME);
+  }
+
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_PRODUCTS)
   public List<String> syncLatestDataFromMarketRepo(Boolean resetSync) {
     List<String> syncedProductIds = new ArrayList<>();
     var isAlreadyUpToDate = false;
-    marketRepoMeta = gitHubRepoMetaRepo.findByRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    marketRepoMeta = gitHubRepoMetaRepo.findByRepoName(getMarketplaceRepoName());
     if (BooleanUtils.isTrue(resetSync) && marketRepoMeta != null) {
       gitHubRepoMetaRepo.delete(marketRepoMeta);
       marketRepoMeta = null;
@@ -201,7 +204,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
     String repoURL = Optional.ofNullable(lastGHCommit.getOwner()).map(GHRepository::getUrl).map(URL::getPath)
         .orElse(EMPTY);
     marketRepoMeta.setRepoURL(repoURL);
-    marketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    marketRepoMeta.setRepoName(getMarketplaceRepoName());
     marketRepoMeta.setLastSHA1(lastGHCommit.getSHA1());
     marketRepoMeta.setLastChange(GitHubUtils.getGHCommitDate(lastGHCommit));
     gitHubRepoMetaRepo.save(marketRepoMeta);

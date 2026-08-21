@@ -1,6 +1,7 @@
 package com.axonivy.market.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.model.GitHubAccessTokenResponse;
 import com.axonivy.market.github.service.GitHubService;
@@ -22,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 public class OAuth2ServiceImpl implements OAuth2Service {
   private final GitHubService gitHubService;
   private final JwtService jwtService;
+  private final AppSettingService appSettingService;
 
   @Override
   public String loginToGitHubAndGetJWT(Oauth2AuthorizationCode oauth2AuthorizationCode) {
@@ -50,8 +52,8 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
 
     var userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+        appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME),
+        appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TEAM_NAME));
 
     String jwt = jwtService.generateJWTFromGitHubToken(token);
     userInfo.setToken(jwt);

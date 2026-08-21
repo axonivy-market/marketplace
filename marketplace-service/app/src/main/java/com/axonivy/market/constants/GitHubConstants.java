@@ -13,10 +13,6 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GitHubConstants {
-  public static final String AXONIVY_MARKET_ORGANIZATION_NAME = "axonivy-market";
-  public static final String AXONIVY_MARKET_TEAM_NAME = "team-wawa";
-  public static final String AXONIVY_MARKETPLACE_REPO_NAME = "market";
-  public static final String AXONIVY_MARKETPLACE_PATH = "market";
   public static final String GITHUB_PROVIDER_NAME = "GitHub";
   public static final String GITHUB_GET_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
   public static final String README_FILE_LOCALE_REGEX = "_(..)";
@@ -29,7 +25,6 @@ public class GitHubConstants {
   public static final String BEARER_PREFIX = "Bearer ";
   public static final String HEADS_PREFIX = "heads/";
   public static final String REFS_HEADS_PREFIX = "refs/" + HEADS_PREFIX;
-  public static final String DEFAULT_BRANCH = "master";
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Json {

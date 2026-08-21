@@ -1,8 +1,10 @@
 package com.axonivy.market.core.config;
 
 import com.axonivy.market.core.constants.CacheNameConstants;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -17,30 +19,26 @@ import java.util.concurrent.TimeUnit;
  * Caffeine spec is applied to caches that don't need a custom policy, such as {@code RepoReleases} in
  * {@code app}. Caches with a different lifetime, such as {@link CacheNameConstants#FIND_PRODUCTS}, are
  * registered individually with their own Caffeine spec. Expiry/size values are configurable via
- * environment variables, each with a sane default.
+ * {@link AppSettingService}-backed {@link AppSettingKey} entries, each with a sane default.
  * </p>
  */
 @Configuration
 @EnableCaching
+@RequiredArgsConstructor
 public class CaffeineCacheConfig {
 
-  @Value("${cache.default.expired-minutes:60}")
-  private int defaultExpiredMinutes;
-
-  @Value("${cache.default.maximum-size:1000}")
-  private int defaultMaximumSize;
-
-  @Value("${cache.products.expired-minutes:10}")
-  private int productsExpiredMinutes;
-
-  @Value("${cache.products.details.expired-minutes:5}")
-  private int productsDetailsExpiredMinutes;
-
-  @Value("${cache.products.details.github-releases.expired-minutes:10}")
-  private int productsDetailsGitHubReleaseExpiredMinutes;
+  private final AppSettingService appSettingService;
 
   @Bean
   public CacheManager cacheManager() {
+    int defaultExpiredMinutes = appSettingService.getIntegerValueByKey(AppSettingKey.CACHE_DEFAULT_EXPIRED_MINUTES);
+    int defaultMaximumSize = appSettingService.getIntegerValueByKey(AppSettingKey.CACHE_DEFAULT_MAXIMUM_SIZE);
+    int productsExpiredMinutes = appSettingService.getIntegerValueByKey(AppSettingKey.CACHE_PRODUCTS_EXPIRED_MINUTES);
+    int productsDetailsExpiredMinutes =
+        appSettingService.getIntegerValueByKey(AppSettingKey.CACHE_PRODUCTS_DETAILS_EXPIRED_MINUTES);
+    int productsDetailsGitHubReleaseExpiredMinutes =
+        appSettingService.getIntegerValueByKey(AppSettingKey.CACHE_PRODUCTS_DETAILS_GITHUB_RELEASES_EXPIRED_MINUTES);
+
     var cacheManager = new CaffeineCacheManager();
     cacheManager.setCaffeine(Caffeine.newBuilder()
         .expireAfterWrite(defaultExpiredMinutes, TimeUnit.MINUTES)

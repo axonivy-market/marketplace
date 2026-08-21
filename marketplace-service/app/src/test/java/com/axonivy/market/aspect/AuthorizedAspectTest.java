@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.*;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.model.UserInfo;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +43,9 @@ class AuthorizedAspectTest {
   @Mock
   private Authorized authorized;
 
+  @Mock
+  private AppSettingService appSettingService;
+
   @InjectMocks
   private AuthorizedAspect authorizedAspect;
 
@@ -69,10 +73,12 @@ class AuthorizedAspectTest {
     when(authorized.scope()).thenReturn(Authorized.AuthorizationScope.ORGANIZATION_TEAM);
     when(request.getHeader(RequestParamConstants.X_AUTHORIZATION)).thenReturn("Bearer valid-token");
     when(jwtService.getRawAccessToken("Bearer valid-token")).thenReturn("valid-token");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME)).thenReturn("axonivy-market");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TEAM_NAME)).thenReturn("team-wawa");
     when(gitHubService.validateUserInOrganizationAndTeam(
         "valid-token",
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME
+        "axonivy-market",
+        "team-wawa"
     )).thenReturn(mockUser);
 
     when(joinPoint.proceed()).thenReturn("success");
@@ -165,10 +171,12 @@ class AuthorizedAspectTest {
     when(jwtService.getRawAccessToken("Bearer valid-token"))
         .thenReturn("valid-token");
 
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME)).thenReturn("axonivy-market");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TEAM_NAME)).thenReturn("team-wawa");
     when(gitHubService.validateUserInOrganizationAndTeam(
         "valid-token",
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME
+        "axonivy-market",
+        "team-wawa"
     )).thenReturn(mockUser);
 
     Oauth2ExchangeCodeException exception = assertThrows(
@@ -195,10 +203,12 @@ class AuthorizedAspectTest {
     when(jwtService.getRawAccessToken("Bearer valid-token"))
         .thenReturn("valid-token");
 
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME)).thenReturn("axonivy-market");
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TEAM_NAME)).thenReturn("team-wawa");
     when(gitHubService.validateUserInOrganizationAndTeam(
         "valid-token",
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME
+        "axonivy-market",
+        "team-wawa"
     )).thenReturn(mockUser);
 
     Oauth2ExchangeCodeException exception = assertThrows(
