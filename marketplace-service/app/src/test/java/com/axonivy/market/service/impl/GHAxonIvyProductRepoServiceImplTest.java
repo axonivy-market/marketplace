@@ -5,6 +5,8 @@ import com.axonivy.market.core.constants.CoreMavenConstants;
 import com.axonivy.market.core.entity.Artifact;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.service.impl.GHAxonIvyProductRepoServiceImpl;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -64,6 +66,9 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   @Mock
   ImageService imageService;
 
+  @Mock
+  AppSettingService appSettingService;
+
   @InjectMocks
   @Spy
   private GHAxonIvyProductRepoServiceImpl axonivyProductRepoServiceImpl;
@@ -71,6 +76,8 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
   void setup() throws IOException {
     when(gitHubService.getOrganization(any())).thenReturn(mockGHOrganization);
     when(mockGHOrganization.getRepository(any())).thenReturn(ghRepository);
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME))
+        .thenReturn("axonivy-market");
   }
 
   @AfterEach
@@ -109,6 +116,8 @@ class GHAxonIvyProductRepoServiceImplTest extends BaseSetup {
 
   @Test
   void testGetOrganization() throws IOException {
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME))
+        .thenReturn("axonivy-market");
     when(gitHubService.getOrganization(anyString())).thenReturn(mockGHOrganization);
     assertEquals(mockGHOrganization, axonivyProductRepoServiceImpl.getOrganization(),
         "Expected getOrganization() to return the mocked GHOrganization on first call");

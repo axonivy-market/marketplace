@@ -2,7 +2,6 @@ package com.axonivy.market.service.impl;
 
 import com.axonivy.market.BaseSetup;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ProductJsonConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.ProductModuleContent;
@@ -150,6 +149,8 @@ class ProductServiceImplTest extends BaseSetup {
   void setup() {
     mockResultReturn = createPageProductsMock();
     lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH)).thenReturn("master");
+    lenient().when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKETPLACE_REPO_NAME))
+        .thenReturn("market");
   }
 
   @Test
@@ -548,8 +549,8 @@ class ProductServiceImplTest extends BaseSetup {
 
   private void mockMarketRepoMetaStatus() {
     var mockMarketRepoMeta = new GitHubRepoMeta();
-    mockMarketRepoMeta.setRepoURL(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
-    mockMarketRepoMeta.setRepoName(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+    mockMarketRepoMeta.setRepoURL("market");
+    mockMarketRepoMeta.setRepoName("market");
     mockMarketRepoMeta.setLastChange(LAST_CHANGE_TIME);
     mockMarketRepoMeta.setLastSHA1(SHA1_SAMPLE);
     when(repoMetaRepo.findByRepoName(any())).thenReturn(mockMarketRepoMeta);

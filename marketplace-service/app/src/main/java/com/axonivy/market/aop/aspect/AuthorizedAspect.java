@@ -2,8 +2,9 @@ package com.axonivy.market.aop.aspect;
 
 import com.axonivy.market.aop.annotation.Authorized;
 import com.axonivy.market.constants.CommonConstants;
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.RequestParamConstants;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.exceptions.model.Oauth2ExchangeCodeException;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.service.JwtService;
@@ -35,6 +36,7 @@ public class AuthorizedAspect {
 
   private final JwtService jwtService;
   private final GitHubService gitHubService;
+  private final AppSettingService appSettingService;
 
   @Around("@annotation(authorized)")
   public Object validateAuthorization(ProceedingJoinPoint joinPoint, Authorized authorized) throws Throwable {
@@ -61,8 +63,8 @@ public class AuthorizedAspect {
     }
     if (Authorized.AuthorizationScope.ORGANIZATION_TEAM == authorized.scope()) {
       var userInfo = gitHubService.validateUserInOrganizationAndTeam(token,
-        GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME,
-        GitHubConstants.AXONIVY_MARKET_TEAM_NAME);
+        appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME),
+        appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TEAM_NAME));
 
       var username = userInfo.getName();
       var gitHubUserId = userInfo.getGitHubId();

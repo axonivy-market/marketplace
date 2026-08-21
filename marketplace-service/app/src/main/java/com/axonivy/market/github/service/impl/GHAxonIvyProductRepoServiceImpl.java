@@ -1,9 +1,10 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.constants.ReadmeConstants;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductModuleContent;
+import com.axonivy.market.core.enums.AppSettingKey;
+import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.github.service.GHAxonIvyProductRepoService;
 import com.axonivy.market.github.service.GitHubService;
 import com.axonivy.market.github.util.GitHubUtils;
@@ -33,6 +34,7 @@ import static com.axonivy.market.constants.CommonConstants.IMAGE_ID_PREFIX;
 public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoService {
   private final GitHubService gitHubService;
   private final ImageService imageService;
+  private final AppSettingService appSettingService;
   private GHOrganization organization;
 
   @Override
@@ -47,7 +49,8 @@ public class GHAxonIvyProductRepoServiceImpl implements GHAxonIvyProductRepoServ
 
   public GHOrganization getOrganization() throws IOException {
     if (organization == null) {
-      organization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+      organization = gitHubService.getOrganization(
+          appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME));
     }
     return organization;
   }

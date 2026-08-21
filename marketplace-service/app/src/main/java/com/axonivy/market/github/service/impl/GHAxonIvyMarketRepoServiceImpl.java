@@ -1,6 +1,5 @@
 package com.axonivy.market.github.service.impl;
 
-import com.axonivy.market.constants.GitHubConstants;
 import com.axonivy.market.enums.FileStatus;
 import com.axonivy.market.enums.FileType;
 import com.axonivy.market.github.model.GitHubFile;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
-import static com.axonivy.market.constants.GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME;
 
 @Log4j2
 @Service
@@ -47,7 +45,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
     Map<String, List<GHContent>> ghContentMap = new HashMap<>();
     try {
       List<GHContent> directoryContent = gitHubService.getDirectoryContent(getRepository(),
-          GitHubConstants.AXONIVY_MARKETPLACE_PATH, getMarketRepoBranch());
+          getMarketplacePath(), getMarketRepoBranch());
       for (var content : directoryContent) {
         extractFileInDirectoryContent(content, ghContentMap);
       }
@@ -95,7 +93,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   public List<GitHubFile> fetchMarketItemsBySHA1Range(String fromSHA1, String toSHA1) {
     Map<String, GitHubFile> gitHubFileMap = new HashMap<>();
     try {
-      final String marketRepo = AXONIVY_MARKETPLACE_REPO_NAME.concat(SLASH);
+      final String marketRepo = getMarketplaceRepoName().concat(SLASH);
       GHCompare compareResult = getRepository().getCompare(fromSHA1, toSHA1);
       for (var commit : GitHubUtils.mapPagedIteratorToList(compareResult.listCommits())) {
         var listFiles = commit.listFiles();
@@ -126,7 +124,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
 
   private GHOrganization getOrganization() throws IOException {
     if (organization == null) {
-      organization = gitHubService.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME);
+      organization = gitHubService.getOrganization(getOrganizationName());
     }
     return organization;
   }
@@ -135,7 +133,7 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
   public GHRepository getRepository() {
     if (repository == null) {
       try {
-        repository = getOrganization().getRepository(GitHubConstants.AXONIVY_MARKETPLACE_REPO_NAME);
+        repository = getOrganization().getRepository(getMarketplaceRepoName());
       } catch (IOException e) {
         log.error("Get AxonIvy Market repo failed: ", e);
       }
@@ -157,5 +155,17 @@ public class GHAxonIvyMarketRepoServiceImpl implements GHAxonIvyMarketRepoServic
 
   private String getMarketRepoBranch() {
     return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKET_BRANCH);
+  }
+
+  private String getMarketplacePath() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKETPLACE_PATH);
+  }
+
+  private String getMarketplaceRepoName() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_MARKETPLACE_REPO_NAME);
+  }
+
+  private String getOrganizationName() {
+    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME);
   }
 }

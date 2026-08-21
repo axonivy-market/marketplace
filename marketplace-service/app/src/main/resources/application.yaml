@@ -74,17 +74,6 @@ jwt:
   secret: '${MARKET_JWT_SECRET_KEY}'
   expiration: '365'
 
-cache:
-  default:
-    expired-minutes: '${CACHE_DEFAULT_EXPIRED_MINUTES:60}'
-    maximum-size: '${CACHE_DEFAULT_MAXIMUM_SIZE:1000}'
-  products:
-    expired-minutes: '${CACHE_PRODUCTS_EXPIRED_MINUTES:5}'
-    details:
-      expired-minutes: '${CACHE_PRODUCTS_DETAILS_EXPIRED_MINUTES:1}'
-      github-releases:
-        expired-minutes: '${CACHE_PRODUCTS_DETAILS_GITHUB_RELEASES_EXPIRED_MINUTES:10}'
-
 market:
   environment: '${MARKET_ENVIRONMENT}'
   node-number: '${MARKET_NODE_NUMBER}'
