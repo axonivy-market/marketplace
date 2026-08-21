@@ -1,5 +1,6 @@
 package com.axonivy.market.core.service.impl;
 
+import com.axonivy.market.core.constants.CacheNameConstants;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.Language;
@@ -9,6 +10,7 @@ import com.axonivy.market.core.service.CoreProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,7 @@ public class CoreProductServiceImpl implements CoreProductService {
   }
 
   @Override
+  @Cacheable(value = CacheNameConstants.FIND_PRODUCTS)
   public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
     return findProducts(type, keyword, language, false, pageable);
   }

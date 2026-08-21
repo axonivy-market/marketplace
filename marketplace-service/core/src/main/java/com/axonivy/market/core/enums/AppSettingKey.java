@@ -226,6 +226,13 @@ public enum AppSettingKey {
       "Maximum allowed click capacity.",
       false),
 
+  PRODUCT_CACHE_EXPIRATION_MINUTES(
+      "market.product-cache.expiration-minutes",
+      "10",
+      AppSettingCategory.SECURITY.name(),
+      "Minutes before the valid product id/version cache is refreshed from the database.",
+      false),
+
   AXON_IVY_DEVELOPER_URL(
       "axon.ivy.developer.url",
       "https://developer.axonivy.com",

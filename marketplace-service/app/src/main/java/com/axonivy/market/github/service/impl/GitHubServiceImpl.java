@@ -80,7 +80,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
+import static com.axonivy.market.core.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
 import static com.axonivy.market.enums.PullRequestAction.*;
@@ -470,7 +470,7 @@ public class GitHubServiceImpl implements GitHubService {
     return new PageImpl<>(gitHubReleaseModels, pageable, ghReleases.size());
   }
 
-  @Cacheable(value = REPO_RELEASES, key = "{#productId}")
+  @Cacheable(value = REPO_RELEASES, key = "{ #productId }")
   @Override
   public List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
     List<GHRelease> ghReleases = new ArrayList<>();
