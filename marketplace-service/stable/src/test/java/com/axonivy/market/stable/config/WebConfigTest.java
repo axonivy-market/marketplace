@@ -31,10 +31,10 @@ class WebConfigTest {
   @BeforeEach
   void setUp() {
     webConfig = new WebConfig();
-    ReflectionTestUtils.setField(webConfig, "market.cors.mappings", "/**");
-    ReflectionTestUtils.setField(webConfig, "market.cors.methods", "GET, POST, PUT, DELETE, OPTIONS");
-    ReflectionTestUtils.setField(webConfig, "market.cors.allowed.origin.patterns", "*");
-    ReflectionTestUtils.setField(webConfig, "market.cors.allowed.origin.max-age", 3600);
+    ReflectionTestUtils.setField(webConfig, "marketCorsMappings", "/**");
+    ReflectionTestUtils.setField(webConfig, "marketCorsMethods", "GET, POST, PUT, DELETE, OPTIONS");
+    ReflectionTestUtils.setField(webConfig, "marketCorsAllowedOriginPatterns", "*");
+    ReflectionTestUtils.setField(webConfig, "marketCorsAllowedOriginMaxAge", 3600);
 
     when(corsRegistry.addMapping(anyString())).thenReturn(corsRegistration);
     when(corsRegistration.allowedOriginPatterns(anyString())).thenReturn(corsRegistration);
