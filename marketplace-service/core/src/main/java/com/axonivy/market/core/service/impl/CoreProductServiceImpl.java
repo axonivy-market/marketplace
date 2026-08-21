@@ -46,7 +46,7 @@ public class CoreProductServiceImpl implements CoreProductService {
   }
 
   @Override
-  @Cacheable(value = CacheNameConstants.FIND_PRODUCTS, key = "{#type, #keyword, #language, #pageable}")
+  @Cacheable(value = CacheNameConstants.FIND_PRODUCTS)
   public Page<Product> findProducts(String type, String keyword, String language, Pageable pageable) {
     return findProducts(type, keyword, language, false, pageable);
   }

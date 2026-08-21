@@ -470,7 +470,7 @@ public class GitHubServiceImpl implements GitHubService {
     return new PageImpl<>(gitHubReleaseModels, pageable, ghReleases.size());
   }
 
-  @Cacheable(value = REPO_RELEASES, key = "{#productId}")
+  @Cacheable(value = REPO_RELEASES, key = "{ #productId }")
   @Override
   public List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
     List<GHRelease> ghReleases = new ArrayList<>();

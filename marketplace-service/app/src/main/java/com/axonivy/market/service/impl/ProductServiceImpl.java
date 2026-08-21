@@ -615,7 +615,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  @Cacheable(value = CacheNameConstants.FIND_PRODUCT_BY_ID_STATE, key = "{ #id, #isShowDevVersion }")
+  @Cacheable(value = CacheNameConstants.FIND_PRODUCT_BY_ID_STATE)
   public Product fetchProductDetail(String id, Boolean isShowDevVersion) {
     var product = getProductByIdWithNewestReleaseVersion(id, isShowDevVersion);
     return Optional.ofNullable(product).map((Product productItem) -> {
@@ -702,7 +702,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  @Cacheable(value = CacheNameConstants.FIND_PRODUCT_BY_ID_VERSION, key = "{ #id, #version }")
+  @Cacheable(value = CacheNameConstants.FIND_PRODUCT_BY_ID_VERSION)
   public Product fetchProductDetailByIdAndVersion(String id, String version) {
     var product = productRepo.getProductByIdAndVersion(id, version);
     if (product != null) {
@@ -827,7 +827,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  @Cacheable(value = CacheNameConstants.GET_GITHUB_RELEASES, key = "{ #productId, #pageable }")
+  @Cacheable(value = CacheNameConstants.GET_GITHUB_RELEASES)
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     var product = productRepo.findProductByIdAndRelatedData(productId);
     if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
@@ -847,7 +847,7 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   }
 
   @Override
-  @Cacheable(value = CacheNameConstants.GET_GITHUB_RELEASES_PRODUCT_ID, key = "{ #productId, #releaseId }")
+  @Cacheable(value = CacheNameConstants.GET_GITHUB_RELEASES_PRODUCT_ID)
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId,
       Long releaseId) throws IOException {
     var product = productRepo.findProductByIdAndRelatedData(productId);
