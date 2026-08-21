@@ -20,11 +20,12 @@ public class CacheNameConstants {
   public static final String FIND_IMAGE = "FindImage";
   public static final String GET_GITHUB_RELEASES = "GetGitHubReleases";
   public static final String GET_GITHUB_RELEASES_PRODUCT_ID = "GetGitHubReleasesByProductIdAndReleaseId";
-  public static final String APP_SETTINGS_FIND_ALL = "AppSettingsFindAll";
-  public static final String APP_SETTINGS_SEARCH = "AppSettingsSearch";
-  public static final String APP_SETTINGS_GET_BY_CATEGORY = "AppSettingsGetByCategory";
-  public static final String APP_SETTINGS_GET_STRING_VALUE = "AppSettingsGetStringValue";
-  public static final String APP_SETTINGS_GET_LONG_VALUE = "AppSettingsGetLongValue";
-  public static final String APP_SETTINGS_GET_INTEGER_VALUE = "AppSettingsGetIntegerValue";
-  public static final String APP_SETTINGS_GET_BOOLEAN_VALUE = "AppSettingsGetBooleanValue";
+  public static final String APP_SETTINGS = "AppSettings";
+  public static final String APP_SETTINGS_FIND_ALL = APP_SETTINGS + "FindAll";
+  public static final String APP_SETTINGS_SEARCH = APP_SETTINGS + "Search";
+  public static final String APP_SETTINGS_GET_BY_CATEGORY = APP_SETTINGS + "GetByCategory";
+  public static final String APP_SETTINGS_GET_STRING_VALUE = APP_SETTINGS + "GetStringValue";
+  public static final String APP_SETTINGS_GET_LONG_VALUE = APP_SETTINGS + "GetLongValue";
+  public static final String APP_SETTINGS_GET_INTEGER_VALUE = APP_SETTINGS + "GetIntegerValue";
+  public static final String APP_SETTINGS_GET_BOOLEAN_VALUE = APP_SETTINGS + "GetBooleanValue";
 }
