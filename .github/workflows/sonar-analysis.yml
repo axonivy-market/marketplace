@@ -32,9 +32,8 @@ jobs:
   ui-analysis:
     name: Sonarqube (UI)
     needs: check-membership
-    if: github.event.workflow_run.name == 'Market-UI CI Build'
+    if: github.event.workflow_run.name == 'Market-UI CI Build' && needs.check-membership.outputs.is_member == 'true'
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_PROJECT_KEY: 'AxonIvy-Market-UI'
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -97,9 +96,8 @@ jobs:
   service-analysis:
     name: Sonarqube (Service)
     needs: check-membership
-    if: github.event.workflow_run.name == 'Market-Service CI Build'
+    if: github.event.workflow_run.name == 'Market-Service CI Build' && needs.check-membership.outputs.is_member == 'true'
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
