@@ -58,14 +58,16 @@ pipeline {
             git fetch origin new-release || true
 
             if git show-ref --verify --quiet refs/remotes/origin/new-release; then
-              AHEAD=$(git rev-list --count origin/$RELEASE_BASE_BRANCH..origin/new-release)
-              if [ "$AHEAD" -gt 0 ]; then
-                echo "ERROR: origin/new-release is $AHEAD commit(s) ahead of origin/$RELEASE_BASE_BRANCH (likely an open Release PR). Merge or close it before running a new release build."
+              OPEN_PR=$(gh pr list --repo axonivy-market/marketplace --head new-release --base $RELEASE_BASE_BRANCH --state open --json number --jq ".[0].number" 2>/dev/null || echo "")
+              if [ -n "$OPEN_PR" ]; then
+                echo "ERROR: An open Release PR (#$OPEN_PR) already exists for new-release. Merge or close it before running a new release build."
                 exit 1
               fi
             fi
 
             git checkout -B new-release origin/$RELEASE_BASE_BRANCH
+            git reset --hard origin/$RELEASE_BASE_BRANCH
+            git clean -fdx
           '''
         }
       }
@@ -135,7 +137,7 @@ pipeline {
               git commit -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
               if [ "$PUSH_CHANGES" = "true" ]; then
                 git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-                git push origin HEAD:new-release
+                git push --force-with-lease origin HEAD:new-release
                 git push origin $RELEASE_VERSION
                 git remote set-url origin https://github.com/axonivy-market/marketplace.git
               fi
