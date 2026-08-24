@@ -9,6 +9,8 @@ validate_inputs() {
     : "${GITHUB_REPOSITORY_OWNER:?GITHUB_REPOSITORY_OWNER is required}"
     : "${VERSION_RETENTION_COUNT:?VERSION_RETENTION_COUNT is required}"
 
+    echo "DEBUG: IMAGE_NAME=${IMAGE_NAME} GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER} VERSION_RETENTION_COUNT=${VERSION_RETENTION_COUNT}" >&2
+
     if ! [[ "${VERSION_RETENTION_COUNT}" =~ ^[0-9]+$ ]]; then
         echo "ERROR: VERSION_RETENTION_COUNT must be a non-negative integer"
         exit 1
@@ -23,11 +25,19 @@ validate_inputs() {
 # Retrieves all image versions and returns the response body plus HTTP code suffix.
 fetch_versions_response() {
     local versions_url
+    local response
     versions_url="https://api.github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${IMAGE_NAME}/versions?per_page=100"
 
-    curl -sS -w "%{http_code}" \
+    echo "DEBUG: Calling GET ${versions_url}" >&2
+
+    response="$(curl -sS -w "%{http_code}" \
         -H "Authorization: Bearer ${GH_TOKEN}" \
-        "${versions_url}"
+        -H "Accept: application/vnd.github+json" \
+        "${versions_url}")"
+
+    echo "DEBUG: Full response body: ${response::-3}" >&2
+
+    echo "${response}"
 }
 
 # Deletes a single GHCR package version id.
@@ -37,7 +47,12 @@ delete_version_by_id() {
     local http_code
 
     delete_url="https://api.github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${IMAGE_NAME}/versions/${version_id}"
+
+    echo "DEBUG: Calling DELETE ${delete_url}" >&2
+
     http_code="$(curl -sS -o /dev/null -w "%{http_code}" -X DELETE -H "Authorization: Bearer ${GH_TOKEN}" "${delete_url}")"
+
+    echo "DEBUG: DELETE ${version_id} returned HTTP ${http_code}" >&2
 
     if [[ "${http_code}" != "204" ]]; then
         echo "WARN: Failed to delete version ID ${version_id} (HTTP ${http_code})"
