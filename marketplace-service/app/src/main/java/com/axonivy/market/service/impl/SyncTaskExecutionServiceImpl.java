@@ -1,5 +1,19 @@
 package com.axonivy.market.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
@@ -9,21 +23,10 @@ import com.axonivy.market.exceptions.model.SyncTaskInProgressException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
 import com.axonivy.market.service.SyncTaskExecutionService;
+
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Log4j2
 @Service
@@ -39,9 +42,9 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Transactional
   @Override
   public SyncTaskExecution start(SyncTaskType jobType) {
-    Optional<SyncTaskExecution> execution = syncTaskExecutionRepo.findByTypeAndNodeNumber(jobType, nodeNumber);
-    if (execution.isPresent()) {
-      SyncTaskExecution existingExecution = execution.get();
+    List<SyncTaskExecution> executions = syncTaskExecutionRepo.findByTypeAndNodeNumber(jobType, nodeNumber);
+    if (ObjectUtils.isNotEmpty(executions)) {
+      SyncTaskExecution existingExecution = executions.getFirst();
       return restartSyncTaskExecution(jobType, existingExecution);
     }
 
@@ -76,7 +79,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Override
   public List<SyncTaskExecutionModel> getAllSyncTaskExecutions() {
     return Arrays.stream(SyncTaskType.values())
-        .map(type -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber))
+        .map(type -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber).stream().findFirst())
         .flatMap(Optional::stream)
         .map(SyncTaskExecutionModel::from)
         .toList();
@@ -86,7 +89,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Override
   public SyncTaskExecutionModel getSyncTaskExecutionByKey(String key) {
     return SyncTaskType.fromKey(key)
-        .flatMap(type -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber))
+        .flatMap(type -> syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber).stream().findFirst())
         .map(SyncTaskExecutionModel::from)
         .orElse(null);
   }
@@ -94,13 +97,14 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   @Override
   public boolean cancel(String jobKey) {
     Optional<SyncTaskType> type = SyncTaskType.fromKey(jobKey);
-    return type.map(syncTaskType -> syncTaskExecutionRepo.findByTypeAndNodeNumber(syncTaskType, nodeNumber)
+    return type.map(syncTaskType -> syncTaskExecutionRepo.findByTypeAndNodeNumber(syncTaskType, nodeNumber).stream()
         .filter(execution -> execution.getStatus() == SyncTaskStatus.RUNNING
             || execution.getStatus() == SyncTaskStatus.STARTED)
         .map((SyncTaskExecution task) -> {
           cancellationRegistry.cancel(syncTaskType);
           return true;
         })
+        .findFirst()
         .orElse(false)).orElse(false);
   }
 
@@ -120,7 +124,7 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
     try {
       return syncTaskExecutionRepo.saveAndFlush(execution);
     } catch (DataIntegrityViolationException ex) {
-      return syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber)
+      return syncTaskExecutionRepo.findByTypeAndNodeNumber(type, nodeNumber).stream().findFirst()
           .map((SyncTaskExecution existingExecution) -> restartSyncTaskExecution(type, existingExecution))
           .orElseThrow(() -> ex);
     }
@@ -145,11 +149,11 @@ public class SyncTaskExecutionServiceImpl implements SyncTaskExecutionService {
   }
 
   private void updateSyncTask(SyncTaskType syncTaskType, SyncTaskStatus status, String message) {
-    Optional<SyncTaskExecution> execution = syncTaskExecutionRepo.findByTypeAndNodeNumber(syncTaskType, nodeNumber);
-    if (execution.isEmpty()) {
+    List<SyncTaskExecution> executions = syncTaskExecutionRepo.findByTypeAndNodeNumber(syncTaskType, nodeNumber);
+    if (executions.isEmpty()) {
       return;
     }
-    SyncTaskExecution taskExecution = execution.get();
+    SyncTaskExecution taskExecution = executions.getFirst();
     Objects.requireNonNull(taskExecution, SyncTaskConstants.NON_NULL_SYNC_TASK_MESSAGE);
 
     if (status == SyncTaskStatus.RUNNING) {

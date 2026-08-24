@@ -930,7 +930,8 @@ class GitHubServiceImplTest extends BaseSetup {
 
     when(repo.getWorkflow("build.yml")).thenReturn(workflow);
     when(repo.queryWorkflowRuns()).thenReturn(queryBuilder);
-    when(queryBuilder.branch(DEFAULT_BRANCH)).thenReturn(queryBuilder);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_DEFAULT_BRANCH)).thenReturn("master");
+    when(queryBuilder.branch("master")).thenReturn(queryBuilder);
     when(queryBuilder.status(GHWorkflowRun.Status.COMPLETED)).thenReturn(queryBuilder);
     when(queryBuilder.list()).thenReturn(pagedRuns);
     when(pagedRuns.withPageSize(anyInt())).thenReturn(pagedRuns);
@@ -945,7 +946,7 @@ class GitHubServiceImplTest extends BaseSetup {
 
     assertSame(matchingRun, result, "Should return the completed run that matches the workflow id.");
     verify(repo).queryWorkflowRuns();
-    verify(queryBuilder).branch(DEFAULT_BRANCH);
+    verify(queryBuilder).branch("master");
     verify(queryBuilder).status(GHWorkflowRun.Status.COMPLETED);
     verify(queryBuilder).list();
     verify(workflow, never()).listRuns();
@@ -1237,7 +1238,8 @@ class GitHubServiceImplTest extends BaseSetup {
 
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
-    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME)).thenReturn("axonivy-market");
+    when(gitHub.getOrganization("axonivy-market")).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(List.of(mockRepo));
     when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt())).thenReturn(List.of(mockInfo));
@@ -1269,7 +1271,8 @@ class GitHubServiceImplTest extends BaseSetup {
 
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
-    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME)).thenReturn("axonivy-market");
+    when(gitHub.getOrganization("axonivy-market")).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(List.of(repoA, repoB, repoC));
     when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt()))
@@ -1296,7 +1299,8 @@ class GitHubServiceImplTest extends BaseSetup {
 
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
     doReturn(gitHub).when(gitHubService).getGitHub("token");
-    when(gitHub.getOrganization(GitHubConstants.AXONIVY_MARKET_ORGANIZATION_NAME)).thenReturn(mockOrg);
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME)).thenReturn("axonivy-market");
+    when(gitHub.getOrganization("axonivy-market")).thenReturn(mockOrg);
     when(mockOrg.listRepositories()).thenReturn(pagedRepos);
     when(pagedRepos.toList()).thenReturn(Collections.emptyList());
     when(multiTaskUtils.parallelProcessWithLimit(anyCollection(), any(), anyInt())).thenReturn(Collections.emptyList());

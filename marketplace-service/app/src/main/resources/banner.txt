@@ -10,7 +10,7 @@ ${AnsiColor.BLUE}                                                        888
                                                         888
                                                         888${AnsiColor.DEFAULT}
 
-Powered by ${AnsiColor.BRIGHT_MAGENTA}Wawa team 🐙${AnsiColor.DEFAULT} - https://market.axonivy.com/teams
+Powered by ${AnsiColor.BRIGHT_MAGENTA}Wawa team${AnsiColor.DEFAULT} - https://market.axonivy.com/teams
 Spring version: ${spring-boot.version}, Port: ${server.port}
 Java: ${java.version} | ${os.name} ${os.arch}
 

@@ -1,6 +1,32 @@
 package com.axonivy.market.core.repository.impl;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import com.axonivy.market.core.constants.CoreCommonConstants;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.CUSTOM_ORDER;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.FIRST_PUBLISHED_DATE;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.ID;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.INSTALLATION_COUNT;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.LISTED;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_ARTIFACT;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_MARKETPLACE_DATA;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_NAMES;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.PRODUCT_SHORT_DESCRIPTION;
+import static com.axonivy.market.core.constants.CorePostgresDBConstants.TYPE;
 import com.axonivy.market.core.criteria.ProductSearchCriteria;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.entity.ProductMarketplaceData;
@@ -11,6 +37,7 @@ import com.axonivy.market.core.enums.TypeOption;
 import com.axonivy.market.core.repository.CoreAbstractBaseRepository;
 import com.axonivy.market.core.repository.CoreCustomProductRepository;
 import com.axonivy.market.core.repository.CoreProductCustomSortRepository;
+
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -20,30 +47,12 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.MapJoin;
 import jakarta.persistence.criteria.Order;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Hibernate;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-
-import static com.axonivy.market.core.constants.CorePostgresDBConstants.*;
 
 @Log4j2
 @Builder

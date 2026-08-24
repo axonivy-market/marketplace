@@ -80,7 +80,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.axonivy.market.constants.CacheNameConstants.REPO_RELEASES;
+import static com.axonivy.market.core.constants.CacheNameConstants.REPO_RELEASES;
 import static com.axonivy.market.constants.GitHubConstants.*;
 import static com.axonivy.market.enums.AccessLevel.*;
 import static com.axonivy.market.enums.PullRequestAction.*;
@@ -257,7 +257,8 @@ public class GitHubServiceImpl implements GitHubService {
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
     var gitHub = getGitHub(getConfiguredToken());
-    GHOrganization organization = gitHub.getOrganization(AXONIVY_MARKET_ORGANIZATION_NAME);
+    GHOrganization organization = gitHub.getOrganization(
+        appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME));
 
     String token = getConfiguredToken();
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
@@ -470,7 +471,7 @@ public class GitHubServiceImpl implements GitHubService {
     return new PageImpl<>(gitHubReleaseModels, pageable, ghReleases.size());
   }
 
-  @Cacheable(value = REPO_RELEASES, key = "{#productId}")
+  @Cacheable(value = REPO_RELEASES, key = "{ #productId }")
   @Override
   public List<GHRelease> getRepoOfficialReleases(String repoName, String productId) throws IOException {
     List<GHRelease> ghReleases = new ArrayList<>();
@@ -516,7 +517,8 @@ public class GitHubServiceImpl implements GitHubService {
     try {
       GHWorkflow workflow = repo.getWorkflow(workflowFileName);
       var runs = Optional.ofNullable(repo.queryWorkflowRuns())
-          .map(query -> query.branch(DEFAULT_BRANCH).status(GHWorkflowRun.Status.COMPLETED).list())
+          .map(query -> query.branch(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_DEFAULT_BRANCH))
+              .status(GHWorkflowRun.Status.COMPLETED).list())
           .orElseGet(workflow::listRuns)
           .withPageSize(PAGE_SIZE_OF_WORKFLOW)
           .toList();

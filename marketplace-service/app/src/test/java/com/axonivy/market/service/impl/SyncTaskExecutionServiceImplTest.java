@@ -1,5 +1,32 @@
 package com.axonivy.market.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.commons.lang3.StringUtils;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.constants.SyncTaskConstants;
 import com.axonivy.market.entity.SyncTaskExecution;
@@ -8,24 +35,6 @@ import com.axonivy.market.enums.SyncTaskType;
 import com.axonivy.market.exceptions.model.SyncTaskInProgressException;
 import com.axonivy.market.model.SyncTaskExecutionModel;
 import com.axonivy.market.repository.SyncTaskExecutionRepository;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SyncTaskExecutionServiceImplTest {
@@ -47,7 +56,7 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testStartCreatesNewExecution() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
-    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(Optional.empty());
+    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(List.of());
     when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
@@ -61,7 +70,7 @@ class SyncTaskExecutionServiceImplTest {
   void testStartUpdatesExistingExecution() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existing = SyncTaskExecution.builder().type(type).build();
-    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(Optional.of(existing));
+    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(List.of(existing));
     when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     SyncTaskExecution result = service.start(type);
@@ -76,7 +85,7 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
         SyncTaskStatus.RUNNING).build();
-    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(Optional.of(existedSyncTaskExecution));
+    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(List.of(existedSyncTaskExecution));
 
     assertThrows(SyncTaskInProgressException.class,
         () -> service.start(type), "Should throw SyncTaskInProgressException when execution status is " +
@@ -88,7 +97,7 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
         SyncTaskStatus.STARTED).build();
-    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(Optional.of(existedSyncTaskExecution));
+    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(List.of(existedSyncTaskExecution));
 
     assertThrows(SyncTaskInProgressException.class,
         () -> service.start(type), "Should throw SyncTaskInProgressException when execution status is " +
@@ -101,8 +110,8 @@ class SyncTaskExecutionServiceImplTest {
     SyncTaskExecution existedSyncTaskExecution = SyncTaskExecution.builder().type(type).status(
         SyncTaskStatus.STARTED).build();
     when(repo.findByTypeAndNodeNumber(type, 1))
-        .thenReturn(Optional.empty())
-        .thenReturn(Optional.of(existedSyncTaskExecution));
+        .thenReturn(List.of())
+        .thenReturn(List.of(existedSyncTaskExecution));
     when(repo.saveAndFlush(any())).thenThrow(
         new DataIntegrityViolationException("Unique constraint violation while creating sync task execution"));
 
@@ -116,8 +125,8 @@ class SyncTaskExecutionServiceImplTest {
     DataIntegrityViolationException exception = new DataIntegrityViolationException(
         "Unique constraint violation while creating sync task execution");
     when(repo.findByTypeAndNodeNumber(type, 1))
-        .thenReturn(Optional.empty())
-        .thenReturn(Optional.empty());
+        .thenReturn(List.of())
+        .thenReturn(List.of());
     when(repo.saveAndFlush(any())).thenThrow(exception);
 
     assertThrows(DataIntegrityViolationException.class,
@@ -128,7 +137,7 @@ class SyncTaskExecutionServiceImplTest {
   void testStartThrowsSyncTaskInProgressExceptionWhenRestartCollidesWithConcurrentUpdate() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution existingExecution = SyncTaskExecution.builder().type(type).status(SyncTaskStatus.SUCCESS).build();
-    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(Optional.of(existingExecution));
+    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(List.of(existingExecution));
     when(repo.saveAndFlush(any())).thenThrow(new ObjectOptimisticLockingFailureException(SyncTaskExecution.class, type));
 
     assertThrows(SyncTaskInProgressException.class,
@@ -139,7 +148,7 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testMarkStatusSuccessDoesNotThrowWhenConcurrentUpdateDetected() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
-    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(List.of(execution));
     when(repo.saveAndFlush(any())).thenThrow(new ObjectOptimisticLockingFailureException(SyncTaskExecution.class,
         SyncTaskType.SYNC_PRODUCTS));
 
@@ -150,7 +159,7 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testMarkStatusSuccess() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
-    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(List.of(execution));
     when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusSuccess(execution.getType(), MESSAGE);
     assertEquals(SyncTaskStatus.SUCCESS, execution.getStatus(), "Status should be SUCCESS after markStatusSuccess");
@@ -161,7 +170,7 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testMarkStatusFailure() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
-    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(List.of(execution));
     when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusFailure(execution.getType(), MESSAGE);
     assertEquals(SyncTaskStatus.FAILED, execution.getStatus(), "Status should be FAILED after markStatusFailure");
@@ -175,7 +184,7 @@ class SyncTaskExecutionServiceImplTest {
         .type(SyncTaskType.SYNC_PRODUCTS)
         .completedDate(LocalDateTime.now())
         .build();
-    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(List.of(execution));
     when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusRunning(execution.getType(), MESSAGE);
     assertEquals(SyncTaskStatus.RUNNING, execution.getStatus(), "Status should be RUNNING after markStatusRunning");
@@ -187,7 +196,7 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testMarkStatusMessageIsAbbreviated() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).build();
-    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(execution.getType(), 1)).thenReturn(List.of(execution));
     when(repo.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
     service.markStatusSuccess(execution.getType(), LONG_MESSAGE);
     assertTrue(execution.getMessage().length() <= 1024, "Message should be abbreviated to 1024 characters");
@@ -195,14 +204,14 @@ class SyncTaskExecutionServiceImplTest {
 
   @Test
   void testGetAllSyncTaskExecutionsEmpty() {
-    when(repo.findByTypeAndNodeNumber(any(), eq(1))).thenReturn(Optional.empty());
+    when(repo.findByTypeAndNodeNumber(any(), eq(1))).thenReturn(List.of());
     List<SyncTaskExecutionModel> result = service.getAllSyncTaskExecutions();
     assertTrue(result.isEmpty() || result.stream().allMatch(Objects::isNull), "Result should be empty or all null");
   }
 
   @Test
   void testGetSyncTaskExecutionByKeyNotFound() {
-    when(repo.findByTypeAndNodeNumber(SyncTaskType.SYNC_PRODUCTS, 1)).thenReturn(Optional.empty());
+    when(repo.findByTypeAndNodeNumber(SyncTaskType.SYNC_PRODUCTS, 1)).thenReturn(List.of());
     SyncTaskExecutionModel result = service.getSyncTaskExecutionByKey(SyncTaskType.SYNC_PRODUCTS.getKey());
     assertNull(result, "Result should be null if not found");
   }
@@ -224,7 +233,7 @@ class SyncTaskExecutionServiceImplTest {
   void testCancelInvokesCancellationRegistryWhenRunning() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution execution = SyncTaskExecution.builder().type(type).status(SyncTaskStatus.RUNNING).build();
-    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(List.of(execution));
 
     boolean result = service.cancel(type.getKey());
 
@@ -236,7 +245,7 @@ class SyncTaskExecutionServiceImplTest {
   void testCancelReturnsFalseWhenNotActive() {
     SyncTaskType type = SyncTaskType.SYNC_PRODUCTS;
     SyncTaskExecution execution = SyncTaskExecution.builder().type(type).status(SyncTaskStatus.SUCCESS).build();
-    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(type, 1)).thenReturn(List.of(execution));
 
     boolean result = service.cancel(type.getKey());
 
@@ -262,7 +271,7 @@ class SyncTaskExecutionServiceImplTest {
   @Test
   void testGetSyncTaskExecutionByKeyFound() {
     SyncTaskExecution execution = SyncTaskExecution.builder().type(SyncTaskType.SYNC_PRODUCTS).status(SyncTaskStatus.SUCCESS).build();
-    when(repo.findByTypeAndNodeNumber(SyncTaskType.SYNC_PRODUCTS, 1)).thenReturn(Optional.of(execution));
+    when(repo.findByTypeAndNodeNumber(SyncTaskType.SYNC_PRODUCTS, 1)).thenReturn(List.of(execution));
 
     SyncTaskExecutionModel model = service.getSyncTaskExecutionByKey(SyncTaskType.SYNC_PRODUCTS.getKey());
     assertNotNull(model, "Model should be returned when execution exists");

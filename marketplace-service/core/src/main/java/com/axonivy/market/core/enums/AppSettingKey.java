@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum AppSettingKey {
-
-  // =========================
-  // SCHEDULING
-  // =========================
+  // Schedule setting
   PRODUCTS_CRON(
       "market.scheduling.products-cron",
       SyncTaskConstants.DEFAULT_SCHEDULE_CRON,
@@ -63,10 +60,7 @@ public enum AppSettingKey {
       "Cron expression for security monitor notifications.",
       false),
 
-  // =========================
-  // GITHUB
-  // =========================
-
+  // GitHub APIs setting
   GITHUB_OAUTH_CLIENT_ID(
       "market.github.oauth2-clientId",
       "",
@@ -102,10 +96,42 @@ public enum AppSettingKey {
       "Marketplace repository branch used for synchronization.",
       false),
 
-  // =========================
-  // MATOMO
-  // =========================
+  GITHUB_ORGANIZATION_NAME(
+      "market.github.organization-name",
+      "axonivy-market",
+      AppSettingCategory.GITHUB.name(),
+      "GitHub organization name that owns the marketplace and product repositories.",
+      false),
 
+  GITHUB_TEAM_NAME(
+      "market.github.team-name",
+      "team-wawa",
+      AppSettingCategory.GITHUB.name(),
+      "GitHub team name authorized to manage the marketplace organization.",
+      false),
+
+  GITHUB_MARKETPLACE_REPO_NAME(
+      "market.github.marketplace-repo-name",
+      "market",
+      AppSettingCategory.GITHUB.name(),
+      "Name of the marketplace repository within the GitHub organization.",
+      false),
+
+  GITHUB_MARKETPLACE_PATH(
+      "market.github.marketplace-path",
+      "market",
+      AppSettingCategory.GITHUB.name(),
+      "Root directory path of marketplace items inside the marketplace repository.",
+      false),
+
+  GITHUB_DEFAULT_BRANCH(
+      "market.github.default-branch",
+      "master",
+      AppSettingCategory.GITHUB.name(),
+      "Default branch used when querying GitHub workflow runs.",
+      false),
+
+  // Matomo setting
   MATOMO_ENABLED(
       "matomo.tracker.enabled",
       "true",
@@ -148,10 +174,7 @@ public enum AppSettingKey {
       "Default Matomo stable site identifier.",
       true),
 
-// =========================
-// MAIL
-// =========================
-
+  // Mail setting
   MAIL_HOST(
       "spring.mail.host",
       "",
@@ -208,10 +231,7 @@ public enum AppSettingKey {
       "Default recipient email address.",
       false),
 
-  // =========================
-  // SECURITY
-  // =========================
-
+  // Security setting
   LIMITED_REQUEST_PATHS(
       "market.limited.request-paths",
       "",
@@ -231,6 +251,49 @@ public enum AppSettingKey {
       "https://developer.axonivy.com",
       AppSettingCategory.GENERAL.name(),
       "Axon Ivy Developer URL.",
+      false),
+
+  // Cache setting
+  PRODUCT_ID_CACHE_EXPIRATION_MINUTES(
+      "market.productid-cache.expiration-minutes",
+      "10",
+      AppSettingCategory.SECURITY.name(),
+      "Minutes before the valid product id/version cache is refreshed from the database.",
+      false),
+
+  CACHE_DEFAULT_EXPIRED_MINUTES(
+      "cache.default.expired-minutes",
+      "60",
+      AppSettingCategory.CACHE.name(),
+      "Default cache entry expiration in minutes.",
+      false),
+
+  CACHE_DEFAULT_MAXIMUM_SIZE(
+      "cache.default.maximum-size",
+      "1000",
+      AppSettingCategory.CACHE.name(),
+      "Default maximum number of entries per cache.",
+      false),
+
+  CACHE_PRODUCTS_EXPIRED_MINUTES(
+      "cache.products.expired-minutes",
+      "5",
+      AppSettingCategory.CACHE.name(),
+      "Expiration in minutes for the find-all-products cache.",
+      false),
+
+  CACHE_PRODUCTS_DETAILS_EXPIRED_MINUTES(
+      "cache.products.details.expired-minutes",
+      "1",
+      AppSettingCategory.CACHE.name(),
+      "Expiration in minutes for the product-by-id-and-version cache.",
+      false),
+
+  CACHE_PRODUCTS_DETAILS_GITHUB_RELEASES_EXPIRED_MINUTES(
+      "cache.products.details.github-releases.expired-minutes",
+      "10",
+      AppSettingCategory.CACHE.name(),
+      "Expiration in minutes for the GitHub releases caches.",
       false);
 
   private final String key;

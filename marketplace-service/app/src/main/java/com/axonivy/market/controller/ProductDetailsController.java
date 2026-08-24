@@ -14,6 +14,7 @@ import com.axonivy.market.exceptions.model.TaskCancelledException;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.ProductDetailModel;
 import com.axonivy.market.model.VersionAndUrlModel;
+import com.axonivy.market.service.ProductCacheService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
@@ -60,6 +61,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ProductDetailsController {
   private final VersionService versionService;
   private final ProductService productService;
+  private final ProductCacheService productCacheService;
   private final ProductContentService productContentService;
   private final ProductDetailModelAssembler detailModelAssembler;
   private final GithubReleaseModelAssembler githubReleaseModelAssembler;
@@ -74,6 +76,9 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String id,
       @PathVariable(VERSION) @Parameter(description = "Release version (from maven metadata.xml)", example = "10.0.20",
           in = ParameterIn.PATH) String version) {
+    if (!productCacheService.isValidProductIdAndVersion(id, version)) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     var productDetail = productService.fetchProductDetailByIdAndVersion(id, version);
     if (productDetail == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -131,6 +136,9 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String id,
       @RequestParam(defaultValue = "false", name = SHOW_DEV_VERSION, required = false) @Parameter(description =
           "Option to get Dev Version (Snapshot/ sprint release)", in = ParameterIn.QUERY) Boolean isShowDevVersion) {
+    if (!productCacheService.isValidProductId(id)) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     var productDetail = productService.fetchProductDetail(id, isShowDevVersion);
     ProductDetailModel model = detailModelAssembler.toModel(productDetail);
     var findDetailsMethod = methodOn(this.getClass()).findProductDetails(id, false);

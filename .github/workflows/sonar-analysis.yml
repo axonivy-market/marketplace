@@ -34,7 +34,7 @@ jobs:
     needs: check-membership
     if: github.event.workflow_run.name == 'Market-UI CI Build'
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' && 'sonar-trusted' || 'sonar-approval' }}
+    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_PROJECT_KEY: 'AxonIvy-Market-UI'
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -99,7 +99,7 @@ jobs:
     needs: check-membership
     if: github.event.workflow_run.name == 'Market-Service CI Build'
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' && 'sonar-trusted' || 'sonar-approval' }}
+    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

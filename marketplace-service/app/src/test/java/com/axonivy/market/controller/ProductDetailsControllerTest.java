@@ -6,6 +6,7 @@ import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.model.GitHubReleaseModel;
 import com.axonivy.market.model.ProductDetailModel;
+import com.axonivy.market.service.ProductCacheService;
 import com.axonivy.market.service.ProductContentService;
 import com.axonivy.market.service.ProductService;
 import com.axonivy.market.service.VersionService;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,6 +35,9 @@ class ProductDetailsControllerTest extends WebMvcControllerTestSupport {
 
   @MockitoBean
   private ProductService productService;
+
+  @MockitoBean
+  private ProductCacheService productCacheService;
 
   @MockitoBean
   private VersionService versionService;
@@ -59,6 +63,8 @@ class ProductDetailsControllerTest extends WebMvcControllerTestSupport {
     product.setId(DOCKER_CONNECTOR_ID);
     ProductDetailModel model = new ProductDetailModel();
     model.setId(DOCKER_CONNECTOR_ID);
+    when(productCacheService.isValidProductIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
+        .thenReturn(true);
     when(productService.fetchProductDetailByIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
         .thenReturn(product);
     when(detailModelAssembler.toModel(product)).thenReturn(model);
@@ -66,6 +72,42 @@ class ProductDetailsControllerTest extends WebMvcControllerTestSupport {
     mockMvc.perform(get("/api/product-details/{id}/{version}", DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(DOCKER_CONNECTOR_ID));
+  }
+
+  @Test
+  void testProductDetailsByVersionNotFoundWhenNotCached() throws Exception {
+    when(productCacheService.isValidProductIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
+        .thenReturn(false);
+
+    mockMvc.perform(get("/api/product-details/{id}/{version}", DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
+        .andExpect(status().isNotFound());
+
+    verify(productService, never()).fetchProductDetailByIdAndVersion(anyString(), anyString());
+  }
+
+  @Test
+  void testFindProductDetails() throws Exception {
+    Product product = new Product();
+    product.setId(DOCKER_CONNECTOR_ID);
+    ProductDetailModel model = new ProductDetailModel();
+    model.setId(DOCKER_CONNECTOR_ID);
+    when(productCacheService.isValidProductId(DOCKER_CONNECTOR_ID)).thenReturn(true);
+    when(productService.fetchProductDetail(DOCKER_CONNECTOR_ID, false)).thenReturn(product);
+    when(detailModelAssembler.toModel(product)).thenReturn(model);
+
+    mockMvc.perform(get("/api/product-details/{id}", DOCKER_CONNECTOR_ID))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(DOCKER_CONNECTOR_ID));
+  }
+
+  @Test
+  void testFindProductDetailsNotFoundWhenNotCached() throws Exception {
+    when(productCacheService.isValidProductId(DOCKER_CONNECTOR_ID)).thenReturn(false);
+
+    mockMvc.perform(get("/api/product-details/{id}", DOCKER_CONNECTOR_ID))
+        .andExpect(status().isNotFound());
+
+    verify(productService, never()).fetchProductDetail(anyString(), any());
   }
 
   @Test

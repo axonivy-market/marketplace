@@ -114,7 +114,7 @@ describe('DeprecationManagementComponent', () => {
     expect(adminAuthService.loadFromSessionStorage).toHaveBeenCalled();
     expect(productService.fetchAllProductIdsByDeprecated).toHaveBeenCalledWith(true);
     expect(component.deprecatedItems).toEqual(mockDeprecatedRows);
-    expect(component.filteredDeprecatedRows).toEqual(mockDeprecatedRows);
+    expect(component.filteredDeprecatedRows()).toEqual(mockDeprecatedRows);
   });
 
   it('should open deprecate dialog when trigger is called', async () => {
@@ -203,11 +203,11 @@ describe('DeprecationManagementComponent', () => {
     component.deprecatedItems = mockDeprecatedRows;
 
     component.filterTable('cms');
-    expect(component.filteredDeprecatedRows.length).toBe(1);
-    expect(component.filteredDeprecatedRows[0].id).toBe('cms-live-editor');
+    expect(component.filteredDeprecatedRows().length).toBe(1);
+    expect(component.filteredDeprecatedRows()[0].id).toBe('cms-live-editor');
 
     component.filterTable('');
-    expect(component.filteredDeprecatedRows.length).toBe(2);
+    expect(component.filteredDeprecatedRows().length).toBe(2);
   });
 
   it('should set extension info when selecting a product', () => {
