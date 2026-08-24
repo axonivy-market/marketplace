@@ -24,15 +24,12 @@ pipeline {
 
   environment {
     RELEASE_BASE_BRANCH = 'master'
-    GITHUB_ACTOR = credentials('MARKETPLACE_GITHUB_OWNER')
     GITHUB_REPOSITORY_OWNER = 'axonivy-market'
     UI_IMAGE_NAME = 'marketplace-ui'
     APP_IMAGE_NAME = 'marketplace-app'
     STABLE_IMAGE_NAME = 'marketplace-stable'
     GH_TOKEN = credentials('GH_TOKEN')
     VERSION_RETENTION_COUNT = credentials('VERSION_RETENTION_COUNT')
-    MARKET_MAIL = credentials('MARKET_MAIL')
-    MARKET_ACCOUNT_NAME = credentials('MARKET_ACCOUNT_NAME')
     MARKETPLACE_ENV_FILE = credentials('PREVIEW_ENV_FILE')
   }
 
@@ -50,23 +47,29 @@ pipeline {
         script {
           deployApproval = load '.build/pipeline-lib/deploy_approval.groovy'
           deployConfig = load '.build/pipeline-lib/deploy_config.groovy'
-          sh '''
-            git config --global user.email $MARKET_MAIL --add
-            git config --global user.name $MARKET_ACCOUNT_NAME --add
-            git remote set-url origin https://github.com/axonivy-market/marketplace.git
-            git fetch origin $RELEASE_BASE_BRANCH
-            git fetch origin new-release || true
+          withCredentials([
+            usernamePassword(credentialsId: 'GIT_ACCOUNT', usernameVariable: 'MARKET_ACCOUNT_NAME', passwordVariable: 'MARKET_MAIL')
+          ]) {
+            sh '''
+              git config --global --replace-all user.email "$MARKET_MAIL"
+              git config --global --replace-all user.name "$MARKET_ACCOUNT_NAME"
+              git remote set-url origin https://github.com/axonivy-market/marketplace.git
+              git fetch origin $RELEASE_BASE_BRANCH
+              git fetch origin new-release || true
 
-            if git show-ref --verify --quiet refs/remotes/origin/new-release; then
-              AHEAD=$(git rev-list --count origin/$RELEASE_BASE_BRANCH..origin/new-release)
-              if [ "$AHEAD" -gt 0 ]; then
-                echo "ERROR: origin/new-release is $AHEAD commit(s) ahead of origin/$RELEASE_BASE_BRANCH (likely an open Release PR). Merge or close it before running a new release build."
-                exit 1
+              if git show-ref --verify --quiet refs/remotes/origin/new-release; then
+                OPEN_PR=$(gh pr list --repo axonivy-market/marketplace --head new-release --base $RELEASE_BASE_BRANCH --state open --json number --jq ".[0].number" 2>/dev/null || echo "")
+                if [ -n "$OPEN_PR" ]; then
+                  echo "ERROR: An open Release PR (#$OPEN_PR) already exists for new-release. Merge or close it before running a new release build."
+                  exit 1
+                fi
               fi
-            fi
 
-            git checkout -B new-release origin/$RELEASE_BASE_BRANCH
-          '''
+              git checkout -B new-release origin/$RELEASE_BASE_BRANCH
+              git reset --hard origin/$RELEASE_BASE_BRANCH
+              git clean -fdx
+            '''
+          }
         }
       }
     }
@@ -87,63 +90,67 @@ pipeline {
 
     stage('Update Version') {
       steps {
-        withEnv([
-          "PARENT_POM_FILE=./marketplace-service/pom.xml",
-          "PACKAGE_FILE=./marketplace-ui/package.json",
-          "PUSH_CHANGES=${params.DEPLOY_TO_PROD}"
+        withCredentials([
+          usernamePassword(credentialsId: 'GIT_ACCOUNT', usernameVariable: 'MARKET_ACCOUNT_NAME', passwordVariable: 'MARKET_MAIL')
         ]) {
-          script {
-            def snapshot = sh(
-              script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f $PARENT_POM_FILE',
-              returnStdout: true
-            ).trim()
-            releaseVersion = snapshot.replace('-SNAPSHOT', '')
-            env.RELEASE_VERSION = releaseVersion
-            currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
-            echo "Release version: ${releaseVersion}"
+          withEnv([
+            "PARENT_POM_FILE=./marketplace-service/pom.xml",
+            "PACKAGE_FILE=./marketplace-ui/package.json",
+            "PUSH_CHANGES=${params.DEPLOY_TO_PROD}"
+          ]) {
+            script {
+              def snapshot = sh(
+                script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f $PARENT_POM_FILE',
+                returnStdout: true
+              ).trim()
+              releaseVersion = snapshot.replace('-SNAPSHOT', '')
+              env.RELEASE_VERSION = releaseVersion
+              currentBuild.displayName = "#${env.BUILD_NUMBER} v${releaseVersion}"
+              echo "Release version: ${releaseVersion}"
 
-            def versionParts = releaseVersion.tokenize('.')
-            versionParts[1] = ((versionParts[1] as Integer) + 1).toString()
-            versionParts[2] = '0'
-            env.NEXT_SNAPSHOT_VERSION = "${versionParts.join('.')}-SNAPSHOT"
-            echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
+              def versionParts = releaseVersion.tokenize('.')
+              versionParts[1] = ((versionParts[1] as Integer) + 1).toString()
+              versionParts[2] = '0'
+              env.NEXT_SNAPSHOT_VERSION = "${versionParts.join('.')}-SNAPSHOT"
+              echo "Next snapshot version: ${env.NEXT_SNAPSHOT_VERSION}"
 
-            sh '''
-              git tag -d $RELEASE_VERSION || true
-              if [ "$PUSH_CHANGES" = "true" ]; then
-                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-                git push --delete origin $RELEASE_VERSION || true
-                git remote set-url origin https://github.com/axonivy-market/marketplace.git
-              fi
+              sh '''
+                git tag -d $RELEASE_VERSION || true
+                if [ "$PUSH_CHANGES" = "true" ]; then
+                  git remote set-url origin https://$MARKET_ACCOUNT_NAME:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+                  git push --delete origin $RELEASE_VERSION || true
+                  git remote set-url origin https://github.com/axonivy-market/marketplace.git
+                fi
 
-              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" $PACKAGE_FILE
-              git add $PACKAGE_FILE
-              git commit -m "[release] set marketplace-ui version to $RELEASE_VERSION"
+                sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$RELEASE_VERSION\\"/" $PACKAGE_FILE
+                git add $PACKAGE_FILE
+                git commit -m "[release] set marketplace-ui version to $RELEASE_VERSION"
 
-              mvn -B release:clean release:prepare \
-                -DreleaseVersion=$RELEASE_VERSION \
-                -DdevelopmentVersion=$NEXT_SNAPSHOT_VERSION \
-                -DautoVersionSubmodules=true \
-                -DpreparationGoals="clean verify -DskipTests=true" \
-                -Dtag=$RELEASE_VERSION \
-                -DpushChanges=false \
-                -Dresume=false \
-                -f $PARENT_POM_FILE
+                mvn -B release:clean release:prepare \
+                  -DreleaseVersion=$RELEASE_VERSION \
+                  -DdevelopmentVersion=$NEXT_SNAPSHOT_VERSION \
+                  -DautoVersionSubmodules=true \
+                  -DpreparationGoals="clean verify -DskipTests=true" \
+                  -Dtag=$RELEASE_VERSION \
+                  -DpushChanges=false \
+                  -Dresume=false \
+                  -f $PARENT_POM_FILE
 
-              sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$NEXT_SNAPSHOT_VERSION\\"/" $PACKAGE_FILE
-              git add $PACKAGE_FILE
-              git commit -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
-              if [ "$PUSH_CHANGES" = "true" ]; then
-                git remote set-url origin https://$GITHUB_ACTOR:$GH_TOKEN@github.com/axonivy-market/marketplace.git
-                git push origin HEAD:new-release
-                git push origin $RELEASE_VERSION
-                git remote set-url origin https://github.com/axonivy-market/marketplace.git
-              fi
+                sed -i "s/\\"version\\": \\"[^\\"]*\\"/\\"version\\": \\"$NEXT_SNAPSHOT_VERSION\\"/" $PACKAGE_FILE
+                git add $PACKAGE_FILE
+                git commit -m "[release] set marketplace-ui version to $NEXT_SNAPSHOT_VERSION"
+                if [ "$PUSH_CHANGES" = "true" ]; then
+                  git remote set-url origin https://$MARKET_ACCOUNT_NAME:$GH_TOKEN@github.com/axonivy-market/marketplace.git
+                  git push --force-with-lease origin HEAD:new-release
+                  git push origin $RELEASE_VERSION
+                  git remote set-url origin https://github.com/axonivy-market/marketplace.git
+                fi
 
-              git checkout $RELEASE_VERSION
-            '''
+                git checkout $RELEASE_VERSION
+              '''
+            }
+            sh 'mvn clean install -DskipTests=true -f $PARENT_POM_FILE'
           }
-          sh 'mvn clean install -DskipTests=true -f $PARENT_POM_FILE'
         }
       }
     }
@@ -220,7 +227,11 @@ pipeline {
 
     stage('Log in to GitHub Container Registry') {
       steps {
-        sh 'echo $GH_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin'
+        withCredentials([
+          usernamePassword(credentialsId: 'GIT_PACKAGE', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+        ]) {
+          sh 'echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_USERNAME --password-stdin'
+        }
       }
     }
 
@@ -305,7 +316,7 @@ pipeline {
             withCredentials([
               string(credentialsId: node.credId, variable: 'EC2_NODE'),
               sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
-              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+              usernamePassword(credentialsId: 'GIT_PACKAGE', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
             ]) {
               sh """
                 set +x
@@ -355,7 +366,7 @@ pipeline {
             withCredentials([
               string(credentialsId: node.credId, variable: 'EC2_NODE'),
               sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
-              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+              usernamePassword(credentialsId: 'GIT_PACKAGE', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
             ]) {
               sh """
                 set +x
@@ -405,7 +416,7 @@ pipeline {
             withCredentials([
               string(credentialsId: node.credId, variable: 'EC2_NODE'),
               sshUserPrivateKey(credentialsId: 'aws-ec2-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY_FILE', usernameVariable: 'SSH_REMOTE_USER'),
-              usernamePassword(credentialsId: 'ghcr-io-token', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
+              usernamePassword(credentialsId: 'GIT_PACKAGE', usernameVariable: 'GHCR_USERNAME', passwordVariable: 'GHCR_TOKEN')
             ]) {
               sh """
                 set +x
