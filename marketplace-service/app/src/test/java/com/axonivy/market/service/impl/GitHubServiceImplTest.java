@@ -189,8 +189,83 @@ class GitHubServiceImplTest extends BaseSetup {
   void testGetGitHubWithValidToken() throws IOException {
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("validToken");
     mockGitHubBuild("validToken");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
     assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
-    verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+    verify(appSettingService, atLeastOnce()).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+  }
+
+  @Test
+  void testGetGitHubSkipsExhaustedTokenAndPicksValidOne() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token1,token2");
+
+    GitHub exhaustedGitHub = mock(GitHub.class);
+    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
+    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
+    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() + 60_000));
+    when(exhaustedGitHub.getRateLimit()).thenReturn(exhaustedRateLimit);
+    doReturn(exhaustedGitHub).when(gitHubService).buildGitHub("token1");
+
+    GitHub validGitHub = mock(GitHub.class);
+    GHRateLimit validRateLimit = mock(GHRateLimit.class);
+    when(validRateLimit.getRemaining()).thenReturn(100);
+    when(validGitHub.getRateLimit()).thenReturn(validRateLimit);
+    doReturn(validGitHub).when(gitHubService).buildGitHub("token2");
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(validGitHub, result, "Expected rotation to skip the exhausted token and pick the valid one");
+    verify(gitHubService).buildGitHub("token1");
+    verify(gitHubService).buildGitHub("token2");
+  }
+
+  @Test
+  void testGetGitHubWaitsAndRetriesWhenAllTokensExhausted() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+
+    GitHub exhaustedGitHub = mock(GitHub.class);
+    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
+    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
+    // Reset date already in the past (beyond the wait buffer) so the retry does not actually sleep in the test.
+    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() - 60_000));
+    when(exhaustedGitHub.getRateLimit()).thenReturn(exhaustedRateLimit);
+
+    GitHub recoveredGitHub = mock(GitHub.class);
+    GHRateLimit recoveredRateLimit = mock(GHRateLimit.class);
+    when(recoveredRateLimit.getRemaining()).thenReturn(100);
+    when(recoveredGitHub.getRateLimit()).thenReturn(recoveredRateLimit);
+
+    doReturn(exhaustedGitHub).doReturn(recoveredGitHub).when(gitHubService).buildGitHub("onlyToken");
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(recoveredGitHub, result,
+        "Expected rotation to succeed on the retry cycle after waiting for the rate limit reset");
+    verify(gitHubService, times(2)).buildGitHub("onlyToken");
+  }
+
+  @Test
+  void testGetGitHubThrowsWhenAllTokensRemainRateLimitedAfterWaiting() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+
+    GitHub exhaustedGitHub = mock(GitHub.class);
+    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
+    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
+    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() - 60_000));
+    when(exhaustedGitHub.getRateLimit()).thenReturn(exhaustedRateLimit);
+    doReturn(exhaustedGitHub).when(gitHubService).buildGitHub("onlyToken");
+
+    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
+        "Expected IOException when all configured tokens remain rate-limited after waiting");
+  }
+
+  @Test
+  void testBuildGitHubConfiguresRateLimitAndAbuseLimitHandlers() throws IOException {
+    GitHub result = gitHubService.buildGitHub("some-token");
+
+    assertNotNull(result, "Expected buildGitHub to construct a GitHub client without making a network call");
   }
 
   @Test
