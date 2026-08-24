@@ -1,10 +1,21 @@
 name: Market Sonar Analysis
-run-name: 'Sonar scan on branch ${{ github.event.workflow_run.head_branch }} triggered by ${{ github.event.workflow_run.actor.login }}'
+run-name: 'Sonar scan on branch ${{ github.event.workflow_run.head_branch || github.ref_name }} triggered by ${{ github.event.workflow_run.actor.login || github.actor }}'
 
 on:
   workflow_run:
     workflows: ['Market-UI CI Build', 'Market-Service CI Build']
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which analysis to run'
+        required: true
+        type: choice
+        options:
+          - ui
+          - service
+          - both
+        default: both
 
 env:
   ORG_NAME: axonivy-market
@@ -12,7 +23,7 @@ env:
 jobs:
   check-membership:
     name: Verify actor org membership
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
       is_member: ${{ steps.check.outputs.is_member }}
@@ -21,7 +32,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          ACTOR: ${{ github.event.workflow_run.actor.login }}
+          ACTOR: ${{ github.event.workflow_run.actor.login || github.actor }}
         run: |
           if gh api "orgs/${ORG_NAME}/members/${ACTOR}" --silent; then
             echo "is_member=true" >> "$GITHUB_OUTPUT"
@@ -32,9 +43,11 @@ jobs:
   ui-analysis:
     name: Sonarqube (UI)
     needs: check-membership
-    if: github.event.workflow_run.name == 'Market-UI CI Build'
+    if: |
+      needs.check-membership.outputs.is_member == 'true' &&
+      (github.event.workflow_run.name == 'Market-UI CI Build' ||
+       (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'ui' || github.event.inputs.target == 'both')))
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_PROJECT_KEY: 'AxonIvy-Market-UI'
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -43,8 +56,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_sha }}
+          repository: ${{ github.event.workflow_run.head_repository.full_name || github.repository }}
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -97,9 +110,11 @@ jobs:
   service-analysis:
     name: Sonarqube (Service)
     needs: check-membership
-    if: github.event.workflow_run.name == 'Market-Service CI Build'
+    if: |
+      needs.check-membership.outputs.is_member == 'true' &&
+      (github.event.workflow_run.name == 'Market-Service CI Build' ||
+       (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'service' || github.event.inputs.target == 'both')))
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -111,8 +126,8 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_sha }}
+          repository: ${{ github.event.workflow_run.head_repository.full_name || github.repository }}
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
 
       - name: Set up JDK 25
