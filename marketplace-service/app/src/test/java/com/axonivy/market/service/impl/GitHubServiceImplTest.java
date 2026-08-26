@@ -222,31 +222,6 @@ class GitHubServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetGitHubWaitsAndRetriesWhenAllTokensExhausted() throws IOException {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
-
-    GitHub exhaustedGitHub = mock(GitHub.class);
-    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
-    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
-    // Reset date already in the past (beyond the wait buffer) so the retry does not actually sleep in the test.
-    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() - 60_000));
-    when(exhaustedGitHub.getRateLimit()).thenReturn(exhaustedRateLimit);
-
-    GitHub recoveredGitHub = mock(GitHub.class);
-    GHRateLimit recoveredRateLimit = mock(GHRateLimit.class);
-    when(recoveredRateLimit.getRemaining()).thenReturn(100);
-    when(recoveredGitHub.getRateLimit()).thenReturn(recoveredRateLimit);
-
-    doReturn(exhaustedGitHub).doReturn(recoveredGitHub).when(gitHubService).buildGitHub("onlyToken");
-
-    GitHub result = gitHubService.getGitHub();
-
-    assertSame(recoveredGitHub, result,
-        "Expected rotation to succeed on the retry cycle after waiting for the rate limit reset");
-    verify(gitHubService, times(2)).buildGitHub("onlyToken");
-  }
-
-  @Test
   void testGetGitHubThrowsWhenAllTokensRemainRateLimitedAfterWaiting() throws IOException {
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
 
@@ -1052,7 +1027,8 @@ class GitHubServiceImplTest extends BaseSetup {
     GHContent readme = mock(GHContent.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already contains unsupported notice");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -1066,7 +1042,8 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README has no unsupported notice to remove");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -1081,7 +1058,8 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(branchRef);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already has no notice and content is unchanged");
     verify(branchRef).delete();
@@ -1094,7 +1072,8 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null and no exception when branch does not exist");
     verify(repository, atLeastOnce()).getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE);
@@ -1107,7 +1086,8 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRef branchRef = mock(GHRef.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already contains the unsupported notice");
     verify(branchRef, never()).delete();
@@ -1127,7 +1107,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
     mockOpenPullRequests(repository, List.of(existingPr));
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(existingPr, result, "Expected already open pull request to be returned");
     verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
@@ -1150,7 +1131,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected a new pull request to be created from existing branch");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -1176,7 +1158,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected pull request to be created after branch recreation");
     verify(existingBranchRef).delete();
@@ -1197,7 +1180,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected pull request to be created when unsupported branch is missing");
     verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");

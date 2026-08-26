@@ -96,8 +96,6 @@ public class GitHubServiceImpl implements GitHubService {
   private static final int MAX_CONCURRENCY = 50;
   // Minimum remaining requests a token must have before {@link #getGitHub()} will select it
   private static final int MIN_REMAINING_RATE_LIMIT = 5;
-  // Number of full token-rotation cycles to attempt, waiting for a rate limit reset between cycles
-  private static final int MAX_RATE_LIMIT_WAIT_CYCLES = 2;
   // Extra buffer added on top of the rate limit reset time to account for clock drift
   private static final long RATE_LIMIT_WAIT_BUFFER_MILLIS = 5_000L;
   private static final String ALTERNATIVE_EXTENSION_FORMAT = """
@@ -126,25 +124,31 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GitHub getGitHub() throws IOException {
     int tokenCount = getConfiguredTokenCount();
-    for (int cycle = 0; cycle < MAX_RATE_LIMIT_WAIT_CYCLES; cycle++) {
-      GHRateLimit earliestExhaustedRateLimit = null;
-      for (int index = 0; index < tokenCount; index++) {
-        GitHub candidateGitHub = buildGitHub(getConfiguredToken(index));
-        GHRateLimit rateLimit = candidateGitHub.getRateLimit();
-        // Make sure enough remaining request before using this token
-        if (rateLimit.getRemaining() >= MIN_REMAINING_RATE_LIMIT) {
-          return candidateGitHub;
-        }
-        log.warn("Configured GitHub token at index {} is close to its rate limit (remaining={}), trying next token",
-            index, rateLimit.getRemaining());
-        if (earliestExhaustedRateLimit == null
-            || rateLimit.getResetDate().before(earliestExhaustedRateLimit.getResetDate())) {
-          earliestExhaustedRateLimit = rateLimit;
-        }
+    for (int index = 0; index < tokenCount; index++) {
+      GitHub candidateGitHub = getValidCandidateGitHub(index);
+      if (candidateGitHub != null) {
+        return candidateGitHub;
       }
-      waitUntilRateLimitReset(earliestExhaustedRateLimit);
     }
     throw new IOException("All configured GitHub tokens remain rate-limited after waiting for the reset window");
+  }
+
+  private GitHub getValidCandidateGitHub(int index) throws IOException {
+    try {
+      GitHub candidateGitHub = buildGitHub(getConfiguredToken(index));
+      GHRateLimit rateLimit = candidateGitHub.getRateLimit();
+      // Make sure enough remaining request before using this token
+      if (rateLimit.getRemaining() >= MIN_REMAINING_RATE_LIMIT) {
+        return candidateGitHub;
+      }
+      log.warn("Configured GitHub token at index {} is close to its rate limit (remaining={}), trying next token",
+          index, rateLimit.getRemaining());
+    } catch (HttpException httpException) {
+      if (httpException.getResponseCode() == HttpStatus.UNAUTHORIZED.value()) {
+        log.warn("Invalid GH Token, move to another - {}", httpException.getMessage());
+      }
+    }
+    return null;
   }
 
   @Override
@@ -161,28 +165,6 @@ public class GitHubServiceImpl implements GitHubService {
         .withRateLimitHandler(GitHubRateLimitHandler.WAIT)
         .withAbuseLimitHandler(GitHubAbuseLimitHandler.WAIT)
         .build();
-  }
-
-  /**
-   * Blocks the current thread until the given rate limit's reset time has passed, adding a small buffer
-   * to account for clock drift between this service and GitHub's servers.
-   */
-  private void waitUntilRateLimitReset(GHRateLimit rateLimit) throws IOException {
-    if (rateLimit == null) {
-      return;
-    }
-    long waitMillis = rateLimit.getResetDate().getTime() - System.currentTimeMillis() + RATE_LIMIT_WAIT_BUFFER_MILLIS;
-    if (waitMillis <= 0) {
-      return;
-    }
-    log.warn("All configured GitHub tokens are rate-limited; waiting {} ms until reset at {}", waitMillis,
-        rateLimit.getResetDate());
-    try {
-      Thread.sleep(waitMillis);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IOException("Interrupted while waiting for GitHub rate limit to reset", e);
-    }
   }
 
   /**
@@ -849,12 +831,13 @@ public class GitHubServiceImpl implements GitHubService {
    * Read the GitHub token from DB-backed AppSetting.
    */
   private String getConfiguredToken(int index) {
+    String token = null;
     String configToken = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
     if (configToken != null && configToken.contains(CoreCommonConstants.COMMA)) {
       String[] tokens = configToken.split(CoreCommonConstants.COMMA);
-      return index >= tokens.length ? tokens[tokens.length - 1] : tokens[index];
+      token = index >= tokens.length ? tokens[tokens.length - 1] : tokens[index];
     }
-    return configToken;
+    return StringUtils.trim(Objects.toString(token, configToken));
   }
 
   /**
