@@ -6,6 +6,7 @@ import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.config.SyncTaskCancellationRegistry;
 import com.axonivy.market.constants.CommonConstants;
 import com.axonivy.market.constants.ErrorMessageConstants;
+import com.axonivy.market.core.constants.CoreCommonConstants;
 import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.enums.ErrorCode;
 import com.axonivy.market.core.exceptions.model.NotFoundException;
@@ -86,7 +87,6 @@ import static com.axonivy.market.enums.AccessLevel.*;
 import static com.axonivy.market.enums.PullRequestAction.*;
 import static org.apache.commons.lang3.StringUtils.*;
 
-
 @Log4j2
 @Service
 @RequiredArgsConstructor
@@ -94,6 +94,12 @@ public class GitHubServiceImpl implements GitHubService {
   public static final int PAGE_SIZE_OF_WORKFLOW = 10;
   private static final String CRLF = CR + LF;
   private static final int MAX_CONCURRENCY = 50;
+  // Minimum remaining requests a token must have before {@link #getGitHub()} will select it
+  private static final int MIN_REMAINING_RATE_LIMIT = 5;
+  // Number of full token-rotation cycles to attempt, waiting for a rate limit reset between cycles
+  private static final int MAX_RATE_LIMIT_WAIT_CYCLES = 2;
+  // Extra buffer added on top of the rate limit reset time to account for clock drift
+  private static final long RATE_LIMIT_WAIT_BUFFER_MILLIS = 5_000L;
   private static final String ALTERNATIVE_EXTENSION_FORMAT = """
    > **Recommended alternative:** [%s](%s)
    """;
@@ -101,15 +107,11 @@ public class GitHubServiceImpl implements GitHubService {
   private static final String NO_ANALYSIS_FOUND = "no analysis found";
   private static final String MUST_BE_ENABLED = "must be enabled";
   private static final String MULTILINE_START = "(?m)^";
-  /**
-   * Regex suffix that matches the remainder of a blockquote block:
-   * captures the rest of the first line, then continues matching consecutive lines starting with ">".
-   */
+  // Regex suffix that matches the remainder of a blockquote block:
+  // * Captures the rest of the first line, then continues matching consecutive lines starting with ">".
   private static final String BLOCKQUOTE_LINES_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*";
-  /**
-   * Same as {@link #BLOCKQUOTE_LINES_PATTERN} but also consumes any trailing whitespace/blank lines
-   * after the block, useful for clean removal without leaving extra empty lines.
-   */
+  // Same as {@link #BLOCKQUOTE_LINES_PATTERN} but also consumes any trailing whitespace/blank lines
+  // * after the block, useful for clean removal without leaving extra empty lines.
   private static final String BLOCKQUOTE_LINES_WITH_TRAILING_WHITESPACE_PATTERN = "[^\\n]*\\n(>[^\\n]*\\n)*\\s*";
   private static final Pattern FORMAT_SPECIFIER_PATTERN = Pattern.compile("%s");
 
@@ -123,7 +125,26 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GitHub getGitHub() throws IOException {
-    return buildGitHub(getConfiguredToken());
+    int tokenCount = getConfiguredTokenCount();
+    for (int cycle = 0; cycle < MAX_RATE_LIMIT_WAIT_CYCLES; cycle++) {
+      GHRateLimit earliestExhaustedRateLimit = null;
+      for (int index = 0; index < tokenCount; index++) {
+        GitHub candidateGitHub = buildGitHub(getConfiguredToken(index));
+        GHRateLimit rateLimit = candidateGitHub.getRateLimit();
+        // Make sure enough remaining request before using this token
+        if (rateLimit.getRemaining() >= MIN_REMAINING_RATE_LIMIT) {
+          return candidateGitHub;
+        }
+        log.warn("Configured GitHub token at index {} is close to its rate limit (remaining={}), trying next token",
+            index, rateLimit.getRemaining());
+        if (earliestExhaustedRateLimit == null
+            || rateLimit.getResetDate().before(earliestExhaustedRateLimit.getResetDate())) {
+          earliestExhaustedRateLimit = rateLimit;
+        }
+      }
+      waitUntilRateLimitReset(earliestExhaustedRateLimit);
+    }
+    throw new IOException("All configured GitHub tokens remain rate-limited after waiting for the reset window");
   }
 
   @Override
@@ -134,7 +155,46 @@ public class GitHubServiceImpl implements GitHubService {
   public GitHub buildGitHub(String accessToken) throws IOException {
     var client = okHttpClientBuilder.build();
     var gitHubConnector = new OkHttpGitHubConnector(client);
-    return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector).build();
+    // Transparently wait and retry when the primary rate limit or secondary (abuse) rate limit is hit,
+    // instead of letting the request fail with an HttpException.
+    return new GitHubBuilder().withOAuthToken(accessToken).withConnector(gitHubConnector)
+        .withRateLimitHandler(GitHubRateLimitHandler.WAIT)
+        .withAbuseLimitHandler(GitHubAbuseLimitHandler.WAIT)
+        .build();
+  }
+
+  /**
+   * Blocks the current thread until the given rate limit's reset time has passed, adding a small buffer
+   * to account for clock drift between this service and GitHub's servers.
+   */
+  private void waitUntilRateLimitReset(GHRateLimit rateLimit) throws IOException {
+    if (rateLimit == null) {
+      return;
+    }
+    long waitMillis = rateLimit.getResetDate().getTime() - System.currentTimeMillis() + RATE_LIMIT_WAIT_BUFFER_MILLIS;
+    if (waitMillis <= 0) {
+      return;
+    }
+    log.warn("All configured GitHub tokens are rate-limited; waiting {} ms until reset at {}", waitMillis,
+        rateLimit.getResetDate());
+    try {
+      Thread.sleep(waitMillis);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException("Interrupted while waiting for GitHub rate limit to reset", e);
+    }
+  }
+
+  /**
+   * Returns the number of GitHub tokens configured via {@link AppSettingKey#GITHUB_TOKEN}, which may be a
+   * single token or a comma-separated list of tokens used for rotation.
+   */
+  private int getConfiguredTokenCount() {
+    String configToken = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+    if (StringUtils.isBlank(configToken) || !configToken.contains(CoreCommonConstants.COMMA)) {
+      return 1;
+    }
+    return configToken.split(CoreCommonConstants.COMMA).length;
   }
 
   @Override
@@ -256,11 +316,11 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   @TrackSyncTaskExecution(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)
   public List<ProductSecurityInfo> syncSecurityDetailsForProduct() throws IOException {
-    var gitHub = getGitHub(getConfiguredToken());
+    var gitHub = getGitHub(getConfiguredToken(0));
     GHOrganization organization = gitHub.getOrganization(
         appSettingService.getStringValueByKey(AppSettingKey.GITHUB_ORGANIZATION_NAME));
 
-    String token = getConfiguredToken();
+    String token = getConfiguredToken(0);
     Function<GHRepository, ProductSecurityInfo> fetchInfoWithContext =
         (GHRepository repo) -> {
           if (cancellationRegistry.isCancelled(SyncTaskType.SYNC_GITHUB_SECURITY_MONITOR)) {
@@ -560,7 +620,7 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GHPullRequest updateReadmeForSuccessorNotes(
       String repoPath, PullRequestAction action, AlternativeExtensionData extensionData) throws IOException {
-    String accessToken = getConfiguredToken();
+    String accessToken = getConfiguredToken(0);
     GitHub gitHub = getGitHub(accessToken);
     GHRepository repository = gitHub.getRepository(repoPath);
 
@@ -622,7 +682,7 @@ public class GitHubServiceImpl implements GitHubService {
       ResponseEntity<Void> response = restClientBuilder.build().patch()
           .uri(url)
           .header(HttpHeaders.AUTHORIZATION,
-              BEARER_PREFIX + appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN))
+              BEARER_PREFIX + getConfiguredToken(0))
           .body("{\"archived\": false}")
           .retrieve()
           .toBodilessEntity();
@@ -788,8 +848,13 @@ public class GitHubServiceImpl implements GitHubService {
   /**
    * Read the GitHub token from DB-backed AppSetting.
    */
-  private String getConfiguredToken() {
-    return appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+  private String getConfiguredToken(int index) {
+    String configToken = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+    if (configToken != null && configToken.contains(CoreCommonConstants.COMMA)) {
+      String[] tokens = configToken.split(CoreCommonConstants.COMMA);
+      return index >= tokens.length ? tokens[tokens.length - 1] : tokens[index];
+    }
+    return configToken;
   }
 
   /**
