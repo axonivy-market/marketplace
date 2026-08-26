@@ -11,8 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse;
 import org.springframework.web.client.RestClientException;
 
 import java.io.BufferedInputStream;
@@ -21,6 +23,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,13 +50,13 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   private static final String IAR = "iar";
   private static final int URL_PATHS_TO_GET = 3;
   private static final int BUFFER_SIZE = 4096;
+  private static final int MAX_REDIRECTS = 5;
   private final RestClientBuilder restClientBuilder;
 
   @Override
   public byte[] downloadFile(String url) {
     try {
-      byte[] body = restClientBuilder.build().get().uri(url).retrieve().body(byte[].class);
-      return body == null ? new byte[0] : body;
+      return fetchBody(url, byte[].class);
     } catch (RestClientException e) {
       addWarningLogWhenFailingToFetchResource(url, e);
       return new byte[0];
@@ -62,8 +66,8 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   @Override
   public String getFileAsString(String url) {
     try {
-      String body = restClientBuilder.build().get().uri(url).retrieve().body(String.class);
-      return StringUtils.defaultString(body);
+      byte[] body = fetchBody(url, byte[].class);
+      return new String(body, StandardCharsets.UTF_8);
     } catch (RestClientException e) {
       addWarningLogWhenFailingToFetchResource(url, e);
       return EMPTY;
@@ -71,13 +75,60 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   }
 
   @Override
-  public ResponseEntity<Resource> fetchUrlResource(String url) {
+  public Resource fetchUrlResource(String url) {
       try {
-        return restClientBuilder.build().get().uri(url).retrieve().toEntity(Resource.class);
+        return fetchBody(url, Resource.class);
       } catch (RestClientException e) {
         addWarningLogWhenFailingToFetchResource(url, e);
     }
     return null;
+  }
+
+  /**
+   * Fetches the response body for the given URL, following redirects manually up to
+   * {@link #MAX_REDIRECTS} times.
+   */
+  private <T> T fetchBody(String url, Class<T> returnType) {
+    if (ObjectUtils.isEmpty(url)) {
+      return null;
+    }
+    return fetchWithRedirects(url, returnType, 0);
+  }
+
+  private <T> T fetchWithRedirects(String url, Class<T> returnType, int redirectCount) {
+    if (redirectCount > MAX_REDIRECTS) {
+      return null;
+    }
+    return restClientBuilder.build()
+        .get().uri(url)
+        .exchange((req, res) -> handleResponse(res, url, returnType, redirectCount));
+  }
+
+  private <T> T handleResponse(ConvertibleClientHttpResponse res, String url, Class<T> returnType,
+      int redirectCount) throws IOException {
+    var status = res.getStatusCode();
+    if (status.is2xxSuccessful()) {
+      return res.bodyTo(returnType);
+    }
+
+    if (status.is3xxRedirection()) {
+      String location = res.getHeaders().getFirst(HttpHeaders.LOCATION);
+      if (location == null) {
+        return null;
+      }
+      String resolvedUrl = resolveUrl(url, location);
+      return fetchWithRedirects(resolvedUrl, returnType, redirectCount + 1);
+    }
+
+    return null;
+  }
+
+  private String resolveUrl(String originalUrl, String location) {
+    URI locationUri = URI.create(location);
+    if (locationUri.isAbsolute()) {
+      return location;
+    }
+    return URI.create(originalUrl).resolve(locationUri).toString();
   }
 
   private void addWarningLogWhenFailingToFetchResource(String url, RestClientException e) {

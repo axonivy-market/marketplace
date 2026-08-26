@@ -57,10 +57,10 @@ public interface FileDownloadService {
    *
    * @param url
    *              type {@link String} - the URL of the resource to fetch
-   * @return {@link ResponseEntity<Resource>} - the HTTP response containing the fetched resource
+   * @return {@link Resource} - the HTTP response containing the fetched resource
    * @author ntqdinh
    */
-  ResponseEntity<Resource> fetchUrlResource(String url);
+  Resource fetchUrlResource(String url);
 
   /**
    * <p>
