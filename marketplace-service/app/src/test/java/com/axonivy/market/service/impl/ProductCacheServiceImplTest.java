@@ -37,33 +37,15 @@ class ProductCacheServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testIsValidProductIdAndVersionReturnsFalseForNullArguments() {
-    assertFalse(productCacheService.isValidProductIdAndVersion(null, MOCK_RELEASED_VERSION));
-    assertFalse(productCacheService.isValidProductIdAndVersion(MOCK_PRODUCT_ID, null));
-  }
-
-  @Test
   void testIsValidProductIdLoadsCacheFromDatabaseOnce() {
     when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_ID_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
-    Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
-    when(productRepo.findAll()).thenReturn(List.of(product));
+    when(productRepo.findAllIds()).thenReturn(List.of(MOCK_PRODUCT_ID));
 
     assertTrue(productCacheService.isValidProductId(MOCK_PRODUCT_ID));
     assertFalse(productCacheService.isValidProductId(UNKNOWN_PRODUCT));
 
     // The cache must be filled once in bulk from Product entities, never re-queried using the caller-supplied id.
-    verify(productRepo, times(1)).findAll();
-  }
-
-  @Test
-  void testIsValidProductIdAndVersionMatchesCachedCombination() {
-    when(appSettingService.getLongValueByKey(AppSettingKey.PRODUCT_ID_CACHE_EXPIRATION_MINUTES)).thenReturn(60L);
-    Product product = buildProduct(MOCK_PRODUCT_ID, List.of(MOCK_RELEASED_VERSION));
-    when(productRepo.findAll()).thenReturn(List.of(product));
-
-    assertTrue(productCacheService.isValidProductIdAndVersion(MOCK_PRODUCT_ID, MOCK_RELEASED_VERSION));
-    assertFalse(productCacheService.isValidProductIdAndVersion(MOCK_PRODUCT_ID, "unknown-version"));
-    assertFalse(productCacheService.isValidProductIdAndVersion(UNKNOWN_PRODUCT, MOCK_RELEASED_VERSION));
+    verify(productRepo, times(1)).findAllIds();
   }
 
   private Product buildProduct(String productId, List<String> releasedVersions) {

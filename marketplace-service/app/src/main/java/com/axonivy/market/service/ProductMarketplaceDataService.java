@@ -113,11 +113,11 @@ public interface ProductMarketplaceDataService {
    *              type {@link String} - the specific artifact ID within the product
    * @param  version
    *              type {@link String} - the product version containing the artifact
-   * @return {@link ResponseEntity<Resource>} - HTTP response entity with the artifact file resource and
+   * @return {@link Resource} - HTTP response entity with the artifact file resource and
    *         appropriate headers (Content-Disposition, Content-Type, Content-Length)
    * @author ntqdinh
    */
-  ResponseEntity<Resource> getProductArtifactStream(String productId, String artifactId, String version);
+  Resource getProductArtifactStream(String productId, String artifactId, String version);
 
   /**
    * <p>

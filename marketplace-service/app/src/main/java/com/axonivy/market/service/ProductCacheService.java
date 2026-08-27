@@ -13,16 +13,4 @@ public interface ProductCacheService {
    * @return {@code true} if the product id exists in the cache, {@code false} otherwise
    */
   boolean isValidProductId(String productId);
-
-  /**
-   * <p>
-   * Checks whether the given product id and version combination exists, using the same periodically
-   * refreshed in-memory cache described in {@link #isValidProductId(String)}.
-   * </p>
-   *
-   * @param productId type {@link String} - the product id to validate
-   * @param version   type {@link String} - the version to validate for the given product id
-   * @return {@code true} if the id/version combination exists in the cache, {@code false} otherwise
-   */
-  boolean isValidProductIdAndVersion(String productId, String version);
 }

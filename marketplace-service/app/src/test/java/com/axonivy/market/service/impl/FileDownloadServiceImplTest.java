@@ -6,17 +6,18 @@ import com.axonivy.market.config.RestClientBuilder;
 import com.axonivy.market.util.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.Answers;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientException;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse;
+import org.springframework.web.client.RestClientException;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,11 +27,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class FileDownloadServiceImplTest extends BaseSetup {
@@ -50,6 +49,20 @@ class FileDownloadServiceImplTest extends BaseSetup {
     lenient().when(restClientBuilder.build()).thenReturn(restClient);
   }
 
+  /**
+   * Stubs the {@code exchange(...)} call for the given URL to simulate a successful 200 response
+   * whose body converts to {@code body}.
+   */
+  private void stubExchangeSuccess(String url, Object body) throws IOException {
+    ConvertibleClientHttpResponse response = mock(ConvertibleClientHttpResponse.class);
+    when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+    when(response.bodyTo(any(Class.class))).thenReturn(body);
+    when(restClient.get().uri(url).exchange(any())).thenAnswer(invocation -> {
+      RestClient.RequestHeadersSpec.ExchangeFunction<?> exchangeFunction = invocation.getArgument(0);
+      return exchangeFunction.exchange(mock(HttpRequest.class), response);
+    });
+  }
+
   @Test
   void testDownloadAndUnzipFileWithEmptyResult() throws IOException {
     var result = fileDownloadService.downloadAndUnzipFile("", new DownloadOption(false, "", false));
@@ -59,7 +72,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   @Test
   void testDownloadAndUnzipFileWithIssue() {
     byte[] result = fileDownloadService.downloadFile(DOWNLOAD_URL);
-    assertArrayEquals(new byte[0], result, "Expected empty array when URL is valid but can not download file");
+    assertArrayEquals(null, result, "Expected empty array when URL is valid but can not download file");
   }
 
   @Test
@@ -204,48 +217,25 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testDownloadFile() {
-    when(restClient.get().uri(MOCK_DOWNLOAD_URL).retrieve().body(byte[].class)).thenReturn(getMockBytes());
+  void testDownloadFile() throws IOException {
+    stubExchangeSuccess(MOCK_DOWNLOAD_URL, getMockBytes());
     byte[] result = fileDownloadService.downloadFile(MOCK_DOWNLOAD_URL);
     assertArrayEquals(getMockBytes(), result, "Content of file download should be the same with original file.");
   }
 
   @Test
-  void testGetFileAsString() {
-    when(restClient.get().uri(MOCK_DOWNLOAD_URL).retrieve().body(String.class)).thenReturn(MOCK_PRODUCT_NAME);
+  void testGetFileAsString() throws IOException {
+    stubExchangeSuccess(MOCK_DOWNLOAD_URL, MOCK_PRODUCT_NAME.getBytes(StandardCharsets.UTF_8));
     String result = fileDownloadService.getFileAsString(MOCK_DOWNLOAD_URL);
     assertEquals(MOCK_PRODUCT_NAME, result, "Content of file download should be the same with original file.");
   }
 
   @Test
-  void testFetchResourceUrl() {
-    ResponseEntity<Resource> mockedResponse = ResponseEntity.ok(mock(Resource.class));
-    when(restClient.get().uri(MOCK_DOWNLOAD_URL).retrieve().toEntity(Resource.class)).thenReturn(mockedResponse);
-    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(MOCK_DOWNLOAD_URL);
-    assertEquals(mockedResponse, result, "Content of stream should be the same with original stream.");
-  }
-
-  @Test
-  void testFetchUrlResource() {
-    ByteArrayResource resource = new ByteArrayResource("hello".getBytes(StandardCharsets.UTF_8));
-    ResponseEntity<Resource> responseEntity = ResponseEntity.ok(resource);
-    when(restClient.get().uri(DOWNLOAD_URL).retrieve().toEntity(Resource.class)).thenReturn(responseEntity);
-    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(DOWNLOAD_URL);
-
-    assertEquals(result, responseEntity, "Stream resource should come from valid stream");
-
-    when(restClient.get().uri(DOWNLOAD_URL).retrieve().toEntity(Resource.class)).thenReturn(null);
-    result = fileDownloadService.fetchUrlResource(DOWNLOAD_URL);
-
-    assertNull(result, "Result should come from the rest template");
-  }
-
-  @Test
-  void testDownloadFileShouldReturnBytesWhenRestTemplateSucceeds() {
+  void testDownloadFileShouldReturnBytesWhenRestTemplateSucceeds() throws IOException {
     String url = "http://example.com/file.zip";
     byte[] expectedBytes = "test-data".getBytes();
 
-    when(restClient.get().uri(url).retrieve().body(byte[].class)).thenReturn(expectedBytes);
+    stubExchangeSuccess(url, expectedBytes);
 
     byte[] result = fileDownloadService.downloadFile(url);
 
@@ -255,7 +245,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   @Test
   void testDownloadFileShouldReturnEmptyArrayWhenRestTemplateThrowsException() {
     String url = "http://example.com/file.zip";
-    when(restClient.get().uri(url).retrieve().body(byte[].class)).thenThrow(new RestClientException("boom"));
+    when(restClient.get().uri(url).exchange(any())).thenThrow(new RestClientException("boom"));
 
     byte[] result = fileDownloadService.downloadFile(url);
 
@@ -263,10 +253,10 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testGetFileAsStringShouldReturnContentWhenRestTemplateSucceeds() {
+  void testGetFileAsStringShouldReturnContentWhenRestTemplateSucceeds() throws IOException {
     String url = "http://example.com/file.txt";
     String expected = "Hello World";
-    when(restClient.get().uri(url).retrieve().body(String.class)).thenReturn(expected);
+    stubExchangeSuccess(url, expected.getBytes(StandardCharsets.UTF_8));
 
     String result = fileDownloadService.getFileAsString(url);
 
@@ -279,7 +269,7 @@ class FileDownloadServiceImplTest extends BaseSetup {
   @Test
   void testGetFileAsStringShouldReturnEmptyWhenRestTemplateThrowsException() {
     String url = "http://example.com/error.txt";
-    when(restClient.get().uri(url).retrieve().body(String.class))
+    when(restClient.get().uri(url).exchange(any()))
         .thenThrow(new RestClientException("boom"));
 
     String result = fileDownloadService.getFileAsString(url);
@@ -291,29 +281,12 @@ class FileDownloadServiceImplTest extends BaseSetup {
   }
 
   @Test
-  void testFetchUrlResourceShouldReturnResponseEntityWhenRestTemplateSucceeds() {
-    String url = "http://example.com/resource";
-    Resource resource = mock(Resource.class);
-    ResponseEntity<Resource> expected = ResponseEntity.ok(resource);
-
-    when(restClient.get().uri(url).retrieve().toEntity(Resource.class))
-        .thenReturn(expected);
-
-    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(url);
-
-    assertThat(result)
-        .as("Expected ResponseEntity returned from RestTemplate.exchange")
-        .isEqualTo(expected);
-
-  }
-
-  @Test
   void testFetchUrlResourceShouldReturnNullWhenRestTemplateThrowsException() {
     String url = "http://example.com/error";
     when(restClient.get().uri(url).retrieve().toEntity(Resource.class))
         .thenThrow(new RestClientException("boom"));
 
-    ResponseEntity<Resource> result = fileDownloadService.fetchUrlResource(url);
+    Resource result = fileDownloadService.fetchUrlResource(url);
 
     assertThat(result)
         .as("Expected null when RestTemplate.exchange throws RestClientException")

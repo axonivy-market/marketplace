@@ -10,6 +10,11 @@ import org.springframework.web.client.RestClient;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
+/**
+ * Builds and caches a {@link RestClient} configured with the connect/read timeout from
+ * {@link AppSettingKey#GITHUB_CONNECT_TIMEOUT}. The cached client is rebuilt only when the
+ * configured timeout value changes.
+ */
 @Component
 @RequiredArgsConstructor
 public class RestClientBuilder {
@@ -32,8 +37,7 @@ public class RestClientBuilder {
   private RestClient createRestClient(long timeoutMillis) {
     var httpClientBuilder = HttpClient.newBuilder();
     if (timeoutMillis > 0) {
-      var timeout = Duration.ofMillis(timeoutMillis);
-      httpClientBuilder.connectTimeout(timeout);
+      httpClientBuilder.connectTimeout(Duration.ofMillis(timeoutMillis));
     }
 
     var requestFactory = new JdkClientHttpRequestFactory(httpClientBuilder.build());
