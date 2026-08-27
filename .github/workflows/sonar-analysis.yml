@@ -5,9 +5,6 @@ run-name: 'Sonar scan on branch ${{ github.event.workflow_run.head_branch || git
 
 on:
   push:
-  workflow_run:
-    workflows: ['Market-UI CI Build', 'Market-Service CI Build']
-    types: [requested, completed]
   workflow_dispatch:
     inputs:
       target:

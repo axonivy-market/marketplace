@@ -235,6 +235,40 @@ class GitHubServiceImplTest extends BaseSetup {
 
     assertThrows(IOException.class, () -> gitHubService.getGitHub(),
         "Expected IOException when all configured tokens remain rate-limited after waiting");
+    // Expected exactly one retry (2 total attempts) after waiting for the reset window, then give up
+    verify(gitHubService, times(2)).buildGitHub("onlyToken");
+  }
+
+  @Test
+  void testGetGitHubWaitsThenRetriesOnceAndSucceedsWhenTokenBecomesAvailable() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+    mockGitHubBuild("onlyToken");
+
+    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
+    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
+    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() - 60_000));
+
+    GHRateLimit validRateLimit = mock(GHRateLimit.class);
+    when(validRateLimit.getRemaining()).thenReturn(100);
+
+    when(gitHub.getRateLimit()).thenReturn(exhaustedRateLimit).thenReturn(validRateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected the single retry after waiting to succeed once the token has capacity again");
+    verify(gitHubService, times(2)).buildGitHub("onlyToken");
+  }
+
+  @Test
+  void testGetGitHubDoesNotWaitWhenTokensAreInvalidRatherThanRateLimited() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+    doThrow(new HttpException("Bad credentials", HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "https://api.github.com"))
+        .when(gitHubService).buildGitHub("onlyToken");
+
+    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
+        "Expected IOException when the only configured token is unauthorized");
+    // No rate-limit reset was ever observed, so no wait/retry should happen for pure auth failures
+    verify(gitHubService, times(1)).buildGitHub("onlyToken");
   }
 
   @Test
@@ -276,16 +310,6 @@ class GitHubServiceImplTest extends BaseSetup {
     assertSame(gitHub, result, "Expected rotation to skip the failing token and pick the valid one");
     verify(gitHubService).buildGitHub("token1");
     verify(gitHubService).buildGitHub("token2");
-  }
-
-  @Test
-  void testGetGitHubThrowsWhenAllTokensFailWithHttpException() throws IOException {
-    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
-    doThrow(new HttpException("Bad credentials", HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "https://api.github.com"))
-        .when(gitHubService).buildGitHub("onlyToken");
-
-    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
-        "Expected IOException when the only configured token fails authentication");
   }
 
   @Test

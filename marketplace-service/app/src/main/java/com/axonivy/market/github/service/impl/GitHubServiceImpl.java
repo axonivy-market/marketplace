@@ -75,6 +75,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -123,17 +124,34 @@ public class GitHubServiceImpl implements GitHubService {
 
   @Override
   public GitHub getGitHub() throws IOException {
-    int tokenCount = getConfiguredTokenCount();
-    for (var index = 0; index < tokenCount; index++) {
-      var candidateGitHub = getValidCandidateGitHub(index);
-      if (candidateGitHub != null) {
-        return candidateGitHub;
+    var earliestResetEpochMillis = new AtomicLong(-1);
+    var gitHub = findAvailableGitHub(earliestResetEpochMillis);
+    if (gitHub != null) {
+      return gitHub;
+    }
+    // All tokens were rate-limited (as opposed to invalid/unauthorized); wait for the earliest reset
+    if (earliestResetEpochMillis.get() > 0) {
+      waitForRateLimitReset(earliestResetEpochMillis.get());
+      gitHub = findAvailableGitHub(new AtomicLong(-1));
+      if (gitHub != null) {
+        return gitHub;
       }
     }
     throw new IOException("All configured GitHub tokens remain rate-limited after waiting for the reset window");
   }
 
-  private GitHub getValidCandidateGitHub(int index) throws IOException {
+  private GitHub findAvailableGitHub(AtomicLong earliestResetEpochMillis) throws IOException {
+    int tokenCount = getConfiguredTokenCount();
+    for (var index = 0; index < tokenCount; index++) {
+      var candidateGitHub = getValidCandidateGitHub(index, earliestResetEpochMillis);
+      if (candidateGitHub != null) {
+        return candidateGitHub;
+      }
+    }
+    return null;
+  }
+
+  private GitHub getValidCandidateGitHub(int index, AtomicLong earliestResetEpochMillis) throws IOException {
     try {
       var candidateGitHub = buildGitHub(getConfiguredToken(index));
       GHRateLimit rateLimit = candidateGitHub.getRateLimit();
@@ -143,12 +161,33 @@ public class GitHubServiceImpl implements GitHubService {
       }
       log.warn("Configured GitHub token at index {} is close to its rate limit (remaining={}), trying next token",
           index, rateLimit.getRemaining());
+      long resetEpochMillis = rateLimit.getResetDate().getTime();
+      if (earliestResetEpochMillis.get() < 0 || resetEpochMillis < earliestResetEpochMillis.get()) {
+        earliestResetEpochMillis.set(resetEpochMillis);
+      }
     } catch (HttpException httpException) {
       if (httpException.getResponseCode() == HttpStatus.UNAUTHORIZED.value()) {
         log.warn("Invalid GH Token, move to another - {}", httpException.getMessage());
       }
     }
     return null;
+  }
+
+  /**
+   * Blocks the current thread until the earliest known rate limit reset time (plus a safety buffer), so that
+   * a subsequent retry has a chance of finding a token with available requests.
+   */
+  private void waitForRateLimitReset(long resetEpochMillis) {
+    long waitMillis = resetEpochMillis - System.currentTimeMillis() + RATE_LIMIT_WAIT_BUFFER_MILLIS;
+    if (waitMillis <= 0) {
+      return;
+    }
+    log.warn("Configured GH tokens are rate-limited; waiting {} ms for resetting before retrying", waitMillis);
+    try {
+      Thread.sleep(waitMillis);
+    } catch (InterruptedException interruptedException) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   @Override
