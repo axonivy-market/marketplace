@@ -63,6 +63,7 @@ docker volume create marketplace_marketbrowser || true
 ## Environment Files
 
 - `templates/.env`: shared app/service variables (`RELEASE_VERSION`, DB settings, app logs, API URLs, etc.).
+- `templates/dev/dev.env`: for local only, to share app/service variables (`BUILD_ENV`, `BUILD_VERSION`.).
 - `nginx/.env`: nginx container settings (`NGINX_VERSION`, `NGINX_CONFIG_PATH`, `NGINX_PORT`, log/cache paths).
 - `matomo/.env`: local/dev Matomo database credentials.
 
@@ -78,16 +79,20 @@ docker compose up -d
 ```
 
 Local development build:
+Replace `/home/axonivy/market/logs/` to your local path
 
 ```bash
 cd marketplace-build/templates/dev
+mvn -f ../../../marketplace-service/pom.xml clean install -DskipTests=true
+export STABLE_LOG_PATH=/home/axonivy/market/logs/stable
+export APP_LOG_PATH=/home/axonivy/market/logs/app
 docker compose up -d --build
 ```
 
 Stop application services:
 
 ```bash
-docker compose down
+docker compose down --rmi all -v
 ```
 
 ## Start NGINX Gateway
@@ -103,26 +108,28 @@ Then run:
 
 ```bash
 cd marketplace-build/nginx
-docker compose --env-file .env up -d --build
+docker compose up -d --build
 ```
 
 Stop nginx:
 
 ```bash
-docker compose down
+docker compose down --rmi all -v
 ```
 
-## Start Optional Matomo
+## Start Matomo
+
+For local environment, we recommended to commmend out in the `matomo` stuff in `./dev/nginx.conf` and skip this step. But if you want a full setup, let start it.
 
 ```bash
 cd marketplace-build/matomo
-docker compose --env-file .env up -d
+docker compose up -d
 ```
 
 Stop Matomo:
 
 ```bash
-docker compose down
+docker compose down --rmi all -v
 ```
 
 ## Typical Local Startup Order
