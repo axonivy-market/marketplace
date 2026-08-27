@@ -198,15 +198,10 @@ public interface ProductService {
    *
    * @param  productId
    *              type {@link String} - the unique product identifier to refresh
-   * @param  marketItemPath
-   *              type {@link String} - the market item path to use for synchronization; can be null to use default
-   * @param  overrideMarketItemPath
-   *              type {@link Boolean} - if true, forces the use of the provided marketItemPath even if different
-   *              from the stored path; if false, uses the stored path
    * @return {@link Product} - the refreshed product object with updated data; returns null if product not found
    * @author tvtphuc
    */
-  Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath);
+  Product renewProductById(String productId);
 
   /**
    * <p>

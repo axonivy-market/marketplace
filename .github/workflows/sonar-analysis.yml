@@ -1,40 +1,52 @@
+# Environment 'sonar-analysis' protection (required reviewers) is enforced by GitHub environment settings.
+# Access Setting > Environments > sonar-analysis to change the required reviewers.
 name: Market Sonar Analysis
-run-name: 'Sonar scan on branch ${{ github.event.workflow_run.head_branch }} triggered by ${{ github.event.workflow_run.actor.login }}'
+run-name: 'Sonar scan on branch ${{ github.event.workflow_run.head_branch || github.ref_name }} triggered by ${{ github.event.workflow_run.actor.login || github.actor }}'
 
 on:
-  workflow_run:
-    workflows: ['Market-UI CI Build', 'Market-Service CI Build']
-    types: [completed]
-
-env:
-  ORG_NAME: axonivy-market
+  push:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which analysis to run'
+        required: true
+        type: choice
+        options:
+          - ui
+          - service
+          - both
+        default: both
 
 jobs:
-  check-membership:
-    name: Verify actor org membership
-    if: github.event.workflow_run.conclusion == 'success'
+
+  detect-changes:
+    name: Detect changed paths
     runs-on: ubuntu-latest
     outputs:
-      is_member: ${{ steps.check.outputs.is_member }}
+      ui: ${{ steps.filter.outputs.ui }}
+      service: ${{ steps.filter.outputs.service }}
     steps:
-      - name: Check if actor is a member of the org
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          ACTOR: ${{ github.event.workflow_run.actor.login }}
-        run: |
-          if gh api "orgs/${ORG_NAME}/members/${ACTOR}" --silent; then
-            echo "is_member=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_member=false" >> "$GITHUB_OUTPUT"
-          fi
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ui:
+              - 'marketplace-ui/**'
+            service:
+              - 'marketplace-service/**'
 
   ui-analysis:
     name: Sonarqube (UI)
-    needs: check-membership
-    if: github.event.workflow_run.name == 'Market-UI CI Build'
+    needs: [detect-changes]
+    # always() is needed because detect-changes is skipped for non-push events
+    if: |
+      always() &&
+      ((github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Market-UI CI Build') ||
+       (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'ui' || github.event.inputs.target == 'both')) ||
+       (github.event_name == 'push' && needs.detect-changes.outputs.ui == 'true'))
+    environment: sonar-analysis
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_PROJECT_KEY: 'AxonIvy-Market-UI'
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -43,8 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_sha }}
+          repository: ${{ github.event.workflow_run.head_repository.full_name || github.repository }}
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -80,11 +92,11 @@ jobs:
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
 
       - name: Comment Sonar result on pull request
-        if: always()
+        if: always() && github.event_name == 'workflow_run'
         uses: actions/github-script@v7
         with:
           script: |
-            const pullRequests = context.payload.workflow_run.pull_requests;
+            const pullRequests = context.payload.workflow_run?.pull_requests;
             if (!pullRequests || pullRequests.length === 0) return;
             const status = '${{ steps.sonarqube-quality-gate-check.outcome }}';
             await github.rest.issues.createComment({
@@ -96,10 +108,15 @@ jobs:
 
   service-analysis:
     name: Sonarqube (Service)
-    needs: check-membership
-    if: github.event.workflow_run.name == 'Market-Service CI Build'
+    needs: [detect-changes]
+    # always() is needed because detect-changes is skipped for non-push events
+    if: |
+      always() &&
+      ((github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Market-Service CI Build') ||
+       (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'service' || github.event.inputs.target == 'both')) ||
+       (github.event_name == 'push' && needs.detect-changes.outputs.service == 'true'))
+    environment: sonar-analysis
     runs-on: self-hosted
-    environment: ${{ needs.check-membership.outputs.is_member == 'true' }}
     env:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -111,8 +128,8 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_sha }}
+          repository: ${{ github.event.workflow_run.head_repository.full_name || github.repository }}
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
 
       - name: Set up JDK 25
@@ -138,11 +155,11 @@ jobs:
           scanMetadataReportFile: ./marketplace-service/target/sonar/report-task.txt
 
       - name: Comment Sonar result on pull request
-        if: always()
+        if: always() && github.event_name == 'workflow_run'
         uses: actions/github-script@v7
         with:
           script: |
-            const pullRequests = context.payload.workflow_run.pull_requests;
+            const pullRequests = context.payload.workflow_run?.pull_requests;
             if (!pullRequests || pullRequests.length === 0) return;
             const status = '${{ steps.sonarqube-quality-gate-check.outcome }}';
             await github.rest.issues.createComment({
