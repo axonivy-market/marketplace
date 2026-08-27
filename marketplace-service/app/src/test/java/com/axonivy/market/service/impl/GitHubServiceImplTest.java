@@ -32,6 +32,7 @@ import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -189,8 +190,163 @@ class GitHubServiceImplTest extends BaseSetup {
   void testGetGitHubWithValidToken() throws IOException {
     when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("validToken");
     mockGitHubBuild("validToken");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
     assertNotNull(gitHubService.getGitHub(), "Expected GitHub object to be created with a valid token");
-    verify(appSettingService).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+    verify(appSettingService, atLeastOnce()).getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+  }
+
+  @Test
+  void testGetGitHubSkipsExhaustedTokenAndPicksValidOne() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token1,token2");
+
+    GitHub exhaustedGitHub = mock(GitHub.class);
+    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
+    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
+    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() + 60_000));
+    when(exhaustedGitHub.getRateLimit()).thenReturn(exhaustedRateLimit);
+    doReturn(exhaustedGitHub).when(gitHubService).buildGitHub("token1");
+
+    GitHub validGitHub = mock(GitHub.class);
+    GHRateLimit validRateLimit = mock(GHRateLimit.class);
+    when(validRateLimit.getRemaining()).thenReturn(100);
+    when(validGitHub.getRateLimit()).thenReturn(validRateLimit);
+    doReturn(validGitHub).when(gitHubService).buildGitHub("token2");
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(validGitHub, result, "Expected rotation to skip the exhausted token and pick the valid one");
+    verify(gitHubService).buildGitHub("token1");
+    verify(gitHubService).buildGitHub("token2");
+  }
+
+  @Test
+  void testGetGitHubThrowsWhenAllTokensRemainRateLimitedAfterWaiting() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+
+    GitHub exhaustedGitHub = mock(GitHub.class);
+    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
+    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
+    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() - 60_000));
+    when(exhaustedGitHub.getRateLimit()).thenReturn(exhaustedRateLimit);
+    doReturn(exhaustedGitHub).when(gitHubService).buildGitHub("onlyToken");
+
+    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
+        "Expected IOException when all configured tokens remain rate-limited after waiting");
+    // Expected exactly one retry (2 total attempts) after waiting for the reset window, then give up
+    verify(gitHubService, times(2)).buildGitHub("onlyToken");
+  }
+
+  @Test
+  void testGetGitHubWaitsThenRetriesOnceAndSucceedsWhenTokenBecomesAvailable() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+    mockGitHubBuild("onlyToken");
+
+    GHRateLimit exhaustedRateLimit = mock(GHRateLimit.class);
+    when(exhaustedRateLimit.getRemaining()).thenReturn(0);
+    when(exhaustedRateLimit.getResetDate()).thenReturn(new Date(System.currentTimeMillis() - 60_000));
+
+    GHRateLimit validRateLimit = mock(GHRateLimit.class);
+    when(validRateLimit.getRemaining()).thenReturn(100);
+
+    when(gitHub.getRateLimit()).thenReturn(exhaustedRateLimit).thenReturn(validRateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected the single retry after waiting to succeed once the token has capacity again");
+    verify(gitHubService, times(2)).buildGitHub("onlyToken");
+  }
+
+  @Test
+  void testGetGitHubDoesNotWaitWhenTokensAreInvalidRatherThanRateLimited() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+    doThrow(new HttpException("Bad credentials", HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "https://api.github.com"))
+        .when(gitHubService).buildGitHub("onlyToken");
+
+    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
+        "Expected IOException when the only configured token is unauthorized");
+    // No rate-limit reset was ever observed, so no wait/retry should happen for pure auth failures
+    verify(gitHubService, times(1)).buildGitHub("onlyToken");
+  }
+
+  @Test
+  void testBuildGitHubConfiguresRateLimitAndAbuseLimitHandlers() throws IOException {
+    GitHub result = gitHubService.buildGitHub("some-token");
+
+    assertNotNull(result, "Expected buildGitHub to construct a GitHub client without making a network call");
+  }
+
+  @Test
+  void testGetGitHubSkipsTokenThatIsUnauthorizedAndPicksNextValidOne() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token1,token2");
+    doThrow(new HttpException("Bad credentials", HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "https://api.github.com"))
+        .when(gitHubService).buildGitHub("token1");
+    mockGitHubBuild("token2");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected rotation to skip the unauthorized token and pick the valid one");
+    verify(gitHubService).buildGitHub("token1");
+    verify(gitHubService).buildGitHub("token2");
+  }
+
+  @Test
+  void testGetGitHubSkipsTokenOnNonUnauthorizedHttpExceptionAndPicksNextValidOne() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token1,token2");
+    doThrow(new HttpException("Server error", HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error",
+        "https://api.github.com")).when(gitHubService).buildGitHub("token1");
+    mockGitHubBuild("token2");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected rotation to skip the failing token and pick the valid one");
+    verify(gitHubService).buildGitHub("token1");
+    verify(gitHubService).buildGitHub("token2");
+  }
+
+  @Test
+  void testGetGitHubUsesSingleTokenWhenNoCommaConfigured() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("singleToken");
+    mockGitHubBuild("singleToken");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected the single configured token to be used");
+    verify(gitHubService, times(1)).buildGitHub("singleToken");
+  }
+
+  @Test
+  void testGetGitHubWithBlankConfiguredTokenBuildsGitHubWithBlankValue() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn(StringUtils.EMPTY);
+    mockGitHubBuild(StringUtils.EMPTY);
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected blank configured token to still be attempted as a single candidate");
+  }
+
+  @Test
+  void testGetGitHubPropagatesNonHttpIOExceptionFromRateLimitCheck() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
+    mockGitHubBuild("token");
+    when(gitHub.getRateLimit()).thenThrow(new IOException("network failure"));
+
+    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
+        "Expected non-HttpException IOException from rate limit check to propagate");
   }
 
   @Test
@@ -977,7 +1133,8 @@ class GitHubServiceImplTest extends BaseSetup {
     GHContent readme = mock(GHContent.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already contains unsupported notice");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -991,7 +1148,8 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README has no unsupported notice to remove");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -1006,7 +1164,8 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(branchRef);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already has no notice and content is unchanged");
     verify(branchRef).delete();
@@ -1019,7 +1178,8 @@ class GitHubServiceImplTest extends BaseSetup {
     setupBaseRepositoryMocks(repository, readme, "# Title\nBody");
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenThrow(new GHFileNotFoundException());
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.REMOVE,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null and no exception when branch does not exist");
     verify(repository, atLeastOnce()).getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE);
@@ -1032,7 +1192,8 @@ class GitHubServiceImplTest extends BaseSetup {
     GHRef branchRef = mock(GHRef.class);
     setupBaseRepositoryMocks(repository, readme, "# Title\n" + UNSUPPORTED_NOTICE_FIXTURE + "\nBody");
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertNull(result, "Expected null when README already contains the unsupported notice");
     verify(branchRef, never()).delete();
@@ -1052,7 +1213,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.getRef(HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE)).thenReturn(existingBranchRef);
     mockOpenPullRequests(repository, List.of(existingPr));
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(existingPr, result, "Expected already open pull request to be returned");
     verify(repository, never()).createPullRequest(anyString(), anyString(), anyString(), anyString());
@@ -1075,7 +1237,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected a new pull request to be created from existing branch");
     verify(readme, never()).update(anyString(), anyString(), anyString());
@@ -1101,7 +1264,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected pull request to be created after branch recreation");
     verify(existingBranchRef).delete();
@@ -1122,7 +1286,8 @@ class GitHubServiceImplTest extends BaseSetup {
     when(repository.createPullRequest(anyString(), eq(UNSUPPORTED_BRANCH_NAME_FIXTURE), eq(BASE_BRANCH), anyString()))
         .thenReturn(createdPr);
 
-    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD, EXTENSION_DATA_FIXTURE);
+    GHPullRequest result = gitHubService.updateReadmeForSuccessorNotes("org/repo", PullRequestAction.ADD,
+        EXTENSION_DATA_FIXTURE);
 
     assertEquals(createdPr, result, "Expected pull request to be created when unsupported branch is missing");
     verify(repository).createRef(REFS_HEADS_PREFIX + UNSUPPORTED_BRANCH_NAME_FIXTURE, "base-sha");
