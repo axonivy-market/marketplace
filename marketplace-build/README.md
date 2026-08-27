@@ -12,6 +12,7 @@ marketplace-build/
 │   ├── .env
 │   ├── docker-compose.yml
 │   └── dev/
+│       ├── dev.env
 │       └── docker-compose.yml
 ├── nginx/
 │   ├── .env
