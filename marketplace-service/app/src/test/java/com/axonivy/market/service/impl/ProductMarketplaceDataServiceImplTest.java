@@ -33,8 +33,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -205,15 +203,14 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
         MOCK_RELEASED_VERSION))
         .thenReturn(List.of(mav));
     ByteArrayResource resource = new ByteArrayResource("data".getBytes());
-    ResponseEntity<Resource> responseEntity = ResponseEntity.ok(resource);
-    when(fileDownloadService.fetchUrlResource(MOCK_DOWNLOAD_URL)).thenReturn(responseEntity);
+    when(fileDownloadService.fetchUrlResource(MOCK_DOWNLOAD_URL)).thenReturn(resource);
 
-    ResponseEntity<Resource> result = productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID,
+    Resource result = productMarketplaceDataService.getProductArtifactStream(MOCK_PRODUCT_ID,
         MOCK_ARTIFACT_ID, MOCK_RELEASED_VERSION);
 
     assertNotNull(result, "Result stream should not be null with existed artifact");
-    assertEquals(HttpStatusCode.valueOf(200), result.getStatusCode(), "Response entity should return code of 200");
-    assertEquals(result.getBody(), resource, "Response's body should equal to the content form received stream");
+    assertTrue(result.exists(), "Response entity should return code of 200");
+    assertEquals(result, resource, "Response's body should equal to the content form received stream");
     verify(mavenArtifactVersionRepo).findByProductIdAndArtifactIdAndVersion(MOCK_PRODUCT_ID, MOCK_ARTIFACT_ID,
         MOCK_RELEASED_VERSION);
     verify(fileDownloadService).fetchUrlResource(MOCK_DOWNLOAD_URL);
@@ -302,7 +299,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(axonIvyClient.getAllVersions()).thenReturn(List.of());
-    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD), any())).thenReturn(
+    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD),
+        any())).thenReturn(
         mockPr);
 
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
@@ -310,7 +308,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     assertNotNull(response, "Pull request URL should be present when GitHub service returns a PR");
     assertEquals("https://github.com/axonivy-market/bpmn-statistic/pull/1", response,
         "Pull request URL should match the mocked GitHub PR HTML URL");
-    verify(gitHubService).updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD), any());
+    verify(gitHubService).updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD),
+        any());
   }
 
   @Test
@@ -326,13 +325,15 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(axonIvyClient.getAllVersions()).thenReturn(List.of());
-    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.REMOVE), any()))
+    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.REMOVE),
+        any()))
         .thenReturn(mockPr);
 
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
 
     assertNotNull(response, "Pull request URL should be present for REMOVE action");
-    verify(gitHubService).updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.REMOVE), any());
+    verify(gitHubService).updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.REMOVE),
+        any());
   }
 
   @Test
@@ -345,7 +346,8 @@ class ProductMarketplaceDataServiceImplTest extends BaseSetup {
     when(productMarketplaceDataRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(getMockProductMarketplaceData()));
     when(productRepo.findById(MOCK_PRODUCT_ID)).thenReturn(Optional.of(product));
     when(axonIvyClient.getAllVersions()).thenReturn(List.of());
-    when(gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD), any()))
+    when(
+        gitHubService.updateReadmeForSuccessorNotes(eq(MOCK_PRODUCT_REPOSITORY_NAME), eq(PullRequestAction.ADD), any()))
         .thenReturn(null);
     String response = productMarketplaceDataService.updateSuccessorForProduct(MOCK_PRODUCT_ID, request);
 

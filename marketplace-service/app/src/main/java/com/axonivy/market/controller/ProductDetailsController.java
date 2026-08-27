@@ -76,7 +76,7 @@ public class ProductDetailsController {
           in = ParameterIn.PATH) String id,
       @PathVariable(VERSION) @Parameter(description = "Release version (from maven metadata.xml)", example = "10.0.20",
           in = ParameterIn.PATH) String version) {
-    if (!productCacheService.isValidProductIdAndVersion(id, version)) {
+    if (!productCacheService.isValidProductId(id)) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     var productDetail = productService.fetchProductDetailByIdAndVersion(id, version);

@@ -63,7 +63,7 @@ class ProductDetailsControllerTest extends WebMvcControllerTestSupport {
     product.setId(DOCKER_CONNECTOR_ID);
     ProductDetailModel model = new ProductDetailModel();
     model.setId(DOCKER_CONNECTOR_ID);
-    when(productCacheService.isValidProductIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
+    when(productCacheService.isValidProductId(DOCKER_CONNECTOR_ID))
         .thenReturn(true);
     when(productService.fetchProductDetailByIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
         .thenReturn(product);
@@ -76,7 +76,7 @@ class ProductDetailsControllerTest extends WebMvcControllerTestSupport {
 
   @Test
   void testProductDetailsByVersionNotFoundWhenNotCached() throws Exception {
-    when(productCacheService.isValidProductIdAndVersion(DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))
+    when(productCacheService.isValidProductId(DOCKER_CONNECTOR_ID))
         .thenReturn(false);
 
     mockMvc.perform(get("/api/product-details/{id}/{version}", DOCKER_CONNECTOR_ID, MOCK_RELEASED_VERSION))

@@ -73,14 +73,13 @@ public class ProductMarketplaceDataController {
   @GetMapping(VERSION_DOWNLOAD_BY_ID)
   public ResponseEntity<StreamingResponseBody> getArtifactResourceStream(@PathVariable(ID) String productId,
       @PathVariable(ARTIFACT_ID) String artifactId, @PathVariable(VERSION) String version) {
-    ResponseEntity<Resource> resourceResponse = productMarketplaceDataService.getProductArtifactStream(productId,
+    Resource resourceResponse = productMarketplaceDataService.getProductArtifactStream(productId,
         artifactId, version);
-    if (resourceResponse == null || !resourceResponse.getStatusCode().is2xxSuccessful() ||
-        resourceResponse.getBody() == null) {
+    if (resourceResponse == null || !resourceResponse.exists()) {
       throw new NotFoundException(ErrorCode.ARTIFACT_NOT_FOUND.getCode(), "Failed to retrieve artifact: " + artifactId);
     }
     StreamingResponseBody streamingBody = outputStream -> productMarketplaceDataService.buildArtifactStreamFromResource(
-        productId, resourceResponse.getBody(), outputStream);
+        productId, resourceResponse, outputStream);
     return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_DISPOSITION,
         "attachment").body(streamingBody);
   }
