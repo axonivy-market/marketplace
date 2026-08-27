@@ -58,7 +58,7 @@ pipeline {
               git fetch origin new-release || true
 
               if git show-ref --verify --quiet refs/remotes/origin/new-release; then
-                OPEN_PR=$(gh pr list --repo axonivy-market/marketplace --head new-release --base $RELEASE_BASE_BRANCH --state open --json number --jq ".[0].number" 2>/dev/null || echo "")
+                OPEN_PR=$(gh pr list --repo axonivy-market/marketplace --head new-release --base develop --state open --json number --jq ".[0].number" 2>/dev/null || echo "")
                 if [ -n "$OPEN_PR" ]; then
                   echo "ERROR: An open Release PR (#$OPEN_PR) already exists for new-release. Merge or close it before running a new release build."
                   exit 1
@@ -444,10 +444,10 @@ pipeline {
       steps {
         script {
           sh '''
-            PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base $RELEASE_BASE_BRANCH --json number --jq ".[0].number" 2>/dev/null || echo "")
+            PR_EXISTS=$(gh pr list --repo axonivy-market/marketplace --head new-release --base develop --json number --jq ".[0].number" 2>/dev/null || echo "")
 
             if [ -z "$PR_EXISTS" ]; then
-              gh pr create --repo axonivy-market/marketplace --title "Release" --body "Automated release PR bumping to next development version $NEXT_SNAPSHOT_VERSION" --head new-release --base $RELEASE_BASE_BRANCH
+              gh pr create --repo axonivy-market/marketplace --title "Raise to new dev version" --body "Automated release PR bumping to next development version $NEXT_SNAPSHOT_VERSION" --head new-release --base develop --label skip-changelog
               echo "Pull request created successfully"
             else
               echo "Pull request #$PR_EXISTS already exists"
