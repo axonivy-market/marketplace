@@ -186,6 +186,7 @@ public class GitHubServiceImpl implements GitHubService {
     try {
       Thread.sleep(waitMillis);
     } catch (InterruptedException interruptedException) {
+      log.error("The wait for rate-limit reset thread is interrupted {}", interruptedException.getMessage());
       Thread.currentThread().interrupt();
     }
   }
