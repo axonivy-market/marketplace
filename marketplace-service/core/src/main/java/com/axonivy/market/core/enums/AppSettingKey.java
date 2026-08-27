@@ -79,7 +79,7 @@ public enum AppSettingKey {
       "market.github.token",
       "",
       AppSettingCategory.GITHUB.name(),
-      "GitHub personal access token used for API requests.",
+      "GitHub personal access token used for API requests. Use comma to separate each token",
       true),
 
   GITHUB_CONNECT_TIMEOUT(
