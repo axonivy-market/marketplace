@@ -723,49 +723,49 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   @Override
   @Transactional
   public boolean syncOneProduct(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
-    try {
-      log.info("Sync product {} is starting ...", productId);
-      log.info("Clean up product {}", productId);
-      var product = renewProductById(productId, marketItemPath, overrideMarketItemPath);
-      log.info("Get data of product {} from the git hub", productId);
-      var gitHubContents = axonIvyMarketRepoService.getMarketItemByPath(product.getMarketDirectory());
-      if (!CollectionUtils.isEmpty(gitHubContents)) {
-        log.info("Update data of product {} from meta.json and logo files", productId);
-        mappingMetaDataAndLogoFromGHContent(gitHubContents, product);
-        updateProductContentForNonStandardProduct(gitHubContents, product);
-        updateFirstPublishedDate(product);
-        productRepo.save(product);
-        
-        updateProductFromReleasedVersions(product);
-        productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
-        log.info("Sync product {} is finished!", productId);
-        return true;
-      }
-    } catch (Exception e) {
-      log.error(e);
+    log.info("Request sync data for product id {} is starting ...", productId);
+    var productOpts = productRepo.findById(productId);
+    if (productOpts.isEmpty()) {
+      log.info("Cannot find any product with id - {}", productId);
+      return false;
     }
+    Product existedProduct = productOpts.get();
+    log.info("Get data of product {} from the git hub", productId);
+    var gitHubContents = axonIvyMarketRepoService.getMarketItemByPath(existedProduct.getMarketDirectory());
+    if (!CollectionUtils.isEmpty(gitHubContents)) {
+      var renewProduct = renewProductById(productId);
+      if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)) {
+        renewProduct.setMarketDirectory(marketItemPath);
+      }
+      log.info("Update data of product {} from meta.json and logo files", productId);
+      mappingMetaDataAndLogoFromGHContent(gitHubContents, renewProduct);
+      updateProductContentForNonStandardProduct(gitHubContents, renewProduct);
+      updateFirstPublishedDate(renewProduct);
+      productRepo.save(renewProduct);
+
+      updateProductFromReleasedVersions(renewProduct);
+      productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
+      log.info("Sync product {} is finished!", productId);
+      return true;
+    }
+
     return false;
   }
 
   @Override
-  public Product renewProductById(String productId, String marketItemPath, Boolean overrideMarketItemPath) {
+  public Product renewProductById(String productId) {
     var product = new Product();
     productRepo.findById(productId).ifPresent((Product foundProduct) -> {
-          ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
-          imageRepo.deleteAllByProductId(foundProduct.getId());
-          metadataRepo.deleteAllByProductId(foundProduct.getId());
-          mavenArtifactVersionRepository.deleteAllByProductId(foundProduct.getId());
-          productModuleContentRepo.deleteAllByProductId(foundProduct.getId());
-          productJsonContentRepo.deleteAllByProductId(foundProduct.getId());
-          productRepo.delete(foundProduct);
-        }
-    );
-
-    if (StringUtils.isNotBlank(marketItemPath) && Boolean.TRUE.equals(overrideMarketItemPath)) {
-      product.setMarketDirectory(marketItemPath);
-    }
+      log.info("Transfer persisted data then clean up for renew product {}", productId);
+      ProductFactory.transferComputedPersistedDataToProduct(foundProduct, product);
+      imageRepo.deleteAllByProductId(foundProduct.getId());
+      metadataRepo.deleteAllByProductId(foundProduct.getId());
+      mavenArtifactVersionRepository.deleteAllByProductId(foundProduct.getId());
+      productModuleContentRepo.deleteAllByProductId(foundProduct.getId());
+      productJsonContentRepo.deleteAllByProductId(foundProduct.getId());
+      productRepo.delete(foundProduct);
+    });
     product.setNewestReleaseVersion(EMPTY);
-
     return product;
   }
 
