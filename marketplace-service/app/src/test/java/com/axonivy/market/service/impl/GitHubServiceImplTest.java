@@ -32,6 +32,7 @@ import com.axonivy.market.repository.ProductSecurityInfoRepository;
 import com.axonivy.market.util.MultiTaskUtils;
 import com.axonivy.market.util.ProductContentUtils;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -241,6 +242,87 @@ class GitHubServiceImplTest extends BaseSetup {
     GitHub result = gitHubService.buildGitHub("some-token");
 
     assertNotNull(result, "Expected buildGitHub to construct a GitHub client without making a network call");
+  }
+
+  @Test
+  void testGetGitHubSkipsTokenThatIsUnauthorizedAndPicksNextValidOne() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token1,token2");
+    doThrow(new HttpException("Bad credentials", HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "https://api.github.com"))
+        .when(gitHubService).buildGitHub("token1");
+    mockGitHubBuild("token2");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected rotation to skip the unauthorized token and pick the valid one");
+    verify(gitHubService).buildGitHub("token1");
+    verify(gitHubService).buildGitHub("token2");
+  }
+
+  @Test
+  void testGetGitHubSkipsTokenOnNonUnauthorizedHttpExceptionAndPicksNextValidOne() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token1,token2");
+    doThrow(new HttpException("Server error", HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error",
+        "https://api.github.com")).when(gitHubService).buildGitHub("token1");
+    mockGitHubBuild("token2");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected rotation to skip the failing token and pick the valid one");
+    verify(gitHubService).buildGitHub("token1");
+    verify(gitHubService).buildGitHub("token2");
+  }
+
+  @Test
+  void testGetGitHubThrowsWhenAllTokensFailWithHttpException() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("onlyToken");
+    doThrow(new HttpException("Bad credentials", HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "https://api.github.com"))
+        .when(gitHubService).buildGitHub("onlyToken");
+
+    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
+        "Expected IOException when the only configured token fails authentication");
+  }
+
+  @Test
+  void testGetGitHubUsesSingleTokenWhenNoCommaConfigured() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("singleToken");
+    mockGitHubBuild("singleToken");
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected the single configured token to be used");
+    verify(gitHubService, times(1)).buildGitHub("singleToken");
+  }
+
+  @Test
+  void testGetGitHubWithBlankConfiguredTokenBuildsGitHubWithBlankValue() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn(StringUtils.EMPTY);
+    mockGitHubBuild(StringUtils.EMPTY);
+    GHRateLimit rateLimit = mock(GHRateLimit.class);
+    when(rateLimit.getRemaining()).thenReturn(100);
+    when(gitHub.getRateLimit()).thenReturn(rateLimit);
+
+    GitHub result = gitHubService.getGitHub();
+
+    assertSame(gitHub, result, "Expected blank configured token to still be attempted as a single candidate");
+  }
+
+  @Test
+  void testGetGitHubPropagatesNonHttpIOExceptionFromRateLimitCheck() throws IOException {
+    when(appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN)).thenReturn("token");
+    mockGitHubBuild("token");
+    when(gitHub.getRateLimit()).thenThrow(new IOException("network failure"));
+
+    assertThrows(IOException.class, () -> gitHubService.getGitHub(),
+        "Expected non-HttpException IOException from rate limit check to propagate");
   }
 
   @Test

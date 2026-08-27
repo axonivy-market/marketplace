@@ -124,8 +124,8 @@ public class GitHubServiceImpl implements GitHubService {
   @Override
   public GitHub getGitHub() throws IOException {
     int tokenCount = getConfiguredTokenCount();
-    for (int index = 0; index < tokenCount; index++) {
-      GitHub candidateGitHub = getValidCandidateGitHub(index);
+    for (var index = 0; index < tokenCount; index++) {
+      var candidateGitHub = getValidCandidateGitHub(index);
       if (candidateGitHub != null) {
         return candidateGitHub;
       }
@@ -135,7 +135,7 @@ public class GitHubServiceImpl implements GitHubService {
 
   private GitHub getValidCandidateGitHub(int index) throws IOException {
     try {
-      GitHub candidateGitHub = buildGitHub(getConfiguredToken(index));
+      var candidateGitHub = buildGitHub(getConfiguredToken(index));
       GHRateLimit rateLimit = candidateGitHub.getRateLimit();
       // Make sure enough remaining request before using this token
       if (rateLimit.getRemaining() >= MIN_REMAINING_RATE_LIMIT) {
@@ -172,7 +172,7 @@ public class GitHubServiceImpl implements GitHubService {
    * single token or a comma-separated list of tokens used for rotation.
    */
   private int getConfiguredTokenCount() {
-    String configToken = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+    var configToken = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
     if (StringUtils.isBlank(configToken) || !configToken.contains(CoreCommonConstants.COMMA)) {
       return 1;
     }
@@ -832,7 +832,7 @@ public class GitHubServiceImpl implements GitHubService {
    */
   private String getConfiguredToken(int index) {
     String token = null;
-    String configToken = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
+    var configToken = appSettingService.getStringValueByKey(AppSettingKey.GITHUB_TOKEN);
     if (configToken != null && configToken.contains(CoreCommonConstants.COMMA)) {
       String[] tokens = configToken.split(CoreCommonConstants.COMMA);
       token = index >= tokens.length ? tokens[tokens.length - 1] : tokens[index];
