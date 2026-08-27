@@ -1,8 +1,8 @@
 package com.axonivy.market.core.repository;
 
 import com.axonivy.market.core.entity.Product;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 @Repository
