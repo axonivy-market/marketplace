@@ -66,12 +66,14 @@ public class FileDownloadServiceImpl implements FileDownloadService {
   @Override
   public String getFileAsString(String url) {
     try {
-      byte[] body = fetchBody(url, byte[].class);
-      return new String(body, StandardCharsets.UTF_8);
+      byte[] body = downloadFile(url);
+      if (body != null) {
+        return new String(body, StandardCharsets.UTF_8);
+      }
     } catch (RestClientException e) {
       addWarningLogWhenFailingToFetchResource(url, e);
-      return EMPTY;
     }
+    return EMPTY;
   }
 
   @Override
