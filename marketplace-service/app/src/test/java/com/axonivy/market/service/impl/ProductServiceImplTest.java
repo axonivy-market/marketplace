@@ -78,7 +78,6 @@ import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -680,6 +679,13 @@ class ProductServiceImplTest extends BaseSetup {
     var mockContentLogo = mockGHContentAsLogo();
     return new ArrayList<>(isIncludedLogoDark ? List.of(mockContent, mockContentLogo, mockGHContentAsLogoDark()) :
         List.of(mockContent, mockContentLogo));
+  }
+
+  @Test
+  void testSyncOneProductFailed() {
+    when(productRepo.findById(anyString())).thenReturn(Optional.of(getMockProduct()));
+    assertFalse(productService.syncOneProduct(StringUtils.EMPTY, StringUtils.EMPTY, true),
+        "Sync one product should be failed");
   }
 
   @Test
