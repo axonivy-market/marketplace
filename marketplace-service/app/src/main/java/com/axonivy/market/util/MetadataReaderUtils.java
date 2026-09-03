@@ -100,11 +100,17 @@ public class MetadataReaderUtils {
   }
 
   private static String resolveLatestSnapshotVersionValue(Document document) {
+    if (document == null) {
+      return EMPTY;
+    }
     String currentSnapshotTimestamp = getElementValue(document, MavenConstants.SNAPSHOT_LAST_UPDATED_TAG);
+    if (StringUtils.isBlank(currentSnapshotTimestamp)) {
+      return EMPTY;
+    }
     NodeList valueNodes = document.getElementsByTagName(MavenConstants.VALUE_TAG);
     return IntStream.range(0, valueNodes.getLength())
         .mapToObj(i -> valueNodes.item(i).getTextContent())
-        .filter(text -> text.contains(Objects.requireNonNull(currentSnapshotTimestamp)))
+        .filter(text -> text.contains(currentSnapshotTimestamp))
         .findFirst()
         .orElse(EMPTY);
   }
