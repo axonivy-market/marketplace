@@ -73,7 +73,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.axonivy.market.constants.MavenConstants.DEFAULT_IVY_MIRROR_MAVEN_BASE_URL;
 import static com.axonivy.market.core.constants.CoreCommonConstants.SLASH;
+import static com.axonivy.market.core.constants.CoreMavenConstants.DEFAULT_IVY_MAVEN_BASE_URL;
 import static com.axonivy.market.constants.MetaConstants.META_FILE;
 import static com.axonivy.market.constants.ProductJsonConstants.LOGO_FILE;
 import static com.axonivy.market.core.enums.DocumentField.SHORT_DESCRIPTIONS;
@@ -377,6 +379,57 @@ class ProductServiceImplTest extends BaseSetup {
         .thenReturn(List.of(mockReadmeProductContent(), mockReturnProductContent));
 
     when(MavenUtils.buildDownloadUrl(any(), any(), any(), any(), any(), any())).thenReturn(MOCK_DOWNLOAD_URL);
+  }
+
+  @Test
+  void testHandleProductArtifactResolvesSnapshotFromProductArtifactMetadata() {
+    String expectedMetadataUrl = DEFAULT_IVY_MIRROR_MAVEN_BASE_URL
+        + "/com/axonivy/util/bpmn-statistic-product/10.0.10-SNAPSHOT/maven-metadata.xml";
+    String expectedDownloadUrl = DEFAULT_IVY_MAVEN_BASE_URL
+        + "/com/axonivy/util/bpmn-statistic-product/10.0.10-SNAPSHOT"
+        + "/bpmn-statistic-product-12.0.2-20250224.083844-2.zip";
+
+    try (MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      ArgumentCaptor<String> metadataUrlCaptor = ArgumentCaptor.forClass(String.class);
+      ArgumentCaptor<String> downloadUrlCaptor = ArgumentCaptor.forClass(String.class);
+      mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(anyString())).thenReturn(
+          getMockSnapshotMetadataContent());
+      when(productContentService.getReadmeAndProductContentsFromVersion(anyString(), anyString(), anyString(), any(),
+          anyString())).thenReturn(mockReadmeProductContent());
+
+      productService.handleProductArtifact(MOCK_SNAPSHOT_VERSION, MOCK_PRODUCT_ID, getMockArtifact(),
+          MOCK_PRODUCT_NAME);
+
+      mockHttpUtils.verify(() -> HttpFetchingUtils.getFileAsString(metadataUrlCaptor.capture()));
+      assertEquals(expectedMetadataUrl, metadataUrlCaptor.getValue(),
+          "Snapshot metadata should be looked up with the defaulted repository and the product artifact ID");
+
+      verify(productContentService).getReadmeAndProductContentsFromVersion(anyString(), anyString(),
+          downloadUrlCaptor.capture(), any(), anyString());
+      assertEquals(expectedDownloadUrl, downloadUrlCaptor.getValue(),
+          "Download URL should use the snapshot build version resolved from the product artifact metadata");
+    }
+  }
+
+  @Test
+  void testHandleProductArtifactSkipsMetadataLookupForReleasedVersion() {
+    String expectedDownloadUrl = DEFAULT_IVY_MAVEN_BASE_URL
+        + "/com/axonivy/util/bpmn-statistic-product/10.0.10/bpmn-statistic-product-10.0.10.zip";
+
+    try (MockedStatic<HttpFetchingUtils> mockHttpUtils = Mockito.mockStatic(HttpFetchingUtils.class)) {
+      ArgumentCaptor<String> downloadUrlCaptor = ArgumentCaptor.forClass(String.class);
+      when(productContentService.getReadmeAndProductContentsFromVersion(anyString(), anyString(), anyString(), any(),
+          anyString())).thenReturn(mockReadmeProductContent());
+
+      productService.handleProductArtifact(MOCK_RELEASED_VERSION, MOCK_PRODUCT_ID, getMockArtifact(),
+          MOCK_PRODUCT_NAME);
+
+      mockHttpUtils.verifyNoInteractions();
+      verify(productContentService).getReadmeAndProductContentsFromVersion(anyString(), anyString(),
+          downloadUrlCaptor.capture(), any(), anyString());
+      assertEquals(expectedDownloadUrl, downloadUrlCaptor.getValue(),
+          "Released versions should keep the plain download URL without a snapshot lookup");
+    }
   }
 
   @Test
