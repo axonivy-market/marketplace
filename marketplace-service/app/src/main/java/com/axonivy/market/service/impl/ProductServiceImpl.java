@@ -587,21 +587,26 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
 
   public ProductModuleContent handleProductArtifact(String version, String productId, Artifact mavenArtifact,
       String productName) {
-    String snapshotVersionValue = StringUtils.EMPTY;
-    if (version.contains(CoreMavenConstants.SNAPSHOT_VERSION)) {
-      String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(mavenArtifact.getRepoUrl(),
-          mavenArtifact.getGroupId(), mavenArtifact.getArtifactId(), version);
-      snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
-    }
-
     String repoUrl = StringUtils.defaultIfBlank(mavenArtifact.getRepoUrl(), DEFAULT_IVY_MAVEN_BASE_URL);
     String artifactId = createProductArtifactId(mavenArtifact);
     String type = StringUtils.defaultIfBlank(mavenArtifact.getType(), DEFAULT_PRODUCT_FOLDER_TYPE);
-    String url = MavenUtils.buildDownloadUrl(artifactId, version, type,
-        repoUrl, mavenArtifact.getGroupId(), StringUtils.defaultIfBlank(snapshotVersionValue, version));
+    String resolvedSnapshotVersion = resolveSnapshotBuildVersion(repoUrl, mavenArtifact.getGroupId(), artifactId,
+        version);
+    String url = MavenUtils.buildDownloadUrl(artifactId, version, type, repoUrl, mavenArtifact.getGroupId(),
+        StringUtils.defaultIfBlank(resolvedSnapshotVersion, version));
 
     return productContentService.getReadmeAndProductContentsFromVersion(productId,
         version, url, mavenArtifact, productName);
+  }
+
+  private static String resolveSnapshotBuildVersion(String repoUrl, String groupId, String artifactId,
+      String version) {
+    if (!version.contains(CoreMavenConstants.SNAPSHOT_VERSION)) {
+      return StringUtils.EMPTY;
+    }
+    String snapshotMetadataUrl = MavenUtils.buildSnapshotMetadataUrlFromArtifactInfo(repoUrl, groupId, artifactId,
+        version);
+    return MetadataReaderUtils.getVersionValueFormMetadataUrl(snapshotMetadataUrl);
   }
 
   private static String createProductArtifactId(Artifact mavenArtifact) {

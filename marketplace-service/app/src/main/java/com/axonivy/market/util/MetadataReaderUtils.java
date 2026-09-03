@@ -5,7 +5,6 @@ import com.axonivy.market.core.entity.Metadata;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -20,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
@@ -52,14 +50,9 @@ public class MetadataReaderUtils {
 
   private static void updateMetadataVersions(Metadata metadata, Document document, boolean isSnapshot) {
     if (isSnapshot) {
-      NodeList valueNodes = document.getElementsByTagName(MavenConstants.VALUE_TAG);
-      String lastUpdatedTag = getElementValue(document, MavenConstants.SNAPSHOT_LAST_UPDATED_TAG);
-      List<String> values = IntStream.range(0, valueNodes.getLength())
-          .mapToObj(i -> valueNodes.item(i).getTextContent())
-          .filter(text -> text.contains(Objects.requireNonNull(lastUpdatedTag))).toList();
-
-      if (ObjectUtils.isNotEmpty(values)) {
-        metadata.setSnapshotVersionValue(values.get(0));
+      String snapshotVersionValue = resolveLatestSnapshotVersionValue(document);
+      if (StringUtils.isNotBlank(snapshotVersionValue)) {
+        metadata.setSnapshotVersionValue(snapshotVersionValue);
       }
       return;
     }
@@ -103,7 +96,17 @@ public class MetadataReaderUtils {
   public static String getVersionValueFormMetadataUrl(String metadataUrl) {
     var metadataContent = HttpFetchingUtils.getFileAsString(metadataUrl);
     var document = getDocumentFromXMLContent(metadataContent);
-    return getElementValue(document, MavenConstants.VALUE_TAG);
+    return resolveLatestSnapshotVersionValue(document);
+  }
+
+  private static String resolveLatestSnapshotVersionValue(Document document) {
+    String currentSnapshotTimestamp = getElementValue(document, MavenConstants.SNAPSHOT_LAST_UPDATED_TAG);
+    NodeList valueNodes = document.getElementsByTagName(MavenConstants.VALUE_TAG);
+    return IntStream.range(0, valueNodes.getLength())
+        .mapToObj(i -> valueNodes.item(i).getTextContent())
+        .filter(text -> text.contains(Objects.requireNonNull(currentSnapshotTimestamp)))
+        .findFirst()
+        .orElse(EMPTY);
   }
 
   public static Document getDocumentFromXMLContent(String xmlData) {
