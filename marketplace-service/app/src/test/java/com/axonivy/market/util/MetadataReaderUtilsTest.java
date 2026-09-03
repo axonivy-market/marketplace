@@ -67,8 +67,8 @@ class MetadataReaderUtilsTest extends BaseSetup {
       mockHttpUtils.when(() -> HttpFetchingUtils.getFileAsString(mockMetadataUrl)).thenReturn(
           getMockSnapshotMetadataContent());
       String snapshotVersionValue = MetadataReaderUtils.getVersionValueFormMetadataUrl(mockMetadataUrl);
-      assertEquals("8.0.5-20221011.124215-170", snapshotVersionValue,
-          "Metadata snapshot version should be match input");
+      assertEquals("12.0.2-20250224.083844-2", snapshotVersionValue,
+          "Metadata snapshot version should match the latest build, not the oldest entry in the document");
     }
   }
 }
