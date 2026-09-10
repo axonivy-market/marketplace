@@ -89,7 +89,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
     }));
   });
   metaDataJsonUrl = model<string>('');
-  versionDropdownInDesigner: ItemDropdown[] = [];
+  versionDropdownInDesigner: WritableSignal<ItemDropdown[]> = signal([]);
 
   artifacts: WritableSignal<ItemDropdown[]> = signal([]);
   isDropDownDisplayed = signal(false);
@@ -243,7 +243,7 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
 
   getVersionInDesigner(): void {
     const designerVersion = this.routingQueryParamService.getDesignerVersionFromSessionStorage() ?? '';
-    this.versionDropdownInDesigner = [];
+    this.versionDropdownInDesigner.set([]);
     this.productService
       .sendRequestToGetProductVersionsForDesigner(this.productId, this.isDevVersionsDisplayed(), designerVersion)
       .subscribe(data => this.handleDesignerVersionData(data));
@@ -320,17 +320,17 @@ export class ProductDetailVersionActionComponent implements AfterViewInit {
       const versionMap = data
         .map(dataVersionAndUrl => dataVersionAndUrl.version)
         .map(version => VERSION.displayPrefix.concat(version));
-      data.forEach(dataVersionAndUrl => {
+      const dropdownItems: ItemDropdown[] = data.map(dataVersionAndUrl => {
         const currentVersion = VERSION.displayPrefix.concat(
           dataVersionAndUrl.version
         );
-        const versionAndUrl: ItemDropdown = {
+        return {
           value: currentVersion,
           label: currentVersion,
           metaDataJsonUrl: dataVersionAndUrl.url
         };
-        this.versionDropdownInDesigner.push(versionAndUrl);
       });
+      this.versionDropdownInDesigner.set(dropdownItems);
       this.versions.set(versionMap);
       this.cdr.markForCheck();
     });
