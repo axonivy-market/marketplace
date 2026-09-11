@@ -57,7 +57,6 @@ export class AdminSettingsComponent implements OnInit {
   protected page = 1;
   protected pageSize = 10;
   protected searchText = '';
-  protected readonly visibleSecrets = new Set<string>();
   protected savingKey: string | null = null;
   protected savedKey: string | null = null;
 
@@ -143,8 +142,9 @@ export class AdminSettingsComponent implements OnInit {
 
     this.savingKey = setting.settingKey;
     this.appSettingsService.updateSetting(setting).subscribe({
-      next: () => {
+      next: savedSetting => {
         this.ngZone.run(() => {
+          setting.settingValue = savedSetting.settingValue;
           this.savedKey = setting.settingKey;
           this.cdr.markForCheck();
         });
@@ -185,18 +185,6 @@ export class AdminSettingsComponent implements OnInit {
       const result = valueA.localeCompare(valueB);
       return this.sortDirection === ASCENDING ? result : -result;
     });
-  }
-
-  protected toggleSecret(settingKey: string): void {
-    if (this.visibleSecrets.has(settingKey)) {
-      this.visibleSecrets.delete(settingKey);
-    } else {
-      this.visibleSecrets.add(settingKey);
-    }
-  }
-
-  protected isSecretVisible(settingKey: string): boolean {
-    return this.visibleSecrets.has(settingKey);
   }
 
   protected getSortIcon(column: keyof AppSetting): string {

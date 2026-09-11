@@ -51,16 +51,27 @@ class AppSettingServiceImplTest {
   }
 
   @Test
-  void testFindAllDecryptsEncryptedSettings() {
+  void testFindAllMasksEncryptedSettings() {
     AppSetting encryptedSetting = buildAppSetting("secret-key", "encrypted-value", true);
     when(repository.findAll()).thenReturn(List.of(encryptedSetting));
-    when(encryptionService.decrypt("encrypted-value")).thenReturn("decrypted-value");
 
     List<AppSettingDto> result = appSettingService.findAll();
 
     assertEquals(1, result.size(), "Expected one setting");
-    assertEquals("decrypted-value", result.getFirst().getSettingValue(),
-        "Encrypted setting value should be decrypted in DTO");
+    assertEquals(AppSettingDto.MASKED_VALUE, result.getFirst().getSettingValue(),
+        "Encrypted setting value should never be decrypted in the API-facing DTO");
+    verify(encryptionService, never()).decrypt(anyString());
+  }
+
+  @Test
+  void testFindAllReturnsEmptyValueForUnsetEncryptedSetting() {
+    AppSetting encryptedSetting = buildAppSetting("secret-key", "", true);
+    when(repository.findAll()).thenReturn(List.of(encryptedSetting));
+
+    List<AppSettingDto> result = appSettingService.findAll();
+
+    assertEquals("", result.getFirst().getSettingValue(),
+        "Unset encrypted setting should surface as empty rather than a misleading mask");
   }
 
   @Test
@@ -115,14 +126,29 @@ class AppSettingServiceImplTest {
     AppSetting setting = buildAppSetting("secret-key", "old-encrypted", true);
     when(repository.findByKey("secret-key")).thenReturn(Optional.of(setting));
     when(encryptionService.encrypt("new-plain-value")).thenReturn("new-encrypted-value");
-    when(encryptionService.decrypt("new-encrypted-value")).thenReturn("new-plain-value");
 
     AppSettingDto result = appSettingService.update("secret-key", "new-plain-value");
 
-    assertEquals("new-plain-value", result.getSettingValue(),
-        "Encrypted setting should be decrypted in the returned DTO");
+    assertEquals(AppSettingDto.MASKED_VALUE, result.getSettingValue(),
+        "Encrypted setting should stay masked in the returned DTO, never the plaintext");
+    assertEquals("new-encrypted-value", setting.getValue(), "Stored value should be the encrypted value");
     verify(encryptionService).encrypt("new-plain-value");
+    verify(encryptionService, never()).decrypt(anyString());
     verify(repository).save(setting);
+  }
+
+  @Test
+  void testUpdateSkipsPersistingWhenIncomingValueIsUnchangedMask() {
+    AppSetting setting = buildAppSetting("secret-key", "old-encrypted", true);
+    when(repository.findByKey("secret-key")).thenReturn(Optional.of(setting));
+
+    AppSettingDto result = appSettingService.update("secret-key", AppSettingDto.MASKED_VALUE);
+
+    assertEquals(AppSettingDto.MASKED_VALUE, result.getSettingValue(),
+        "Leaving the masked placeholder untouched should not overwrite the stored secret");
+    assertEquals("old-encrypted", setting.getValue(), "Stored value should be left untouched");
+    verify(encryptionService, never()).encrypt(anyString());
+    verify(repository, never()).save(any());
   }
 
   @Test

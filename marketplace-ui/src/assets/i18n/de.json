@@ -541,6 +541,7 @@
         "action": "Aktionen",
         "settingDescription": "Beschreibung",
         "noSettings": "Keine Einstellungen gefunden.",
+        "secretPlaceholder": "Neuen Wert eingeben",
         "saveSuccess": "Einstellung erfolgreich aktualisiert.",
         "saveError": "Fehler beim Aktualisieren der Einstellung.",
         "save": {

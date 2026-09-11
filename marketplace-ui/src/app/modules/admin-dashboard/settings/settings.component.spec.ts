@@ -239,6 +239,17 @@ describe('AdminSettingsComponent', () => {
       expect(component['savedKey']).toBeNull();
     });
 
+    it('should replace the entered value with the masked value returned by the server', () => {
+      const setting: AppSetting = { ...MOCK_SETTINGS[1], settingValue: 'new-secret-plaintext' };
+      appSettingsServiceMock.updateSetting.mockReturnValue(
+        of({ ...setting, settingValue: '********' })
+      );
+
+      component['save'](setting);
+
+      expect(setting.settingValue).toBe('********');
+    });
+
     it('should clear savingKey and revert value on error', () => {
       const setting: AppSetting = { ...MOCK_SETTINGS[1], settingValue: 'new-value' };
       appSettingsServiceMock.updateSetting.mockReturnValue(
@@ -326,23 +337,4 @@ describe('AdminSettingsComponent', () => {
     });
   });
 
-  describe('toggleSecret / isSecretVisible', () => {
-    it('should show secret after toggle on', () => {
-      expect(component['isSecretVisible']('github.token')).toBe(false);
-      component['toggleSecret']('github.token');
-      expect(component['isSecretVisible']('github.token')).toBe(true);
-    });
-
-    it('should hide secret after second toggle', () => {
-      component['toggleSecret']('github.token');
-      component['toggleSecret']('github.token');
-      expect(component['isSecretVisible']('github.token')).toBe(false);
-    });
-
-    it('should track visibility independently per key', () => {
-      component['toggleSecret']('github.token');
-      expect(component['isSecretVisible']('github.token')).toBe(true);
-      expect(component['isSecretVisible']('app.name')).toBe(false);
-    });
-  });
 });

@@ -101,26 +101,12 @@
             </td>
             <td>
               @if (setting.encrypted) {
-                <div class="input-group">
-                  <input
-                    class="form-control"
-                    [type]="isSecretVisible(setting.settingKey) ? 'text' : 'password'"
-                    [(ngModel)]="setting.settingValue" />
-
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    (click)="toggleSecret(setting.settingKey)">
-
-                    <i
-                      [class]="
-                        isSecretVisible(setting.settingKey)
-                          ? 'ti ti-eye-off'
-                          : 'ti ti-eye'
-                      ">
-                    </i>
-                  </button>
-                </div>
+                <input
+                  class="form-control"
+                  type="password"
+                  autocomplete="new-password"
+                  [placeholder]="'common.admin.settings.secretPlaceholder' | translate"
+                  [(ngModel)]="setting.settingValue" />
               } @else {
                 <input
                   type="text"
