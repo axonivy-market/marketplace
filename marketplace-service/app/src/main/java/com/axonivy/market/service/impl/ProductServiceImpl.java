@@ -749,6 +749,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
       productRepo.save(renewProduct);
 
       updateProductFromReleasedVersions(renewProduct);
+      // Persist product again to keep fields computed from Maven metadata (e.g. newestReleaseVersion)
+      productRepo.save(renewProduct);
       productMarketplaceDataRepo.checkAndInitProductMarketplaceDataIfNotExist(productId);
       log.info("Sync product {} is finished!", productId);
       return true;
