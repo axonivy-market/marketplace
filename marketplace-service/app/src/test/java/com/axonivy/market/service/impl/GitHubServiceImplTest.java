@@ -87,9 +87,9 @@ class GitHubServiceImplTest extends BaseSetup {
   private static final String BASE_BRANCH = "master";
   private static final String UNSUPPORTED_BRANCH_NAME_FIXTURE = "feature/update-deprecated-for-readme";
   private static final String UNSUPPORTED_NOTICE_FIXTURE = """
-      > [!CAUTION]
+      > [!WARNING]
       > ## Deprecated
-      > These connectors are deprecated and will no longer be maintained or supported. It will be removed in Release 10.0.0.
+      > This product is deprecated and will no longer be maintained or supported. It will be removed in Release 10.0.0.
       >
       > **Recommended alternative:** [successor-extension](https://market.axonivy.com/successor)""".stripIndent().trim();
   private static final AlternativeExtensionData EXTENSION_DATA_FIXTURE = AlternativeExtensionData.builder()
@@ -1542,10 +1542,10 @@ class GitHubServiceImplTest extends BaseSetup {
     String readmeWithNotice = """
         # My Project
         
-        > [!CAUTION]
+        > [!WARNING]
         > ## Deprecated
-        > These connectors are deprecated and will no longer be maintained or supported. It will be removed in Release 10.0.0.
-        
+        > This product is deprecated and will no longer be maintained or supported. It will be removed in Release 10.0.0.
+
         Some content here.
         """;
     setupDeprecationReadmeMocks(readmeWithNotice);
