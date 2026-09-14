@@ -60,6 +60,9 @@ export class AdminSettingsComponent implements OnInit {
   protected savingKey: string | null = null;
   protected savedKey: string | null = null;
 
+  protected secretDrafts: Record<string, string> = {};
+  private readonly touchedSecretKeys = new Set<string>();
+
   private readonly searchChanged = new Subject<string>();
 
   constructor() {
@@ -98,6 +101,8 @@ export class AdminSettingsComponent implements OnInit {
           this.ngZone.run(() => {
             this.settings = settings;
             this.filteredSettings = [...settings];
+            this.secretDrafts = {};
+            this.touchedSecretKeys.clear();
             this.applySorting();
             this.cdr.markForCheck();
           });
@@ -135,16 +140,35 @@ export class AdminSettingsComponent implements OnInit {
     this.applySorting();
   }
 
+  protected onSecretInputChange(setting: AppSetting, value: string): void {
+    this.secretDrafts[setting.settingKey] = value;
+    this.touchedSecretKeys.add(setting.settingKey);
+  }
+
+  private resolveValueToSend(setting: AppSetting): string | undefined {
+    if (!setting.encrypted) {
+      return setting.settingValue;
+    }
+    if (!this.touchedSecretKeys.has(setting.settingKey)) {
+      return undefined;
+    }
+    return this.secretDrafts[setting.settingKey] ?? '';
+  }
+
   protected save(setting: AppSetting): void {
     const previousValue = this.settings.find(
       s => s.settingKey === setting.settingKey
     )?.settingValue ?? setting.settingValue;
 
+    const valueToSend = this.resolveValueToSend(setting);
+
     this.savingKey = setting.settingKey;
-    this.appSettingsService.updateSetting(setting).subscribe({
+    this.appSettingsService.updateSetting(setting.settingKey, valueToSend).subscribe({
       next: savedSetting => {
         this.ngZone.run(() => {
           setting.settingValue = savedSetting.settingValue;
+          delete this.secretDrafts[setting.settingKey];
+          this.touchedSecretKeys.delete(setting.settingKey);
           this.savedKey = setting.settingKey;
           this.cdr.markForCheck();
         });

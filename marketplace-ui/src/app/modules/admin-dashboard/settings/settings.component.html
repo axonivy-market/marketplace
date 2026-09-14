@@ -106,7 +106,8 @@
                   type="password"
                   autocomplete="new-password"
                   [placeholder]="'common.admin.settings.secretPlaceholder' | translate"
-                  [(ngModel)]="setting.settingValue" />
+                  [ngModel]="secretDrafts[setting.settingKey] ?? ''"
+                  (ngModelChange)="onSecretInputChange(setting, $event)" />
               } @else {
                 <input
                   type="text"

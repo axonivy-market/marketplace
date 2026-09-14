@@ -138,17 +138,44 @@ class AppSettingServiceImplTest {
   }
 
   @Test
-  void testUpdateSkipsPersistingWhenIncomingValueIsUnchangedMask() {
+  void testUpdateSkipsPersistingWhenIncomingValueIsNull() {
     AppSetting setting = buildAppSetting("secret-key", "old-encrypted", true);
     when(repository.findByKey("secret-key")).thenReturn(Optional.of(setting));
 
-    AppSettingDto result = appSettingService.update("secret-key", AppSettingDto.MASKED_VALUE);
+    AppSettingDto result = appSettingService.update("secret-key", null);
 
     assertEquals(AppSettingDto.MASKED_VALUE, result.getSettingValue(),
-        "Leaving the masked placeholder untouched should not overwrite the stored secret");
+        "Omitting the value should leave the stored secret untouched");
     assertEquals("old-encrypted", setting.getValue(), "Stored value should be left untouched");
     verify(encryptionService, never()).encrypt(anyString());
     verify(repository, never()).save(any());
+  }
+
+  @Test
+  void testUpdateAllowsSettingEncryptedValueToLiteralMaskString() {
+    AppSetting setting = buildAppSetting("secret-key", "old-encrypted", true);
+    when(repository.findByKey("secret-key")).thenReturn(Optional.of(setting));
+    when(encryptionService.encrypt(AppSettingDto.MASKED_VALUE)).thenReturn("encrypted-mask-lookalike");
+
+    appSettingService.update("secret-key", AppSettingDto.MASKED_VALUE);
+
+    assertEquals("encrypted-mask-lookalike", setting.getValue(),
+        "A secret whose plaintext happens to equal the mask sentinel must still be stored, not silently ignored");
+    verify(encryptionService).encrypt(AppSettingDto.MASKED_VALUE);
+    verify(repository).save(setting);
+  }
+
+  @Test
+  void testUpdateClearsEncryptedValueWithoutEncryptingBlank() {
+    AppSetting setting = buildAppSetting("secret-key", "old-encrypted", true);
+    when(repository.findByKey("secret-key")).thenReturn(Optional.of(setting));
+
+    AppSettingDto result = appSettingService.update("secret-key", "");
+
+    assertEquals("", result.getSettingValue(), "Explicitly clearing the secret should surface as empty");
+    assertEquals("", setting.getValue(), "Stored value should be blank, not ciphertext of an empty string");
+    verify(encryptionService, never()).encrypt(anyString());
+    verify(repository).save(setting);
   }
 
   @Test
