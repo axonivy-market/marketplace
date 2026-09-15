@@ -541,6 +541,7 @@
         "action": "Actions",
         "settingDescription": "Description",
         "noSettings": "No settings found.",
+        "secretPlaceholder": "Enter a new value",
         "saveSuccess": "Setting updated successfully.",
         "saveError": "Failed to update setting.",
         "save": {

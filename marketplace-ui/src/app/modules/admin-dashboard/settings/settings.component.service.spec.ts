@@ -99,7 +99,7 @@ describe('AppSettingsService', () => {
   describe('updateSetting', () => {
     it('should send PUT with auth headers and settingValue in body', () => {
       const setting = mockSettings[0];
-      service.updateSetting(setting).subscribe(response => {
+      service.updateSetting(setting.settingKey, setting.settingValue).subscribe(response => {
         expect(response).toEqual(setting);
       });
 
@@ -111,9 +111,19 @@ describe('AppSettingsService', () => {
       req.flush(setting);
     });
 
+    it('should omit settingValue from the body when undefined', () => {
+      const setting = mockSettings[0];
+      service.updateSetting(setting.settingKey, undefined).subscribe();
+
+      const expectedUrl = `${API_URI.APP_SETTINGS}/${encodeURIComponent(setting.settingKey)}`;
+      const req = httpMock.expectOne(r => r.url === expectedUrl);
+      expect(req.request.body).toEqual({});
+      req.flush(setting);
+    });
+
     it('should URL-encode special characters in settingKey', () => {
       const setting: AppSetting = { ...mockSettings[0], settingKey: 'github.api/token' };
-      service.updateSetting(setting).subscribe();
+      service.updateSetting(setting.settingKey, setting.settingValue).subscribe();
 
       const expectedUrl = `${API_URI.APP_SETTINGS}/${encodeURIComponent(setting.settingKey)}`;
       const req = httpMock.expectOne(r => r.url === expectedUrl);
