@@ -724,6 +724,52 @@ class ProductServiceImplTest extends BaseSetup {
         "Sync one product should be successful when overriding Market item path");
   }
 
+  @Test
+  void testSyncOneProductPersistsNewestReleaseVersionComputedFromMavenMetadata() throws IOException {
+    Product mockProduct = new Product();
+    mockProduct.setId(SAMPLE_PRODUCT_ID);
+    mockProduct.setMarketDirectory(SAMPLE_PRODUCT_PATH);
+    when(productRepo.findById(anyString())).thenReturn(Optional.of(mockProduct));
+    var mockContents = mockMetaJsonAndLogoList(true);
+    when(marketRepoService.getMarketItemByPath(anyString())).thenReturn(mockContents);
+
+    String mavenMetadataXml = """
+        <metadata>
+          <groupId>com.axonivy.connector.amazon.comprehend</groupId>
+          <artifactId>amazon-comprehend-connector-product</artifactId>
+          <versioning>
+            <latest>12.0.1</latest>
+            <release>12.0.1</release>
+            <versions>
+              <version>10.0.2</version>
+              <version>12.0.1</version>
+            </versions>
+            <lastUpdated>20250505041015</lastUpdated>
+          </versioning>
+        </metadata>
+        """;
+    when(fileDownloadService.getFileAsString(anyString())).thenReturn(mavenMetadataXml);
+
+    List<String> capturedNewestReleaseVersions = new ArrayList<>();
+    when(productRepo.save(any(Product.class))).thenAnswer(invocation -> {
+      Product savedProduct = invocation.getArgument(0);
+      capturedNewestReleaseVersions.add(savedProduct.getNewestReleaseVersion());
+      return savedProduct;
+    });
+
+    assertTrue(productService.syncOneProduct(SAMPLE_PRODUCT_ID, SAMPLE_PRODUCT_PATH, false),
+        "Sync one product should be successful");
+
+    verify(productRepo, times(2)).save(any(Product.class));
+    assertEquals(2, capturedNewestReleaseVersions.size(),
+        "Product should be saved twice: once before and once after Maven metadata is processed");
+    assertEquals(StringUtils.EMPTY, capturedNewestReleaseVersions.get(0),
+        "First save (before Maven metadata is fetched) should still carry the reset blank version");
+    assertEquals("12.0.1", capturedNewestReleaseVersions.get(1),
+        "Second save must persist newestReleaseVersion computed from Maven metadata - "
+            + "otherwise MARP-4808 regresses and deprecation crashes on a blank version");
+  }
+
   private List<GHContent> mockMetaJsonAndLogoList(boolean isIncludedLogoDark) throws IOException {
     var mockContent = mockGHContentAsMetaJSON();
     InputStream inputStream = this.getClass().getResourceAsStream(SLASH.concat(META_FILE));

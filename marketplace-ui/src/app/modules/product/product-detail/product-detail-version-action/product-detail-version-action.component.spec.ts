@@ -346,6 +346,46 @@ describe('ProductDetailVersionActionComponent', () => {
     expect(component.versions()).toEqual([]);
   });
 
+  it('should populate versionDropdownInDesigner signal with metadata URLs and render items in the dropdown', () => {
+    component.actionType = ProductDetailActionType.DESIGNER_ENV;
+    const mockVersionsAndUrls = [
+      { version: '1.0', url: 'https://example.com/1.0/json' },
+      { version: '2.0', url: 'https://example.com/2.0/json' }
+    ];
+    productServiceMock.sendRequestToGetProductVersionsForDesigner.mockReturnValue(
+      of(mockVersionsAndUrls)
+    );
+
+    component.getVersionInDesigner();
+
+    expect(component.versionDropdownInDesigner()).toEqual([
+      {
+        value: 'Version 1.0',
+        label: 'Version 1.0',
+        metaDataJsonUrl: 'https://example.com/1.0/json'
+      },
+      {
+        value: 'Version 2.0',
+        label: 'Version 2.0',
+        metaDataJsonUrl: 'https://example.com/2.0/json'
+      }
+    ]);
+
+    fixture.detectChanges();
+    const dropdownItems = fixture.nativeElement.querySelectorAll(
+      '.designer-section .dropdown-item.item-bar'
+    );
+    expect(dropdownItems.length).toBe(2);
+    expect(dropdownItems[0].textContent).toContain('Version 1.0');
+    expect(dropdownItems[0].getAttribute('metadatajsonurl')).toBe(
+      'https://example.com/1.0/json'
+    );
+    expect(dropdownItems[1].textContent).toContain('Version 2.0');
+    expect(dropdownItems[1].getAttribute('metadatajsonurl')).toBe(
+      'https://example.com/2.0/json'
+    );
+  });
+
   it('should return the correct tracking environment based on the action type', () => {
     const testCases = [
       {

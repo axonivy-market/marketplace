@@ -854,7 +854,7 @@ public class GitHubServiceImpl implements GitHubService {
    */
   private String removeUnsupportedNotice(String readmeContent, String notice) {
     // If exact match fails, use regex to match the deprecation block structure
-    // Match from "> [!CAUTION]" through all consecutive blockquote lines (starting with ">")
+    // Match from "> [!WARNING]" through all consecutive blockquote lines (starting with ">")
     // including the optional "Recommended alternative" line with any URL
     String noticePrefix = FORMAT_SPECIFIER_PATTERN.split(
         getGithubUnsupportedTextConfig().unsupportedNotice())[0].trim();

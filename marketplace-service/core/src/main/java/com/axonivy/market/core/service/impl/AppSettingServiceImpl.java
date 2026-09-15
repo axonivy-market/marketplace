@@ -64,35 +64,52 @@ public class AppSettingServiceImpl implements AppSettingService {
     AppSetting setting = repository.findByKey(key).orElseThrow(
         () -> new EntityNotFoundException("Setting not found for key: " + key));
 
-    if (setting.getEncrypted()) {
-      setting.setValue(encryptionService.encrypt(value));
-    } else {
-      setting.setValue(value);
+    if (value == null) {
+      return toDto(setting);
     }
 
+    setting.setValue(resolveStoredValue(setting, value));
     repository.save(setting);
     return toDto(setting);
+  }
+
+  private String resolveStoredValue(AppSetting setting, String value) {
+    if (!Boolean.TRUE.equals(setting.getEncrypted())) {
+      return value;
+    }
+    return StringUtils.isBlank(value) ? StringUtils.EMPTY : encryptionService.encrypt(value);
   }
 
   @Override
   @Cacheable(value = CacheNameConstants.APP_SETTINGS_GET_BY_CATEGORY)
   public Map<String, String> getByCategory(AppSettingCategory category) {
     List<AppSetting> appSettings = repository.findByCategoryIgnoreCase(category.name());
-    return appSettings.stream().collect(Collectors.toMap(AppSetting::getKey, this::resolveValue));
+    return appSettings.stream()
+        .collect(Collectors.toMap(AppSetting::getKey, this::resolveDecryptedValueForInternalUseOnly));
   }
 
   @Override
   @Cacheable(value = CacheNameConstants.APP_SETTINGS_GET_STRING_VALUE)
   public String getStringValueByKey(AppSettingKey setting) {
-    return repository.findByKey(setting.getKey()).map(this::resolveValue).filter(StringUtils::isNotBlank).orElse(
-        setting.getDefaultValue());
+    return repository.findByKey(setting.getKey())
+        .map(this::resolveDecryptedValueForInternalUseOnly)
+        .filter(StringUtils::isNotBlank)
+        .orElse(setting.getDefaultValue());
   }
 
   private AppSettingDto toDto(AppSetting entity) {
-    return AppSettingDto.from(entity, resolveValue(entity));
+    return AppSettingDto.from(entity, resolveDisplayValue(entity));
   }
 
-  private String resolveValue(AppSetting setting) {
+  private String resolveDisplayValue(AppSetting setting) {
+    if (Boolean.TRUE.equals(setting.getEncrypted())) {
+      boolean hasValue = StringUtils.isNotBlank(setting.getValue());
+      return hasValue ? AppSettingDto.MASKED_VALUE : StringUtils.EMPTY;
+    }
+    return StringUtils.trimToEmpty(setting.getValue());
+  }
+
+  private String resolveDecryptedValueForInternalUseOnly(AppSetting setting) {
     String value = StringUtils.trimToEmpty(setting.getValue());
     boolean encrypted = Boolean.TRUE.equals(setting.getEncrypted());
     if (StringUtils.isBlank(value) || !encrypted) {

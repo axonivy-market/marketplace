@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AppSettingDto {
 
+  public static final String MASKED_VALUE = "********";
+
   private String settingKey;
 
   private String settingValue;
