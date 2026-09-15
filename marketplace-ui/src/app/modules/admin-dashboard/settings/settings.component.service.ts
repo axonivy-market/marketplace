@@ -48,11 +48,12 @@ export class AppSettingsService {
     );
   }
 
-  updateSetting(setting: AppSetting): Observable<AppSetting> {
+  // `undefined` is dropped from the JSON body; the backend treats a missing settingValue as "leave unchanged".
+  updateSetting(key: string, settingValueOrUnchanged: string | undefined): Observable<AppSetting> {
     return this.http.put<AppSetting>(
-      `${API_URI.APP_SETTINGS}/${encodeURIComponent(setting.settingKey)}`,
+      `${API_URI.APP_SETTINGS}/${encodeURIComponent(key)}`,
       {
-        settingValue: setting.settingValue
+        settingValue: settingValueOrUnchanged
       },
       {
         headers: this.adminAuth.getAuthHeaders()

@@ -202,11 +202,54 @@ describe('AdminSettingsComponent', () => {
   });
 
   describe('save', () => {
-    it('should call updateSetting with the given setting', () => {
+    it('should call updateSetting with the key and value for a plain-text setting', () => {
       component['save'](MOCK_SETTINGS[0]);
       expect(appSettingsServiceMock.updateSetting).toHaveBeenCalledWith(
-        MOCK_SETTINGS[0]
+        MOCK_SETTINGS[0].settingKey,
+        MOCK_SETTINGS[0].settingValue
       );
+    });
+
+    it('should call updateSetting with undefined for an untouched encrypted setting', () => {
+      const setting = MOCK_SETTINGS[1];
+      component['save'](setting);
+      expect(appSettingsServiceMock.updateSetting).toHaveBeenCalledWith(
+        setting.settingKey,
+        undefined
+      );
+    });
+
+    it('should send the drafted value for a touched encrypted setting', () => {
+      const setting = MOCK_SETTINGS[1];
+      component['onSecretInputChange'](setting, 'new-secret-plaintext');
+      component['save'](setting);
+      expect(appSettingsServiceMock.updateSetting).toHaveBeenCalledWith(
+        setting.settingKey,
+        'new-secret-plaintext'
+      );
+    });
+
+    it('should send an empty string when the secret draft is touched then cleared', () => {
+      const setting = MOCK_SETTINGS[1];
+      component['onSecretInputChange'](setting, 'temp');
+      component['onSecretInputChange'](setting, '');
+      component['save'](setting);
+      expect(appSettingsServiceMock.updateSetting).toHaveBeenCalledWith(
+        setting.settingKey,
+        ''
+      );
+    });
+
+    it('should reset the secret draft after a successful save', () => {
+      const setting = MOCK_SETTINGS[1];
+      appSettingsServiceMock.updateSetting.mockReturnValue(
+        of({ ...setting, settingValue: '********' })
+      );
+      component['onSecretInputChange'](setting, 'new-secret-plaintext');
+
+      component['save'](setting);
+
+      expect(component['secretDrafts'][setting.settingKey]).toBeUndefined();
     });
 
     it('should set savingKey while saving and clear on complete', () => {
@@ -237,6 +280,18 @@ describe('AdminSettingsComponent', () => {
 
       vi.advanceTimersByTime(2000);
       expect(component['savedKey']).toBeNull();
+    });
+
+    it('should replace the entered value with the masked value returned by the server', () => {
+      const setting: AppSetting = { ...MOCK_SETTINGS[1] };
+      component['onSecretInputChange'](setting, 'new-secret-plaintext');
+      appSettingsServiceMock.updateSetting.mockReturnValue(
+        of({ ...setting, settingValue: '********' })
+      );
+
+      component['save'](setting);
+
+      expect(setting.settingValue).toBe('********');
     });
 
     it('should clear savingKey and revert value on error', () => {
@@ -326,23 +381,4 @@ describe('AdminSettingsComponent', () => {
     });
   });
 
-  describe('toggleSecret / isSecretVisible', () => {
-    it('should show secret after toggle on', () => {
-      expect(component['isSecretVisible']('github.token')).toBe(false);
-      component['toggleSecret']('github.token');
-      expect(component['isSecretVisible']('github.token')).toBe(true);
-    });
-
-    it('should hide secret after second toggle', () => {
-      component['toggleSecret']('github.token');
-      component['toggleSecret']('github.token');
-      expect(component['isSecretVisible']('github.token')).toBe(false);
-    });
-
-    it('should track visibility independently per key', () => {
-      component['toggleSecret']('github.token');
-      expect(component['isSecretVisible']('github.token')).toBe(true);
-      expect(component['isSecretVisible']('app.name')).toBe(false);
-    });
-  });
 });
