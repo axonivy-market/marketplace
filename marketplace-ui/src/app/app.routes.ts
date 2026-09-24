@@ -6,6 +6,7 @@ import { ERROR_PAGE } from './shared/constants/common.constant';
 import { SecurityMonitorComponent } from './modules/admin-dashboard/security-monitor/security-monitor.component';
 import { ReleasePreviewComponent } from './modules/release-preview/release-preview.component';
 import { MonitoringDashboardComponent } from './modules/monitor/monitor-dashboard/monitor-dashboard.component';
+import { marketMonitorRedirectGuard } from './core/guards/market-monitor-redirect.guard';
 import { ProductDetailResolver } from './core/resolver/product-detail.resolve';
 import { CustomSortComponent } from './modules/admin-dashboard/custom-sort/custom-sort.component';
 import { FeedbackApprovalComponent } from './modules/admin-dashboard/feedback-approval/feedback-approval.component';
@@ -53,7 +54,8 @@ export const routes: Routes = [
   },
   {
     path: 'monitoring',
-    component: MonitoringDashboardComponent
+    component: MonitoringDashboardComponent,
+    canActivate: [marketMonitorRedirectGuard]
   },
   {
     path: 'request-access',
