@@ -7,6 +7,7 @@ import { Pageable } from '../models/apis/pageable.model';
 import { ItemDropdown } from '../models/item-dropdown.model';
 
 export const MARKET_BASE_URL = 'https://market.axonivy.com/';
+export const MARKET_MONITOR_URL = 'https://axonivy-market.github.io/market-monitor/';
 
 export const NAV_ITEMS: NavItem[] = [
   {

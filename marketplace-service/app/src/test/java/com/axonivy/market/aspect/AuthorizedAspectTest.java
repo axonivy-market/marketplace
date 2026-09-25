@@ -9,6 +9,7 @@ import com.axonivy.market.core.enums.AppSettingKey;
 import com.axonivy.market.core.service.AppSettingService;
 import com.axonivy.market.core.testutil.MockServletRequestUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,11 @@ class AuthorizedAspectTest {
   @BeforeEach
   void setup() {
     MockServletRequestUtils.bindRequest(request);
+  }
+
+  @AfterEach
+  void tearDown() {
+    MockServletRequestUtils.resetRequestAttributes();
   }
 
   @Test
@@ -105,8 +111,6 @@ class AuthorizedAspectTest {
 
     assertEquals(HttpStatus.BAD_REQUEST.name(), exception.getError(),
         "Error code should be BAD_REQUEST when request attributes are missing");
-
-    MockServletRequestUtils.bindRequest(request);
   }
 
   @Test

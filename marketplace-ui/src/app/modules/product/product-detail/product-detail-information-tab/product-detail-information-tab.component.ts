@@ -28,11 +28,11 @@ import { ROUTER } from '../../../../shared/constants/router.constant';
 import { CookieService } from 'ngx-cookie-service';
 import { CommonUtils } from '../../../../shared/utils/common.utils';
 import { RouteUtils } from '../../../../shared/utils/route.utils';
-import { ACTIVE_TAB } from '../../../../shared/constants/query.params.constant';
 import { startWith, Subscription } from 'rxjs';
 const SELECTED_VERSION = 'selectedVersion';
 const SHIELDS_BADGE_BASE_URL = 'https://img.shields.io/github/actions/workflow/status';
 const SHIELDS_WORKFLOW = 'ci.yml';
+const GITHUB_BASE_URL = 'https://github.com';
 const BRANCH = 'master';
 @Component({
   selector: 'app-product-detail-information-tab',
@@ -57,7 +57,7 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
   route = inject(ActivatedRoute);
   router = inject(Router);
   shieldsBadgeUrl = '';
-  repoName = '';
+  workflowRunsUrl = '';
   translateService = inject(TranslateService);
   private readonly hostElement = inject(ElementRef<HTMLElement>);
   private langChangeSub?: Subscription;
@@ -142,8 +142,9 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
     const url = new URL(this.productDetail.statusBadgeUrl);
     const pathParts = url.pathname.split('/').filter(part => part.length > 0);
     const owner = pathParts[0];
-    this.repoName = pathParts[1];
-    return `${SHIELDS_BADGE_BASE_URL}/${owner}/${this.repoName}/${SHIELDS_WORKFLOW}?branch=${BRANCH}`;
+    const repoName = pathParts[1];
+    this.workflowRunsUrl = `${GITHUB_BASE_URL}/${owner}/${repoName}/actions/workflows/${SHIELDS_WORKFLOW}`;
+    return `${SHIELDS_BADGE_BASE_URL}/${owner}/${repoName}/${SHIELDS_WORKFLOW}?branch=${BRANCH}`;
   }
 
   isVersionUnchangedOrFirstChange(change: SimpleChange | undefined): boolean {
@@ -171,25 +172,6 @@ export class ProductDetailInformationTabComponent implements AfterViewInit, OnCh
       changedProduct.currentValue !== changedProduct.previousValue
     );
   }
-  onBadgeClick() {
-    let focusedTab;
-    if (this.productDetail.isFocusedProduct) {
-      focusedTab = ACTIVE_TAB.FOCUSED;
-    } else {
-      focusedTab = ACTIVE_TAB.STANDARD;
-    }
-    if (this.repoName) {
-      this.router.navigate(['/monitoring'], {
-        queryParams: {
-          repoSearch: this.repoName,
-          activeTab: focusedTab
-        }
-      });
-    } else {
-      this.router.navigate(['/monitoring']);
-    }
-  }
-
   addVersionParamToRoute(selectedVersion: string) {
     this.router
       .navigate([], {

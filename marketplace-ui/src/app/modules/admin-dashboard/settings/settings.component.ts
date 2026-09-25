@@ -60,7 +60,7 @@ export class AdminSettingsComponent implements OnInit {
   protected savingKey: string | null = null;
   protected savedKey: string | null = null;
 
-  protected secretDrafts: Record<string, string> = {};
+  protected secretDrafts: Record<string, string | undefined> = {};
   private readonly touchedSecretKeys = new Set<string>();
 
   private readonly searchChanged = new Subject<string>();

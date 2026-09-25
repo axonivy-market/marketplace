@@ -1033,6 +1033,24 @@ class ProductServiceImplTest extends BaseSetup {
   }
 
   @Test
+  void testSyncGitHubReleaseModelsSkipsUnlistedProduct() throws IOException {
+    when(productRepo.findProductByIdAndRelatedData(anyString())).thenReturn(null);
+
+    Page<GitHubReleaseModel> result = productService.syncGitHubReleaseModels(SAMPLE_PRODUCT_ID, PAGEABLE);
+
+    assertTrue(result.isEmpty(), "Unlisted product should yield an empty page instead of throwing");
+  }
+
+  @Test
+  void testGetGitHubReleaseModelByProductIdAndReleaseIdThrowsWhenProductIsUnlisted() {
+    when(productRepo.findProductByIdAndRelatedData(anyString())).thenReturn(null);
+
+    assertThrows(NotFoundException.class,
+        () -> productService.getGitHubReleaseModelByProductIdAndReleaseId(SAMPLE_PRODUCT_ID, 1L),
+        "Unlisted product should surface as not-found rather than NPE");
+  }
+
+  @Test
   void testGetBestMatchVersionSuccess() {
     String productId = "123";
     String inputVersion = "1";

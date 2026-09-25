@@ -154,12 +154,12 @@
           class="text-secondary">
           {{ 'common.product.detail.information.value.status' | translate }}
         </span>
-        <img
-          class="status__image"
-          [src]="shieldsBadgeUrl"
-          [alt]="shieldsBadgeUrl"
-          (click)="onBadgeClick()"
-          style="cursor: pointer"/>
+        <a [href]="workflowRunsUrl" target="_blank" rel="noopener noreferrer">
+          <img
+            class="status__image"
+            [src]="shieldsBadgeUrl"
+            [alt]="shieldsBadgeUrl" />
+        </a>
       </div>
     }
     <hr class="border-top-0" />
