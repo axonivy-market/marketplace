@@ -1,11 +1,24 @@
 package com.axonivy.market.model;
 
 import com.axonivy.market.core.entity.Product;
+import com.axonivy.market.core.testutil.MockServletRequestUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProductDetailModelTest {
+
+  @BeforeEach
+  void setupRequestContext() {
+    MockServletRequestUtils.createAndBindMockRequest();
+  }
+
+  @AfterEach
+  void resetRequestContext() {
+    MockServletRequestUtils.resetRequestAttributes();
+  }
 
   @Test
   void testEqualsWithNullAndDifferentClass() {
