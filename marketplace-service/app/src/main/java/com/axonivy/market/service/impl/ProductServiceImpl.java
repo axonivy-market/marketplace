@@ -840,7 +840,8 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   @Cacheable(value = CacheNameConstants.GET_GITHUB_RELEASES)
   public Page<GitHubReleaseModel> getGitHubReleaseModels(String productId, Pageable pageable) throws IOException {
     var product = productRepo.findProductByIdAndRelatedData(productId);
-    if (StringUtils.isBlank(product.getRepositoryName()) || StringUtils.isBlank(product.getSourceUrl())) {
+    if (product == null || StringUtils.isBlank(product.getRepositoryName())
+        || StringUtils.isBlank(product.getSourceUrl())) {
       return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
     List<GHRelease> ghReleases = gitHubService.getRepoOfficialReleases(product.getRepositoryName(), productId);
@@ -861,6 +862,9 @@ public class ProductServiceImpl extends CoreProductServiceImpl implements Produc
   public GitHubReleaseModel getGitHubReleaseModelByProductIdAndReleaseId(String productId,
       Long releaseId) throws IOException {
     var product = productRepo.findProductByIdAndRelatedData(productId);
+    if (product == null) {
+      throw new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with id: " + productId);
+    }
 
     return this.gitHubService.getGitHubReleaseModelByProductIdAndReleaseId(product, releaseId);
   }
