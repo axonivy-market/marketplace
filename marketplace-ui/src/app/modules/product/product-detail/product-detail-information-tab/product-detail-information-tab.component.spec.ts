@@ -368,18 +368,6 @@ describe('ProductDetailInformationTabComponent', () => {
       );
     });
 
-    it('should navigate to /monitoring with repo name in query params when onBadgeClick is called and productDetail has id', () => {
-      component.repoName = 'test-repo';
-      component.productDetail = { isFocusedProduct: true } as ProductDetail;
-      const navigateSpy = vi.spyOn(component.router, 'navigate');
-
-      component.onBadgeClick();
-
-      expect(navigateSpy).toHaveBeenCalledWith(['/monitoring'], {
-        queryParams: { repoSearch: 'test-repo', activeTab: 'focused' }
-      });
-    });
-
     it('should return empty string when statusBadgeUrl is missing', () => {
       component.productDetail = {
         id: 'repo',
@@ -389,7 +377,7 @@ describe('ProductDetailInformationTabComponent', () => {
       expect(result).toBe('');
     });
 
-    it('should return formatted shields.io badge URL and set repoName', () => {
+    it('should return formatted shields.io badge URL and set the GitHub workflow runs URL', () => {
       component.productDetail = {
         statusBadgeUrl:
           'https://github.com/axonivy-market/keycloak-connector/actions/workflows/ci.yml/badge.svg'
@@ -397,19 +385,12 @@ describe('ProductDetailInformationTabComponent', () => {
 
       const result = component.getShieldsBadgeUrl();
 
-      expect(component.repoName).toBe('keycloak-connector');
+      expect(component.workflowRunsUrl).toBe(
+        'https://github.com/axonivy-market/keycloak-connector/actions/workflows/ci.yml'
+      );
       expect(result).toBe(
         `${SHIELDS_BADGE_BASE_URL}/axonivy-market/keycloak-connector/${SHIELDS_WORKFLOW}?branch=${BRANCH}`
       );
-    });
-
-    it('should not navigate when onBadgeClick is called and productDetail is missing repoName', () => {
-      component.repoName = '';
-      component.productDetail = { isFocusedProduct: false } as ProductDetail;
-      const navigateSpy = vi.spyOn(component.router, 'navigate');
-
-      component.onBadgeClick();
-      expect(navigateSpy).toHaveBeenCalledWith(['/monitoring']);
     });
   });
 
