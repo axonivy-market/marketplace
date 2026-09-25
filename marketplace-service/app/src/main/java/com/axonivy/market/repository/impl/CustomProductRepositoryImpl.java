@@ -7,7 +7,6 @@ import com.axonivy.market.core.repository.impl.CoreCustomProductRepositoryImpl;
 import com.axonivy.market.repository.CustomProductRepository;
 import com.axonivy.market.repository.ProductCustomSortRepository;
 import com.axonivy.market.repository.ProductModuleContentRepository;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.extern.log4j.Log4j2;
@@ -58,12 +57,12 @@ public class CustomProductRepositoryImpl extends CoreCustomProductRepositoryImpl
         cb.notEqual(root.get(LISTED), false),
         cb.isNull(root.get(LISTED)));
     context.query().where(idPredicate, listedPredicate);
-    try {
-      return getEntityManager().createQuery(context.query()).getSingleResult();
-    } catch (NoResultException e) {
-      log.error("Cannot find product: {}", id, e);
+    List<Product> results = findByCriteria(context);
+    if (results.isEmpty()) {
+      log.warn("Skipped product {}: not found or not listed", id);
       return null;
     }
+    return results.getFirst();
   }
 
   @Override
