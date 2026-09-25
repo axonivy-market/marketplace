@@ -38,7 +38,7 @@
     "dompurify": "^3.4.11",
     "easymde": "^2.20.0",
     "emoji-toolkit": "^9.0.1",
-    "express": "^4.22.1",
+    "express": "^5.2.1",
     "jwt-decode": "^4.0.0",
     "linkify-it": "^5.0.0",
     "markdown-it": "^14.2.0",
