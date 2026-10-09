@@ -120,19 +120,26 @@ class CustomProductRepositoryImplTest {
         .containsExactlyInAnyOrder(LISTED_PRODUCT_ID, EXPRESS_IMPORTER_PRODUCT_ID, PORTAL_PRODUCT_ID);
 
     assertThat(products)
-        .as("English names should be loaded eagerly for use outside a transaction")
-        .allSatisfy(product -> assertThat(product.getNames()).containsKey(EN_LANGUAGE));
-
-    assertThat(products)
-        .as("artifacts and archived artifacts should be loaded outside a transaction")
-        .allSatisfy(product -> assertThat(product.getArtifacts())
-            .allSatisfy(artifact -> assertThat(artifact.getArchivedArtifacts()).isNotNull()));
+        .as("products should have related data loaded for use outside a transaction")
+        .isNotEmpty()
+        .allSatisfy(product -> {
+          assertThat(product.getNames())
+              .as("product names should include the English entry")
+              .containsKey(EN_LANGUAGE);
+          assertThat(product.getArtifacts())
+              .as("product artifacts should be loaded")
+              .isNotEmpty()
+              .allSatisfy(artifact -> assertThat(artifact.getArchivedArtifacts())
+                  .as("archived artifacts should be loaded")
+                  .isNotNull());
+        });
 
     Product portal = products.stream()
         .filter(product -> PORTAL_PRODUCT_ID.equals(product.getId()))
         .findFirst()
         .orElseThrow();
     assertThat(portal.getArtifacts())
+        .as("portal artifacts should not be duplicated")
         .extracting(Artifact::getArtifactId)
         .containsExactlyInAnyOrder("portal-guide", "portal-components", "portal-product");
   }
