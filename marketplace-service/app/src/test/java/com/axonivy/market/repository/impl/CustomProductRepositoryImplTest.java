@@ -122,5 +122,18 @@ class CustomProductRepositoryImplTest {
     assertThat(products)
         .as("English names should be loaded eagerly for use outside a transaction")
         .allSatisfy(product -> assertThat(product.getNames()).containsKey(EN_LANGUAGE));
+
+    assertThat(products)
+        .as("artifacts and archived artifacts should be loaded outside a transaction")
+        .allSatisfy(product -> assertThat(product.getArtifacts())
+            .allSatisfy(artifact -> assertThat(artifact.getArchivedArtifacts()).isNotNull()));
+
+    Product portal = products.stream()
+        .filter(product -> PORTAL_PRODUCT_ID.equals(product.getId()))
+        .findFirst()
+        .orElseThrow();
+    assertThat(portal.getArtifacts())
+        .extracting(Artifact::getArtifactId)
+        .containsExactlyInAnyOrder("portal-guide", "portal-components", "portal-product");
   }
 }

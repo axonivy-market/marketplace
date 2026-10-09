@@ -42,7 +42,8 @@ INSERT INTO product_name (product_id, language, name)
 VALUES
     ('case-process-viewer-utils', 'en', 'Case Process Viewer'),
     ('express-importer', 'en', 'Express Importer'),
-    ('portal', 'en', 'Axon Ivy Portal');
+    ('portal', 'en', 'Axon Ivy Portal'),
+    ('portal', 'de', 'Axon Ivy Portal');
 
 INSERT INTO product_description (product_id, language, short_description)
 VALUES

@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -21,7 +23,7 @@ public interface ProductRepository extends CoreProductRepository, CustomProductR
       """)
   List<ProductIdMarketDirectoryProjection> findAllIdAndMarketDirectory();
 
-  @EntityGraph(attributePaths = {"artifacts.archivedArtifacts", "names"})
+  @EntityGraph(attributePaths = "names")
   @Query("""
       SELECT p
       FROM Product p
@@ -32,7 +34,19 @@ public interface ProductRepository extends CoreProductRepository, CustomProductR
           WHERE KEY(n) = 'en'
       )
       """)
-  List<Product> findProductsWithEnglishNameAndArtifacts();
+  List<Product> findProductsWithEnglishName();
+
+  @EntityGraph(attributePaths = "artifacts.archivedArtifacts")
+  List<Product> findProductsWithArtifactsByIdIn(Collection<String> productIds);
+
+  @Transactional(readOnly = true)
+  default List<Product> findProductsWithEnglishNameAndArtifacts() {
+    List<Product> products = findProductsWithEnglishName();
+    if (!products.isEmpty()) {
+      findProductsWithArtifactsByIdIn(products.stream().map(Product::getId).toList());
+    }
+    return products;
+  }
 
   @Query("SELECT p.id FROM Product p ORDER BY p.id")
   List<String> findAllIds();
