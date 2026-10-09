@@ -4,6 +4,7 @@ import com.axonivy.market.core.entity.Product;
 import com.axonivy.market.core.repository.CoreProductRepository;
 import com.axonivy.market.model.projection.ProductIdMarketDirectoryProjection;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -20,13 +21,16 @@ public interface ProductRepository extends CoreProductRepository, CustomProductR
       """)
   List<ProductIdMarketDirectoryProjection> findAllIdAndMarketDirectory();
 
+  @EntityGraph(attributePaths = {"artifacts.archivedArtifacts", "names"})
   @Query("""
       SELECT p
       FROM Product p
-      LEFT JOIN FETCH p.artifacts a
-      LEFT JOIN FETCH a.archivedArtifacts
-      JOIN p.names n
-      WHERE KEY(n) = 'en'
+      WHERE p IN (
+          SELECT p2
+          FROM Product p2
+          JOIN p2.names n
+          WHERE KEY(n) = 'en'
+      )
       """)
   List<Product> findProductsWithEnglishNameAndArtifacts();
 
