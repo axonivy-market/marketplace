@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 class CustomProductRepositoryImplTest {
   private static final String LISTED_PRODUCT_ID = "case-process-viewer-utils";
+  private static final String EXPRESS_IMPORTER_PRODUCT_ID = "express-importer";
   private static final String PORTAL_PRODUCT_ID = "portal";
   private static final String LISTED_ARTIFACT_ID = "case-process-viewer-utils-product";
   private static final String EN_LANGUAGE = "en";
@@ -105,5 +107,40 @@ class CustomProductRepositoryImplTest {
         .as("products with documents should be returned without duplicates")
         .extracting(Product::getId)
         .containsExactlyInAnyOrder(PORTAL_PRODUCT_ID);
+  }
+
+  @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void testFindProductsWithEnglishNameAndArtifactsLoadsRelatedDataWithoutSession() {
+    List<Product> products = productRepository.findProductsWithEnglishNameAndArtifacts();
+
+    assertThat(products)
+        .as("products with an English name should be returned")
+        .extracting(Product::getId)
+        .containsExactlyInAnyOrder(LISTED_PRODUCT_ID, EXPRESS_IMPORTER_PRODUCT_ID, PORTAL_PRODUCT_ID);
+
+    assertThat(products)
+        .as("products should have related data loaded for use outside a transaction")
+        .isNotEmpty()
+        .allSatisfy(product -> {
+          assertThat(product.getNames())
+              .as("product names should include the English entry")
+              .containsKey(EN_LANGUAGE);
+          assertThat(product.getArtifacts())
+              .as("product artifacts should be loaded")
+              .isNotEmpty()
+              .allSatisfy(artifact -> assertThat(artifact.getArchivedArtifacts())
+                  .as("archived artifacts should be loaded")
+                  .isNotNull());
+        });
+
+    Product portal = products.stream()
+        .filter(product -> PORTAL_PRODUCT_ID.equals(product.getId()))
+        .findFirst()
+        .orElseThrow();
+    assertThat(portal.getArtifacts())
+        .as("portal artifacts should not be duplicated")
+        .extracting(Artifact::getArtifactId)
+        .containsExactlyInAnyOrder("portal-guide", "portal-components", "portal-product");
   }
 }
