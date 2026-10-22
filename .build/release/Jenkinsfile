@@ -197,6 +197,7 @@ pipeline {
                 export STABLE_LOG_PATH=/home/axonivy/marketplace/logs/stable
                 export APP_LOG_PATH=/home/axonivy/marketplace/logs/app
                 export MARKET_ENV_FILE=../.env.runtime
+                docker pull node:24-alpine
                 docker compose --project-name marketplace up --build --force-recreate -d
             '''
           }
