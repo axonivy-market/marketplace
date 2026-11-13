@@ -1,5 +1,8 @@
 # AxonIvy Marketplace
 
+> [!WARNING]
+> This Website is no longer maintained. The succcessor is here: https://github.com/axonivy/market.axonivy.com/
+
 Complete marketplace platform for AxonIvy products with UI, backend services, and deployment infrastructure.
 
 ## Architecture
